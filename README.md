@@ -16,10 +16,10 @@ Danh sách hàm và yêu cầu của từng nhiệm vụ nằm trong [PhanCongCo
 
 ## Nhóm 15
 
-- Võ Văn Cường
-- Tô Tuệ Nghi
-- Trần Hoàng Nhi
-- Lê Tấn Phát
+- Võ Văn Cường - 24120029
+- Tô Tuệ Nghi - 24120100
+- Trần Hoàng Nhi - 24120113
+- Lê Tấn Phát - 24120115
 
 Giảng viên hướng dẫn: Trần Hải Anh Điền, Võ Nam Thục Đoan, Đặng Trần Minh Hậu, Lê Phúc Lữ.
 
@@ -110,12 +110,12 @@ Bộ test đối chiếu số lớn và lũy thừa với Python trên số ng�
 
 ## Quy trình làm việc
 
-Mỗi nhiệm vụ làm trên một nhánh riêng:
+Mỗi thành viên làm trên một nhánh riêng:
 
 ```powershell
 git switch main
 git pull
-git switch -c nv1-u512
+git switch -c <Ten>
 ```
 
 Cách cài một hàm:
