@@ -1,0 +1,9 @@
+*.exe
+*.o
+__pycache__/
+dh
+test_u512
+test_modexp
+test_random
+test_prime
+test_dh
