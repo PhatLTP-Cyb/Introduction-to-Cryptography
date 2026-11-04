@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cẩm nang Lab 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Một cột đọc như giáo trình; mỗi phần là một bước của buổi trình bày, sơ đồ và bảng được phép tràn ngang trong khung riêng. */
+:root {
+  --bg: #f5f7f9;
+  --paper: #ffffff;
+  --ink: #18232e;
+  --muted: #586776;
+  --line: #d3dce4;
+  --tint: #e8f0f4;
+  --accent: #0b6e80;
+  --accent-ink: #ffffff;
+  --warn: #9a5b00;
+  --warn-bg: #fdf3e2;
+  --ok: #23734a;
+  --bad: #b23a3a;
+  --display: "Lexend", "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f161c; --paper: #161f27; --ink: #e3eaf0; --muted: #9aabb9; --line: #2c3a46;
+    --tint: #1c2a34; --accent: #5cc3d4; --accent-ink: #0b1a1f; --warn: #f0b45a; --warn-bg: #2d2416;
+    --ok: #6fcf98; --bad: #ef8a8a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f161c; --paper: #161f27; --ink: #e3eaf0; --muted: #9aabb9; --line: #2c3a46;
+  --tint: #1c2a34; --accent: #5cc3d4; --accent-ink: #0b1a1f; --warn: #f0b45a; --warn-bg: #2d2416;
+  --ok: #6fcf98; --bad: #ef8a8a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--body); }
+main { max-width: 860px; margin: 0 auto; padding-block: 36px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 44px; }
+header { display: grid; gap: 10px; }
+.kicker { font: 600 13px/1.4 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(30px, 5vw, 44px)/1.15 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 600 26px/1.25 var(--display); margin: 0; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .no { font: 600 15px/1 var(--mono); color: var(--accent); border: 1.5px solid var(--accent); border-radius: 6px; padding: 5px 7px; flex: none; }
+h3 { font: 600 19px/1.35 var(--display); margin: 8px 0 0; text-wrap: balance; }
+p, ul, ol { margin: 0; max-width: 68ch; }
+ul, ol { padding-left: 22px; display: grid; gap: 4px; }
+section { display: grid; gap: 14px; min-width: 0; scroll-margin-top: 16px; }
+.lead { font-size: 18px; color: var(--muted); max-width: 62ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 600 13px/1 var(--body); padding: 7px 10px; border-radius: 999px; background: var(--tint); color: var(--ink); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+:not(pre) > code { background: var(--tint); padding: 1px 5px; border-radius: 4px; }
+pre { margin: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 14px/1.6 var(--mono); }
+.box { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; min-width: 0; }
+.key { border-left: 4px solid var(--accent); background: var(--paper); padding: 12px 16px; border-radius: 0 8px 8px 0; display: grid; gap: 6px; }
+.key b:first-child { color: var(--accent); }
+.trap { border-left: 4px solid var(--warn); background: var(--warn-bg); padding: 12px 16px; border-radius: 0 8px 8px 0; display: grid; gap: 6px; }
+.trap > b:first-child { color: var(--warn); }
+.wrap { overflow-x: auto; min-width: 0; }
+table { border-collapse: collapse; width: 100%; background: var(--paper); font-size: 15px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: var(--tint); font-weight: 600; }
+td.num, th.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+figure svg { width: 100%; height: auto; max-width: 100%; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; }
+figcaption { font-size: 14px; color: var(--muted); max-width: 70ch; }
+.toc { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+.toc ol { columns: 2 260px; column-gap: 28px; display: block; }
+.toc li { margin-bottom: 4px; break-inside: avoid; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.seq { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font: 600 15px/1 var(--mono); }
+.seq span { padding: 8px 10px; border-radius: 6px; background: var(--tint); font-variant-numeric: tabular-nums; }
+.seq i { font-style: normal; color: var(--muted); font-weight: 400; }
+.seq .hit { background: var(--accent); color: var(--accent-ink); }
+.seq .bad { outline: 2px solid var(--bad); color: var(--bad); background: var(--paper); }
+.seq .lab { background: none; padding: 0 4px 0 0; color: var(--muted); font-family: var(--body); font-weight: 600; }
+.verdict-ok { color: var(--ok); font-weight: 600; }
+.verdict-bad { color: var(--bad); font-weight: 600; }
+.qa { display: grid; gap: 12px; }
+.qa .box p.a { color: var(--muted); }
+.agenda td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 480px) { body { font-size: 15px; } h2 { font-size: 22px; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="kicker">Nhập môn Mã hóa – Mật mã · Nhóm 15</div>
+  <h1>Cẩm nang Lab 01: Số nguyên tố và trao đổi khóa Diffie-Hellman</h1>
+  <p class="lead">Tài liệu để cả nhóm cùng hiểu đồ án trước khi chia việc: đồ án làm gì, toán nằm bên dưới, và mỗi nhiệm vụ cần nắm lý thuyết nào. Mỗi phần có ví dụ số nhỏ đã được tính kiểm chứng.</p>
+  <div class="meta">
+    <span class="chip">Hạn nộp 17/11/2026</span>
+    <span class="chip">C++14, không thư viện số lớn</span>
+    <span class="chip">p tối thiểu 512 bit</span>
+    <span class="chip">29 hàm cần cài</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Mục lục">
+  <ol>
+    <li><a href="#tong-quan">Bức tranh lớn</a></li>
+    <li><a href="#toan-nen">Toán nền: số học mô-đun</a></li>
+    <li><a href="#diffie-hellman">Diffie-Hellman</a></li>
+    <li><a href="#so-lon">NV1: Số lớn 512 bit</a></li>
+    <li><a href="#luy-thua">NV2: Lũy thừa mô-đun</a></li>
+    <li><a href="#nguyen-to">NV3: Kiểm tra nguyên tố, safe prime</a></li>
+    <li><a href="#ngau-nhien">NV4: Số ngẫu nhiên, khóa riêng</a></li>
+    <li><a href="#phan-tu-sinh">NV5: Phần tử sinh và chương trình chính</a></li>
+    <li><a href="#cach-lam">Khung mã và cách làm việc</a></li>
+    <li><a href="#bao-cao">Lý thuyết nào vào báo cáo</a></li>
+    <li><a href="#tu-kiem-tra">Câu hỏi tự kiểm tra</a></li>
+  </ol>
+</nav>
+
+<section aria-labelledby="h-agenda">
+  <h3 id="h-agenda">Gợi ý thứ tự trình bày tối nay (khoảng 75 phút)</h3>
+  <div class="wrap"><table class="agenda">
+    <tr><th>Thời lượng</th><th>Nội dung</th><th>Mục</th></tr>
+    <tr><td>10 phút</td><td>Đồ án làm gì, kết quả chạy ra trông thế nào, các phần nối với nhau ra sao</td><td>1</td></tr>
+    <tr><td>15 phút</td><td>Số học mô-đun và Diffie-Hellman qua ví dụ p = 23</td><td>2, 3</td></tr>
+    <tr><td>30 phút</td><td>Lý thuyết của từng nhiệm vụ NV1 đến NV5, mỗi nhiệm vụ khoảng 6 phút</td><td>4 đến 8</td></tr>
+    <tr><td>10 phút</td><td>Khung mã, cách chạy test, quy trình Git</td><td>9</td></tr>
+    <tr><td>10 phút</td><td>Chia việc, chốt các ô "Quyết định" trong biên bản</td><td>Biên bản</td></tr>
+  </table></div>
+</section>
+
+<!-- 1 -->
+<section id="tong-quan" aria-labelledby="h1-1">
+  <h2 id="h1-1"><span class="no">1</span>Bức tranh lớn</h2>
+  <p>Đồ án là một chương trình C++ đóng vai cả Alice lẫn Bob. Hai người tạo ra <b>cùng một số bí mật</b> mà không bao giờ gửi số đó cho nhau, dù mọi thứ họ gửi đều có thể bị người khác đọc. Chương trình chạy đúng 5 bước, đã viết sẵn trong <code>src/main.cpp</code>:</p>
+  <ol>
+    <li>Sinh số nguyên tố an toàn p (512 bit) và chọn phần tử sinh g.</li>
+    <li>Alice chọn khóa riêng a, Bob chọn khóa riêng b, đều ngẫu nhiên trong [2, p − 2].</li>
+    <li>Alice tính A = g<sup>a</sup> mod p, Bob tính B = g<sup>b</sup> mod p, rồi gửi cho nhau.</li>
+    <li>Alice tính B<sup>a</sup> mod p, Bob tính A<sup>b</sup> mod p.</li>
+    <li>In hai kết quả và kiểm tra chúng bằng nhau.</li>
+  </ol>
+  <p>Thuật toán chỉ có vậy. Cái khó nằm ở chỗ mọi số đều dài 512 bit, khoảng 155 chữ số thập phân, trong khi kiểu lớn nhất của C++ là 64 bit. Vì thế nhóm phải tự xây toàn bộ phần số học bên dưới.</p>
+
+  <figure>
+    <svg viewBox="0 0 780 270" role="img" aria-label="Sơ đồ phụ thuộc: NV1 số lớn là nền của NV2 và NV4; NV2 và NV4 cấp cho NV3; NV2, NV3, NV4 cùng cấp cho NV5.">
+      <defs>
+        <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      </defs>
+      <g font-family="Be Vietnam Pro, Segoe UI, sans-serif" font-size="13" fill="currentColor">
+        <rect x="20" y="105" width="150" height="60" rx="8" fill="none" stroke-width="2.5" style="stroke: var(--accent)"/>
+        <text x="95" y="130" text-anchor="middle" font-weight="700">NV1 · Số lớn</text>
+        <text x="95" y="150" text-anchor="middle" font-size="12">u512.cpp · 16 hàm</text>
+
+        <rect x="230" y="40" width="150" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="305" y="65" text-anchor="middle" font-weight="700">NV2 · Lũy thừa</text>
+        <text x="305" y="85" text-anchor="middle" font-size="12">modexp.cpp · 4 hàm</text>
+
+        <rect x="230" y="170" width="150" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="305" y="195" text-anchor="middle" font-weight="700">NV4 · Ngẫu nhiên</text>
+        <text x="305" y="215" text-anchor="middle" font-size="12">random.cpp · 5 hàm</text>
+
+        <rect x="440" y="105" width="150" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="515" y="130" text-anchor="middle" font-weight="700">NV3 · Nguyên tố</text>
+        <text x="515" y="150" text-anchor="middle" font-size="12">prime.cpp · 3 hàm</text>
+
+        <rect x="630" y="105" width="130" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="695" y="130" text-anchor="middle" font-weight="700">NV5 · DH</text>
+        <text x="695" y="150" text-anchor="middle" font-size="12">dh.cpp, main.cpp</text>
+
+        <g stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#arr1)">
+          <line x1="170" y1="125" x2="228" y2="80"/>
+          <line x1="170" y1="145" x2="228" y2="190"/>
+          <line x1="380" y1="80" x2="438" y2="122"/>
+          <line x1="380" y1="190" x2="438" y2="148"/>
+          <line x1="590" y1="135" x2="628" y2="135"/>
+          <path d="M380 55 C 500 10, 640 20, 680 103"/>
+          <path d="M380 215 C 500 262, 640 252, 680 167"/>
+        </g>
+        <text x="178" y="92" font-size="11">phép toán số lớn</text>
+        <text x="392" y="94" font-size="11">lũy thừa</text>
+        <text x="392" y="184" font-size="11">số ngẫu nhiên</text>
+        <text x="598" y="128" font-size="11">p</text>
+        <text x="520" y="25" font-size="11">tính A, B, bí mật chung</text>
+        <text x="540" y="258" font-size="11">khóa riêng a, b</text>
+      </g>
+    </svg>
+    <figcaption>Mỗi mũi tên là "được dùng bởi". NV1 nằm dưới mọi thứ, nên có hạn sớm nhất (06/11). NV6 lo Makefile, kiểm thử, đóng gói; NV7 viết báo cáo.</figcaption>
+  </figure>
+</section>
+
+<!-- 2 -->
+<section id="toan-nen" aria-labelledby="h1-2">
+  <h2 id="h1-2"><span class="no">2</span>Toán nền: số học mô-đun</h2>
+
+  <h3>Phép mod là đồng hồ</h3>
+  <p><code>a mod n</code> là số dư khi chia a cho n, luôn nằm trong 0 … n − 1. Đồng hồ 12 giờ là mod 12: 9 giờ cộng 5 tiếng ra 2 giờ, vì 14 mod 12 = 2. Ta viết <b>a ≡ b (mod n)</b> khi a và b có cùng số dư, tức n chia hết a − b.</p>
+
+  <div class="key">
+    <b>Tính chất quan trọng nhất của cả đồ án</b>
+    <p>(a + b) mod n = ((a mod n) + (b mod n)) mod n, và (a · b) mod n = ((a mod n) · (b mod n)) mod n.</p>
+    <p>Nghĩa là được phép lấy mod <b>sau mỗi bước</b> mà kết quả cuối không đổi. Nhờ vậy số trung gian không bao giờ vượt quá n² và luôn nằm vừa trong bộ nhớ.</p>
+  </div>
+
+  <h3>Nhóm nhân mod p</h3>
+  <p>Với p nguyên tố, các số 1, 2, …, p − 1 nhân với nhau theo mod p vẫn ra một số trong tập đó, và số nào cũng có nghịch đảo. Tập này gọi là <b>ℤ<sub>p</sub>*</b>, có đúng p − 1 phần tử. Diffie-Hellman làm việc hoàn toàn bên trong tập này.</p>
+
+  <h3>Định lý Fermat nhỏ</h3>
+  <p>Nếu p nguyên tố và a không chia hết cho p thì <b>a<sup>p−1</sup> ≡ 1 (mod p)</b>. Ví dụ 5<sup>22</sup> mod 23 = 1. Định lý này là nền của phép kiểm tra nguyên tố ở mục 6.</p>
+
+  <h3>Bậc của một phần tử</h3>
+  <p>Nhân một số với chính nó liên tục, sớm muộn sẽ quay về 1. Số lần nhân nhỏ nhất để về 1 gọi là <b>bậc</b>. Bậc luôn là ước của p − 1. Đây là chìa khóa của mục 8 (phần tử sinh).</p>
+</section>
+
+<!-- 3 -->
+<section id="diffie-hellman" aria-labelledby="h1-3">
+  <h2 id="h1-3"><span class="no">3</span>Diffie-Hellman</h2>
+  <p>Ví dụ với số nhỏ để thấy cơ chế. p = 23 và g = 5 là công khai, ai cũng biết.</p>
+
+  <figure>
+    <svg viewBox="0 0 780 300" role="img" aria-label="Alice và Bob gửi A = 4 và B = 10 qua kênh công khai; Eve thấy p, g, A, B nhưng không thấy a, b; cả hai cùng tính ra bí mật 18.">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      </defs>
+      <g font-family="Be Vietnam Pro, Segoe UI, sans-serif" font-size="13" fill="currentColor">
+        <text x="390" y="26" text-anchor="middle" font-weight="700">Công khai: p = 23, g = 5</text>
+
+        <rect x="20" y="45" width="210" height="235" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="125" y="72" text-anchor="middle" font-weight="700" font-size="15">Alice</text>
+        <text x="40" y="104">Chọn a = 4 (giữ kín)</text>
+        <text x="40" y="134">A = 5⁴ mod 23 = 4</text>
+        <text x="40" y="232">Nhận B = 10</text>
+        <text x="40" y="262" font-weight="700" style="fill: var(--accent)">s = 10⁴ mod 23 = 18</text>
+
+        <rect x="550" y="45" width="210" height="235" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="655" y="72" text-anchor="middle" font-weight="700" font-size="15">Bob</text>
+        <text x="570" y="104">Chọn b = 3 (giữ kín)</text>
+        <text x="570" y="134">B = 5³ mod 23 = 10</text>
+        <text x="570" y="232">Nhận A = 4</text>
+        <text x="570" y="262" font-weight="700" style="fill: var(--accent)">s = 4³ mod 23 = 18</text>
+
+        <rect x="290" y="45" width="200" height="235" rx="10" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="390" y="72" text-anchor="middle" font-weight="700" font-size="15">Eve nghe lén</text>
+        <text x="390" y="196" text-anchor="middle">Thấy p, g, A = 4, B = 10</text>
+        <text x="390" y="220" text-anchor="middle">Không thấy a, b, s</text>
+        <text x="390" y="252" text-anchor="middle" font-size="12">Muốn s phải giải 5ᵃ ≡ 4 (mod 23)</text>
+
+        <g stroke="currentColor" stroke-width="1.6" fill="none">
+          <line x1="230" y1="140" x2="548" y2="140" marker-end="url(#arr2)"/>
+          <line x1="550" y1="165" x2="232" y2="165" marker-end="url(#arr2)"/>
+        </g>
+        <text x="390" y="132" text-anchor="middle" font-size="12">Alice gửi A = 4</text>
+        <text x="390" y="182" text-anchor="middle" font-size="12">Bob gửi B = 10</text>
+      </g>
+    </svg>
+    <figcaption>Hai bên ra cùng 18 dù số 18 không đi qua kênh truyền. Eve có mọi thứ được gửi, nhưng thiếu a hoặc b.</figcaption>
+  </figure>
+
+  <h3>Vì sao hai bên ra cùng một số</h3>
+  <p>Alice tính B<sup>a</sup> = (g<sup>b</sup>)<sup>a</sup> = g<sup>ab</sup>. Bob tính A<sup>b</sup> = (g<sup>a</sup>)<sup>b</sup> = g<sup>ab</sup>. Lũy thừa đổi thứ tự được, và mod sau mỗi bước không làm đổi kết quả (mục 2), nên hai số luôn bằng nhau.</p>
+
+  <h3>Vì sao Eve không tính được</h3>
+  <p>Biết g, p và A = g<sup>a</sup> mod p, tìm lại a gọi là <b>bài toán logarit rời rạc</b>. Tính xuôi g<sup>a</sup> rất nhanh (mục 5), nhưng tính ngược chưa có cách nào nhanh khi p lớn. Với p = 23, Eve thử a = 1, 2, 3, … là ra ngay. Với p 512 bit, a có khoảng 2<sup>511</sup> giá trị, thử lần lượt là không thể.</p>
+  <p>Bài 2 của môn có phương pháp Index Calculus giải bài toán này nhanh hơn thử lần lượt. Vì thế trong thực tế người ta dùng p từ 2048 bit trở lên; 512 bit của đồ án chỉ để học.</p>
+
+  <div class="trap">
+    <b>Giới hạn cần nêu trong báo cáo</b>
+    <p>Diffie-Hellman thuần không xác thực ai đang nói chuyện. Eve có thể đứng giữa, trao đổi khóa riêng với Alice và riêng với Bob (tấn công man-in-the-middle, slide cuối Bài 2). Thực tế phải kết hợp chứng chỉ hoặc chữ ký số.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="so-lon" aria-labelledby="h1-4">
+  <h2 id="h1-4"><span class="no">4</span>NV1: Số lớn 512 bit</h2>
+  <p>Không kiểu có sẵn nào chứa nổi 512 bit, nên ta chia số thành <b>8 "chữ số"</b>, mỗi chữ số là một <code>uint64_t</code>. Giống hệ thập phân dùng chữ số 0–9, ở đây mỗi chữ số đi từ 0 tới 2<sup>64</sup> − 1. Khung mã lưu trong mảng <code>digits[8]</code>, với <code>digits[0]</code> là chữ số thấp nhất.</p>
+
+  <figure>
+    <svg viewBox="0 0 780 160" role="img" aria-label="Tám ô digits[7] đến digits[0], mỗi ô 64 bit, trọng số từ 2 mũ 448 xuống 2 mũ 0; số nhớ đi từ ô thấp sang ô cao.">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      </defs>
+      <g font-family="JetBrains Mono, Consolas, monospace" font-size="12" fill="currentColor">
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="20" y="40" width="86" height="44" rx="5"/>
+          <rect x="112" y="40" width="86" height="44" rx="5"/>
+          <rect x="204" y="40" width="86" height="44" rx="5"/>
+          <rect x="296" y="40" width="86" height="44" rx="5"/>
+          <rect x="388" y="40" width="86" height="44" rx="5"/>
+          <rect x="480" y="40" width="86" height="44" rx="5"/>
+          <rect x="572" y="40" width="86" height="44" rx="5"/>
+          <rect x="664" y="40" width="96" height="44" rx="5" stroke-width="2.5" style="stroke: var(--accent)"/>
+        </g>
+        <text x="63" y="67" text-anchor="middle">digits[7]</text>
+        <text x="155" y="67" text-anchor="middle">digits[6]</text>
+        <text x="247" y="67" text-anchor="middle">digits[5]</text>
+        <text x="339" y="67" text-anchor="middle">digits[4]</text>
+        <text x="431" y="67" text-anchor="middle">digits[3]</text>
+        <text x="523" y="67" text-anchor="middle">digits[2]</text>
+        <text x="615" y="67" text-anchor="middle">digits[1]</text>
+        <text x="712" y="67" text-anchor="middle">digits[0]</text>
+        <text x="63" y="104" text-anchor="middle">× 2^448</text>
+        <text x="155" y="104" text-anchor="middle">× 2^384</text>
+        <text x="247" y="104" text-anchor="middle">× 2^320</text>
+        <text x="339" y="104" text-anchor="middle">× 2^256</text>
+        <text x="431" y="104" text-anchor="middle">× 2^192</text>
+        <text x="523" y="104" text-anchor="middle">× 2^128</text>
+        <text x="615" y="104" text-anchor="middle">× 2^64</text>
+        <text x="712" y="104" text-anchor="middle">× 1</text>
+        <text x="63" y="26" text-anchor="middle" font-family="Be Vietnam Pro, Segoe UI, sans-serif">cao nhất</text>
+        <text x="712" y="26" text-anchor="middle" font-family="Be Vietnam Pro, Segoe UI, sans-serif">thấp nhất</text>
+        <path d="M700 118 C 690 148, 640 148, 625 110" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <text x="660" y="152" text-anchor="middle" font-family="Be Vietnam Pro, Segoe UI, sans-serif">số nhớ</text>
+      </g>
+    </svg>
+    <figcaption>Giá trị = digits[0] + digits[1]·2<sup>64</sup> + … + digits[7]·2<sup>448</sup>. Phép tính chạy từ ô thấp lên ô cao, số nhớ chuyển sang ô bên trái.</figcaption>
+  </figure>
+
+  <h3>Các phép cần cài và ý tưởng</h3>
+  <div class="wrap"><table>
+    <tr><th>Hàm</th><th>Cách làm</th></tr>
+    <tr><td><code>add_overflow</code>, <code>+</code></td><td>Cộng như cộng tay, từ ô 0 lên ô 7. Dùng <code>uint128_t</code> để cộng hai ô 64 bit cộng số nhớ mà không tràn; phần trên 64 bit là số nhớ sang ô kế. Số nhớ còn lại sau ô 7 chính là "tràn".</td></tr>
+    <tr><td><code>-</code></td><td>Trừ từ ô thấp lên, mượn 1 từ ô kế khi ô hiện tại không đủ.</td></tr>
+    <tr><td><code>==</code>, <code>&lt;</code></td><td>So từ ô cao xuống; ô đầu tiên khác nhau quyết định kết quả.</td></tr>
+    <tr><td><code>&lt;&lt;</code>, <code>&gt;&gt;</code></td><td>Dịch n bit = dịch n/64 ô nguyên, rồi dịch n%64 bit bên trong, ghép phần rơi ra sang ô bên cạnh.</td></tr>
+    <tr><td><code>bit</code>, <code>set_bit</code>, <code>bit_length</code></td><td>Bit thứ i nằm ở ô i/64, vị trí i%64. Độ dài bit là vị trí bit 1 cao nhất cộng 1.</td></tr>
+    <tr><td><code>mod_u64</code></td><td>Chia cho số nhỏ như chia tay: đi từ ô cao xuống, r = (r · 2<sup>64</sup> + ô) mod m, tính trên <code>uint128_t</code>. Dùng để sàng số nguyên tố.</td></tr>
+    <tr><td><code>from_hex</code>, <code>to_hex</code></td><td>Mỗi chữ số hex là 4 bit, mỗi ô chứa đúng 16 chữ số hex. Hệ 16 dùng để in và để đối chiếu với Python.</td></tr>
+  </table></div>
+
+  <p>Ví dụ số nhớ đi qua ranh giới ô: ô 0 = <code>ffffffffffffffff</code> (lớn nhất), cộng thêm 1. Ô 0 thành 0 và nhớ 1 sang ô 1, kết quả là <code>10000000000000000</code> trong hệ 16.</p>
+
+  <div class="trap">
+    <b>Bẫy hay gặp</b>
+    <ul>
+      <li>Trong C++, dịch một <code>uint64_t</code> đi 64 bit là hành vi không xác định. Khi n%64 = 0 phải xử lý riêng, không được viết <code>x &gt;&gt; (64 − 0)</code>.</li>
+      <li>p có đủ 512 bit nên a + b có thể vượt 2<sup>512</sup>. Đó là lý do có <code>add_overflow</code> trả về cờ tràn, để NV2 dùng.</li>
+      <li>Phép trừ cho ra số "âm" sẽ quay vòng thành số rất lớn. Luôn so sánh trước khi trừ nếu cần kết quả không âm.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="luy-thua" aria-labelledby="h1-5">
+  <h2 id="h1-5"><span class="no">5</span>NV2: Lũy thừa mô-đun</h2>
+  <p>Ta cần tính g<sup>a</sup> mod p với a dài 512 bit. Nhân g với chính nó a lần cần khoảng 2<sup>511</sup> phép nhân, không bao giờ xong. Ý tưởng cứu cánh, cũng là gợi ý của giáo viên trong seminar: <b>phân tích số mũ thành tổng các lũy thừa của 2</b>.</p>
+
+  <h3>Bình phương và nhân</h3>
+  <p>13 = 8 + 4 + 1 nên 3<sup>13</sup> = 3<sup>8</sup> · 3<sup>4</sup> · 3<sup>1</sup>. Các lũy thừa 3<sup>1</sup>, 3<sup>2</sup>, 3<sup>4</sup>, 3<sup>8</sup> có được bằng cách bình phương liên tiếp. Cài đặt gọn nhất là đi qua các bit của số mũ từ trái sang phải: mỗi bit thì bình phương, gặp bit 1 thì nhân thêm cơ số.</p>
+  <div class="wrap"><table>
+    <tr><th>Bit của 13 = 1101₂</th><th>Bình phương</th><th>Nhân 3 nếu bit = 1</th></tr>
+    <tr><td>1</td><td class="num">1² = 1</td><td class="num">1 · 3 = 3</td></tr>
+    <tr><td>1</td><td class="num">3² = 9</td><td class="num">9 · 3 = 27 ≡ 4</td></tr>
+    <tr><td>0</td><td class="num">4² = 16</td><td class="num">bỏ qua</td></tr>
+    <tr><td>1</td><td class="num">16² = 256 ≡ 3</td><td class="num">3 · 3 = <b>9</b></td></tr>
+  </table></div>
+  <p>Vậy 3<sup>13</sup> mod 23 = 9. Với số mũ 512 bit, cách này cần khoảng 511 phép bình phương và trung bình 256 phép nhân, tổng cỡ <b>767 phép nhân mô-đun</b> thay vì 2<sup>511</sup>.</p>
+<pre>result = 1
+for từng bit của exp, từ bit cao xuống bit thấp:
+    result = (result * result) mod m
+    if bit == 1:
+        result = (result * base) mod m</pre>
+
+  <h3>Nhân mô-đun cũng dùng đúng ý tưởng đó</h3>
+  <p>Tích hai số 512 bit dài 1024 bit, không vừa <code>uint512_t</code>. Cách của slide (hàm <code>mulMod</code>): phân tích số nhân thành lũy thừa của 2, chỉ dùng <b>nhân đôi và cộng</b>, mod sau mỗi bước nên số không bao giờ phình ra. Ví dụ 7 · 13 mod 23, với 13 = 1101₂:</p>
+  <div class="wrap"><table>
+    <tr><th>Bit</th><th>Nhân đôi (mod 23)</th><th>Cộng 7 nếu bit = 1</th></tr>
+    <tr><td>1</td><td class="num">0</td><td class="num">7</td></tr>
+    <tr><td>1</td><td class="num">14</td><td class="num">21</td></tr>
+    <tr><td>0</td><td class="num">42 ≡ 19</td><td class="num">bỏ qua</td></tr>
+    <tr><td>1</td><td class="num">38 ≡ 15</td><td class="num">22</td></tr>
+  </table></div>
+  <p>Kết quả 22, khớp 91 mod 23. Bốn hàm của NV2 xếp chồng lên nhau: <code>reduce_mod</code> đưa số về nhỏ hơn m, <code>add_mod</code> cộng rồi trừ m nếu vượt, <code>mul_mod</code> nhân đôi và cộng bằng <code>add_mod</code>, <code>modular_exponentiation</code> bình phương và nhân bằng <code>mul_mod</code>.</p>
+
+  <div class="trap">
+    <b>Bẫy hay gặp</b>
+    <ul>
+      <li>Khi m đủ 512 bit, nhân đôi một số nhỏ hơn m vẫn có thể tràn khỏi 512 bit. Phải dùng <code>add_overflow</code>: nếu tràn thì chắc chắn tổng thật lớn hơn m, cứ trừ m.</li>
+      <li>Ba trường hợp biên: số mũ 0 cho kết quả 1, mô-đun 1 cho kết quả 0, cơ số lớn hơn mô-đun thì phải <code>reduce_mod</code> trước.</li>
+    </ul>
+  </div>
+  <p>Về tốc độ: một bản cài đặt thử dùng đúng cách nhân đôi và cộng này chạy cả chương trình 512 bit trong 0,6–6,8 giây trên máy Windows của nhóm, nên đủ dùng. Muốn nhanh hơn thì nâng cấp lên phép nhân Montgomery, nhưng đó là phần làm thêm.</p>
+</section>
+
+<!-- 6 -->
+<section id="nguyen-to" aria-labelledby="h1-6">
+  <h2 id="h1-6"><span class="no">6</span>NV3: Kiểm tra nguyên tố và số nguyên tố an toàn</h2>
+
+  <h3>Vì sao không chia thử</h3>
+  <p>Cách học ở phổ thông là chia thử cho mọi số tới √n. Với n 512 bit, √n cỡ 2<sup>256</sup>, tức khoảng 10<sup>77</sup> lần chia, không máy nào chạy nổi. Ta cần phép kiểm tra chỉ tốn vài phép lũy thừa.</p>
+
+  <h3>Phép thử Fermat và chỗ thủng của nó</h3>
+  <p>Theo Fermat nhỏ, nếu n nguyên tố thì b<sup>n−1</sup> ≡ 1 (mod n). Đảo lại: nếu b<sup>n−1</sup> ≢ 1 thì n <b>chắc chắn là hợp số</b>. Nhưng có những hợp số vẫn qua được phép thử này. 561 = 3 · 11 · 17 là ví dụ nổi tiếng (số Carmichael): 2<sup>560</sup> mod 561 = 1 dù 561 không nguyên tố.</p>
+
+  <h3>Miller-Rabin vá chỗ thủng</h3>
+  <p>Ý tưởng cốt lõi: <b>nếu n nguyên tố thì số duy nhất bình phương ra 1 là 1 và −1</b> (vì n chia hết (x − 1)(x + 1) thì phải chia hết một trong hai thừa số). Hợp số thì có thể có "căn bậc hai lạ" của 1, và đó là bằng chứng nó là hợp số.</p>
+  <p>Cách làm: viết n − 1 = 2<sup>r</sup> · m với m lẻ. Tính b<sup>m</sup>, rồi bình phương liên tiếp r lần để đi tới b<sup>n−1</sup>. Nếu n nguyên tố, dãy này hoặc bắt đầu bằng 1, hoặc phải gặp −1 (tức n − 1) ngay trước khi gặp 1.</p>
+
+  <div class="grid2">
+    <div class="box">
+      <b>n = 97 (nguyên tố), b = 5</b>
+      <p>96 = 2<sup>5</sup> · 3, nên bắt đầu từ 5<sup>3</sup>:</p>
+      <div class="seq"><span>28</span><i>→</i><span>8</span><i>→</i><span>64</span><i>→</i><span>22</span><i>→</i><span class="hit">96</span><i>→</i><span>1</span></div>
+      <p class="verdict-ok">Gặp 96 = −1 trước khi ra 1: qua vòng này.</p>
+    </div>
+    <div class="box">
+      <b>n = 561 (hợp số), b = 2</b>
+      <p>560 = 2<sup>4</sup> · 35, nên bắt đầu từ 2<sup>35</sup>:</p>
+      <div class="seq"><span>263</span><i>→</i><span>166</span><i>→</i><span class="bad">67</span><i>→</i><span>1</span><i>→</i><span>1</span></div>
+      <p class="verdict-bad">67² ≡ 1 nhưng 67 ≠ ±1: 561 là hợp số.</p>
+    </div>
+  </div>
+  <p>Mỗi vòng với cơ số ngẫu nhiên bắt được hợp số với xác suất ít nhất 3/4. Sau 20 vòng, xác suất nhận nhầm hợp số không quá 4<sup>−20</sup> ≈ 9,1 · 10<sup>−13</sup>.</p>
+
+  <div class="trap">
+    <b>Không dùng hàm primeTest trên slide Bài 2</b>
+    <p>Hàm đó loại cả số nguyên tố thật, ví dụ 17 với cơ số 2. Thử với các số nguyên tố dưới 2000, có 68 trên 301 số bị loại nhầm với ít nhất một cơ số. Dùng đúng điều kiện ở trên: qua vòng khi b<sup>m</sup> ≡ ±1, hoặc gặp −1 ở một bước bình phương nào đó.</p>
+  </div>
+
+  <h3>Số nguyên tố an toàn (safe prime)</h3>
+  <p>p gọi là an toàn khi p và q = (p − 1)/2 <b>đều</b> nguyên tố. Các safe prime nhỏ: 5, 7, 11, 23, 47, 59, 83, 107 (83 và 107 chính là hai số trong ví dụ của Bài 2).</p>
+  <p>Vì sao đề bắt dùng loại này: bậc của mọi phần tử là ước của p − 1. Với safe prime, p − 1 = 2q chỉ có các ước 1, 2, q, 2q. Nếu p − 1 có nhiều ước nhỏ, kẻ tấn công có thể chia bài toán logarit rời rạc thành nhiều bài toán nhỏ dễ giải (phương pháp Pohlig-Hellman). Với p − 1 = 2q và q khổng lồ, không còn đường tắt đó. Ngoài ra, tìm phần tử sinh cũng trở nên rất dễ (mục 8).</p>
+
+  <h3>Cách sinh</h3>
+  <ol>
+    <li>Chọn q ngẫu nhiên, lẻ, đặt bit cao nhất để p = 2q + 1 có đúng 512 bit.</li>
+    <li><b>Sàng</b>: loại ngay nếu q hoặc p chia hết cho một số nguyên tố nhỏ (dưới 2000). Bước này rẻ và loại phần lớn ứng viên.</li>
+    <li>Chạy Miller-Rabin trên cả q và p. Không qua thì quay lại bước 1.</li>
+  </ol>
+  <p>Cứ khoảng 177 số lẻ 512 bit mới có một số nguyên tố, mà cần cả q lẫn 2q + 1 cùng nguyên tố, nên thường phải thử từ vài nghìn tới vài chục nghìn ứng viên. Khi thử bằng Python, ba lần sinh 512 bit xét 9.098 đến 74.126 ứng viên. Thử nghiệm ở 256 bit cho thấy sàng trước giúp giảm khoảng 30 lần số lần chạy Miller-Rabin, nên sàng gần như bắt buộc.</p>
+</section>
+
+<!-- 7 -->
+<section id="ngau-nhien" aria-labelledby="h1-7">
+  <h2 id="h1-7"><span class="no">7</span>NV4: Số ngẫu nhiên và khóa riêng</h2>
+  <p>Toàn bộ độ an toàn dựa trên việc Eve không đoán được a và b. p lớn đến đâu cũng vô ích nếu khóa riêng sinh từ một nguồn đoán được.</p>
+
+  <h3>Seed và bộ sinh số giả ngẫu nhiên</h3>
+  <p>Máy tính là thiết bị tất định, nên ta làm hai bước:</p>
+  <ol>
+    <li><b>Seed</b>: lấy 32 byte thật sự khó đoán từ hệ điều hành. Hệ điều hành gom nhiễu từ phần cứng, thời điểm ngắt, v.v. Trên Windows khung mã gọi <code>BCryptGenRandom</code>, trên Linux gọi <code>getrandom</code>, cả hai qua hàm <code>randombytes</code>.</li>
+    <li><b>PRNG</b>: từ seed đó sinh ra dòng số dài bao nhiêu cũng được. Mã mẫu dùng SHAKE128 (thuộc họ SHA-3): seed được "hấp thụ" vào trạng thái, rồi "vắt" ra từng khúc byte. Không biết seed thì không đoán được byte tiếp theo.</li>
+  </ol>
+  <p>Seed cố định (<code>--seed abc</code>) chỉ dùng để kiểm thử, vì cùng seed luôn cho cùng dãy số và cùng khóa.</p>
+
+  <h3>Vì sao không dùng rand() hay seed theo thời gian</h3>
+  <p>Khi thử trên máy nhóm, khóa sinh bằng <code>srand(time)</code> bị dò lại seed của cả một ngày (86.400 giá trị) trong khoảng 7 mili giây. <code>std::mt19937</code> có đầu ra đẹp về thống kê nhưng chỉ cần 624 giá trị liên tiếp là khôi phục được trạng thái và đoán mọi số sau. Tiêu chí của mật mã là "không đoán được số tiếp theo", không phải "trông ngẫu nhiên".</p>
+
+  <h3>Lấy số trong một khoảng mà không bị lệch</h3>
+  <p>Lấy số ngẫu nhiên rồi <code>% n</code> làm phân bố bị lệch. Ví dụ một byte ngẫu nhiên (0–255) lấy mod 10: các số 0–5 xuất hiện 26 lần, còn 6–9 chỉ 25 lần. Cách đúng là <b>loại rồi sinh lại</b>: sinh đúng số bit của khoảng, nếu vượt khoảng thì bỏ và sinh lần nữa. Mỗi lần có ít nhất một nửa cơ hội được nhận, nên trung bình chưa tới 2 lần thử.</p>
+  <p><code>generate_private_key</code> chỉ là <code>random_range(2, p − 2)</code>. Loại 0, 1 và p − 1 vì chúng cho khóa công khai tầm thường: a = 1 cho A = g, lộ khóa ngay; a = 0 hoặc p − 1 cho A = 1.</p>
+</section>
+
+<!-- 8 -->
+<section id="phan-tu-sinh" aria-labelledby="h1-8">
+  <h2 id="h1-8"><span class="no">8</span>NV5: Phần tử sinh và chương trình chính</h2>
+  <p>g là <b>phần tử sinh</b> khi các lũy thừa g<sup>1</sup>, g<sup>2</sup>, … đi qua mọi phần tử của ℤ<sub>p</sub>*, tức g có bậc đúng bằng p − 1. Nếu g có bậc nhỏ, khóa công khai chỉ rơi vào một tập nhỏ và dễ dò hơn. So sánh hai cơ số với p = 23:</p>
+  <div class="box">
+    <div class="seq"><span class="lab">2ᵏ mod 23:</span><span>2</span><span>4</span><span>8</span><span>16</span><span>9</span><span>18</span><span>13</span><span>3</span><span>6</span><span>12</span><span class="bad">1</span><i>rồi lặp lại</i></div>
+    <p class="verdict-bad">Bậc 11: chỉ đi qua 11 trong 22 giá trị. 2 không phải phần tử sinh mod 23.</p>
+    <div class="seq"><span class="lab">5ᵏ mod 23:</span><span>5</span><span>2</span><span>10</span><span>4</span><span>20</span><span>8</span><span>17</span><span>16</span><span>11</span><span>9</span><span class="hit">22</span><span>18</span><span>21</span><span>13</span><span>19</span><span>3</span><span>15</span><span>6</span><span>7</span><span>12</span><span>14</span><span>1</span></div>
+    <p class="verdict-ok">Bậc 22: đi qua cả 22 giá trị. 5 là phần tử sinh.</p>
+  </div>
+
+  <h3>Kiểm tra nhanh nhờ safe prime</h3>
+  <p>Bậc của g là ước của p − 1 = 2q, nên chỉ có thể là 1, 2, q hoặc 2q. Muốn bậc đúng bằng 2q thì chỉ cần loại hai khả năng 2 và q:</p>
+  <div class="key"><p><b>g là phần tử sinh khi và chỉ khi g² ≢ 1 và g<sup>q</sup> ≢ 1 (mod p).</b></p></div>
+  <p>Với p = 23, q = 11: 5² = 25 ≡ 2 và 5<sup>11</sup> ≡ 22, cả hai khác 1 nên nhận 5. Còn 2<sup>11</sup> ≡ 1 nên loại 2. <code>find_generator</code> chọn g ngẫu nhiên trong [2, p − 2] rồi kiểm tra đúng hai phép lũy thừa này; khoảng một nửa số ứng viên đạt. Mẫu của đề gán cứng g = 2 nhưng ghi chú yêu cầu tìm hiểu và chọn giá trị khác, nên ta làm hàm này.</p>
+  <p>Hàm <code>main</code> đã viết sẵn đủ 5 bước ở mục 1. NV5 rà lại nội dung in ra và lấy kết quả chạy thật cho báo cáo.</p>
+</section>
+
+<!-- 9 -->
+<section id="cach-lam" aria-labelledby="h1-9">
+  <h2 id="h1-9"><span class="no">9</span>Khung mã và cách làm việc</h2>
+  <p>Khung trong <code>project_01_source/</code> đã dịch được trên Windows và Linux. Hàm nào chưa cài sẽ in <code>CHUA CAI: &lt;tên hàm&gt;</code> rồi dừng, nên chạy test là biết còn thiếu gì.</p>
+  <div class="wrap"><table>
+    <tr><th>Lệnh (trong project_01_source)</th><th>Tác dụng</th></tr>
+    <tr><td><code>mingw32-make test</code></td><td>Dịch và chạy toàn bộ test, mỗi phần báo <code>DAT</code>, <code>SAI</code> hoặc <code>CHUA CAI</code></td></tr>
+    <tr><td><code>mingw32-make run</code></td><td>Chạy chương trình với seed từ hệ điều hành</td></tr>
+    <tr><td><code>python tests/run_tests.py 512</code></td><td>Kiểm tra lại ở đúng 512 bit, Python xác nhận p là safe prime</td></tr>
+  </table></div>
+  <p>Cách cài một hàm: mở tệp của nhiệm vụ, đọc ghi chú <code>TODO</code>, xóa dòng <code>not_implemented(...)</code>, viết phần cài đặt, chạy <code>mingw32-make test</code>. Mỗi nhiệm vụ một nhánh Git, người kiểm tra chéo chạy test trước khi nhập vào <code>main</code>.</p>
+  <div class="wrap"><table>
+    <tr><th>Nhiệm vụ</th><th>Hạn</th><th>Cần có trước</th></tr>
+    <tr><td>NV1 Số lớn</td><td class="num">06/11</td><td>Không</td></tr>
+    <tr><td>NV4 Ngẫu nhiên</td><td class="num">07/11</td><td>NV1</td></tr>
+    <tr><td>NV2 Lũy thừa</td><td class="num">08/11</td><td>NV1</td></tr>
+    <tr><td>NV3 Nguyên tố</td><td class="num">11/11</td><td>NV1, NV2, NV4</td></tr>
+    <tr><td>NV5 Trao đổi khóa</td><td class="num">11/11</td><td>NV2, NV3, NV4</td></tr>
+    <tr><td>NV6 Tích hợp, đóng gói</td><td class="num">13/11</td><td>NV1–NV5</td></tr>
+    <tr><td>NV7 Báo cáo</td><td class="num">15/11</td><td>NV1–NV6</td></tr>
+  </table></div>
+  <p>Trong lúc chờ NV1, các bạn làm NV2 đến NV5 vẫn có thể viết trước bằng Python với số nhỏ để hiểu thuật toán, rồi chuyển sang C++ khi <code>uint512_t</code> xong.</p>
+</section>
+
+<!-- 10 -->
+<section id="bao-cao" aria-labelledby="h1-10">
+  <h2 id="h1-10"><span class="no">10</span>Lý thuyết nào vào báo cáo</h2>
+  <div class="wrap"><table>
+    <tr><th>Mục báo cáo (đề 2.5)</th><th>Lấy lý thuyết từ</th></tr>
+    <tr><td>1. Hệ thống xử lý số lớn</td><td>Mục 4 và 5: cách biểu diễn 8 ô, cách các phép toán hoạt động, nhân và lũy thừa mô-đun</td></tr>
+    <tr><td>2. Hàm kiểm tra số nguyên tố</td><td>Mục 6: chia thử, Fermat, số Carmichael, Miller-Rabin, safe prime</td></tr>
+    <tr><td>3. Số ngẫu nhiên (điểm cộng)</td><td>Mục 7: seed, PRNG, vì sao không dùng rand(), lấy mẫu không lệch</td></tr>
+    <tr><td>4. Diffie-Hellman và ứng dụng thực tế</td><td>Mục 3, cộng thêm ứng dụng như TLS, SSH, VPN và giới hạn man-in-the-middle</td></tr>
+    <tr><td>5. Mô tả chương trình</td><td>Mục 9: cách cài công cụ, chạy, đổi kích thước số bằng <code>LIMBS</code> và <code>bit_size</code></td></tr>
+    <tr><td>6. Tự đánh giá</td><td>Tốc độ đo được, seed cố định chỉ để test, lũy thừa chưa chạy thời gian hằng, 512 bit chỉ để học</td></tr>
+  </table></div>
+</section>
+
+<!-- 11 -->
+<section id="tu-kiem-tra" aria-labelledby="h1-11">
+  <h2 id="h1-11"><span class="no">11</span>Câu hỏi tự kiểm tra</h2>
+  <p>Mỗi bạn nên trả lời được các câu này trước khi bắt tay vào code. Đáp án ngắn nằm ngay dưới câu hỏi.</p>
+  <div class="qa">
+    <div class="box"><b>Vì sao Alice và Bob ra cùng bí mật mà không gửi nó cho nhau?</b><p class="a">Cả hai đều tính g<sup>ab</sup> mod p: Alice tính (g<sup>b</sup>)<sup>a</sup>, Bob tính (g<sup>a</sup>)<sup>b</sup>.</p></div>
+    <div class="box"><b>Vì sao không tính g<sup>a</sup> trước rồi mới lấy mod?</b><p class="a">g<sup>a</sup> với a 512 bit có hơn 2<sup>500</sup> chữ số, không bộ nhớ nào chứa nổi. Phải mod sau mỗi phép nhân để số luôn nhỏ hơn p.</p></div>
+    <div class="box"><b>Vì sao cần <code>add_overflow</code>?</b><p class="a">p đủ 512 bit nên tổng hai số nhỏ hơn p vẫn có thể vượt 2<sup>512</sup> và mất bit cao. Cờ tràn cho biết lúc đó phải trừ p.</p></div>
+    <div class="box"><b>Vì sao Fermat chưa đủ mà phải dùng Miller-Rabin?</b><p class="a">Số Carmichael như 561 qua được phép thử Fermat với mọi cơ số nguyên tố cùng nhau với nó. Miller-Rabin bắt thêm "căn bậc hai lạ" của 1, như 67 với n = 561.</p></div>
+    <div class="box"><b>Vì sao chỉ cần kiểm tra g² và g<sup>q</sup> để biết g là phần tử sinh?</b><p class="a">Với safe prime, bậc của g chỉ có thể là 1, 2, q hoặc 2q. Loại được 2 và q (kéo theo loại luôn 1) thì bậc phải là 2q = p − 1.</p></div>
+    <div class="box"><b>Nếu seed bị đoán ra thì p lớn có cứu được khóa không?</b><p class="a">Không. Biết seed là sinh lại được đúng a và b, không cần giải logarit rời rạc.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Mọi ví dụ số trên trang đã được tính lại bằng Python. Tài liệu đi kèm: đề <code>Lab01.pdf</code>, <code>TongQuan_DoAn.md</code> và biên bản họp, phân công trong kho của nhóm.</p>
+</footer>
+
+</main>
+</body>
+</html>
