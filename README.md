@@ -124,7 +124,7 @@ Cách cài một hàm:
 2. Xóa dòng `not_implemented(...)`, viết phần cài đặt.
 3. Chạy `mingw32-make test` và xem test của nhiệm vụ đó.
 
-Khi xong, đẩy nhánh lên và tạo pull request. Người kiểm tra chéo đọc mã, chạy test rồi mới nhập vào `main`. Không đổi tên hoặc tham số các hàm trong `src/u512.h`, `src/dh.h` khi chưa báo cả nhóm.
+Xong mỗi nhiệm vụ, đẩy nhánh lên và tạo một pull request. Người kiểm tra chéo đọc mã, chạy test rồi mới nhập vào `main`. Không đổi tên hoặc tham số các hàm trong `src/u512.h`, `src/dh.h` khi chưa báo cả nhóm.
 
 ## Giới hạn
 
