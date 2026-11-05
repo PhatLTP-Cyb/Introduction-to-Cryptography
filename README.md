@@ -16,10 +16,10 @@ Danh sách hàm và yêu cầu của từng nhiệm vụ nằm trong [PhanCongCo
 
 ## Nhóm 15
 
-- Võ Văn Cường
-- Tô Tuệ Nghi
-- Trần Hoàng Nhi
-- Lê Tấn Phát
+- Võ Văn Cường - 24120029
+- Tô Tuệ Nghi - 24120100
+- Trần Hoàng Nhi - 24120113
+- Lê Tấn Phát - 24120115
 
 Giảng viên hướng dẫn: Trần Hải Anh Điền, Võ Nam Thục Đoan, Đặng Trần Minh Hậu, Lê Phúc Lữ.
 
@@ -110,12 +110,12 @@ Bộ test đối chiếu số lớn và lũy thừa với Python trên số ng�
 
 ## Quy trình làm việc
 
-Mỗi nhiệm vụ làm trên một nhánh riêng:
+Mỗi thành viên làm trên một nhánh riêng:
 
 ```powershell
 git switch main
 git pull
-git switch -c nv1-u512
+git switch -c <Ten>
 ```
 
 Cách cài một hàm:
@@ -124,7 +124,7 @@ Cách cài một hàm:
 2. Xóa dòng `not_implemented(...)`, viết phần cài đặt.
 3. Chạy `mingw32-make test` và xem test của nhiệm vụ đó.
 
-Khi xong, đẩy nhánh lên và tạo pull request. Người kiểm tra chéo đọc mã, chạy test rồi mới nhập vào `main`. Không đổi tên hoặc tham số các hàm trong `src/u512.h`, `src/dh.h` khi chưa báo cả nhóm.
+Xong mỗi nhiệm vụ, đẩy nhánh lên và tạo một pull request. Người kiểm tra chéo đọc mã, chạy test rồi mới nhập vào `main`. Không đổi tên hoặc tham số các hàm trong `src/u512.h`, `src/dh.h` khi chưa báo cả nhóm.
 
 ## Giới hạn
 

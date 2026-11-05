@@ -4,7 +4,7 @@
 
 Tổng quan đồ án: [TongQuan_DoAn.md](TongQuan_DoAn.md) · Khung mã: [project_01_source](project_01_source/README.md)
 
-> **Hạn nộp: 17/11/2026.** Chưa phân công người, các cột người phụ trách để trống và sẽ điền sau.
+> **Hạn nộp: 17/11/2026.**
 
 ## 1. Thông tin nhóm
 
@@ -26,7 +26,7 @@ Nhóm trưởng: ........................
 - [Đặng Trần Minh Hậu](https://courses.fit.hcmus.edu.vn/user/profile.php?id=7444)
 - [Lê Phúc Lữ](https://courses.fit.hcmus.edu.vn/user/profile.php?id=16185)
 
-Thắc mắc về đồ án gửi cả hai địa chỉ theo đề: thadien@fit.hcmus.edu.vn 
+Thắc mắc về đồ án gửi cả hai địa chỉ theo đề: nvqhuy@fit.hcmus.edu.vn và ndhy@fit.hcmus.edu.vn
 
 ## 3. Bảng nhiệm vụ và yêu cầu đạt được
 
@@ -34,13 +34,24 @@ Thắc mắc về đồ án gửi cả hai địa chỉ theo đề: thadien@fit.
 
 | Mã | Nhiệm vụ | Phụ trách | Kiểm tra chéo | Phụ thuộc | Hạn | Sản phẩm đầu ra | Yêu cầu đạt được |
 |---|---|---|---|---|---|---|---|
-| NV1 | Kiểu số lớn `uint512_t` | | | Không | 06/11 | `src/u512.cpp` | - Cài đủ 16 hàm ở mục 4.1<br>- Giữ đúng tên kiểu `uint512_t` của mẫu<br>- Đúng ở các biên: 0, 2^512 − 1, số nhớ và số mượn<br>- `test_u512` báo `DAT` (hơn 7.000 kiểm tra, đối chiếu Python) |
-| NV2 | Lũy thừa mô-đun | | | NV1 | 08/11 | `src/modexp.cpp`<br>Số đo thời gian lũy thừa | - Cài đủ 4 hàm ở mục 4.2<br>- `modular_exponentiation` dùng phân tích số mũ thành lũy thừa của 2<br>- Không tràn khi mô-đun đủ 512 bit<br>- Đúng ở các biên: exponent = 0, mod = 1, base ≥ mod<br>- `test_modexp` báo `DAT` |
-| NV3 | Kiểm tra nguyên tố và sinh safe prime | | | NV1, NV2, NV4 | 11/11 | `src/prime.cpp`<br>Số đo thời gian sinh safe prime | - Cài đủ 3 hàm ở mục 4.3<br>- Miller-Rabin chuẩn, cơ số ngẫu nhiên, đổi được số vòng; không dùng `primeTest` trên slide<br>- Có sàng số nguyên tố nhỏ trước Miller-Rabin<br>- Không dùng thư viện hỗ trợ<br>- `python tests/run_tests.py 512` báo `test_prime` là `DAT`, Python xác nhận p là safe prime |
-| NV4 | Ngẫu nhiên và khóa riêng | | | NV1 | 07/11 | `src/random.cpp` | - Cài đủ 5 hàm ở mục 4.4<br>- Chế độ mặc định lấy seed 32 byte từ hệ điều hành<br>- Sinh số không lệch phân bố, không dùng phép mod<br>- Khóa riêng luôn nằm trong [2, p − 2]<br>- Không dùng `rand()`, `mt19937`, seed theo thời gian<br>- `test_random` báo `DAT` |
-| NV5 | Trao đổi khóa Diffie-Hellman | | | NV2, NV3, NV4 | 11/11 | `src/dh.cpp`, `src/main.cpp`<br>Kết quả chạy mẫu cho báo cáo | - Cài `find_generator` ở mục 4.5<br>- `main` in p, g, A, B và hai bí mật chung<br>- Đổi được `bit_size`, tối thiểu 512 bit<br>- Bí mật chung trùng khớp qua ít nhất 10 lần chạy với seed khác nhau<br>- `test_dh` và `dh` báo `DAT` |
-| NV6 | Tích hợp, kiểm thử, đóng gói | | | NV1–NV5 | 13/11 | `Makefile`, `tests/`<br>`24120029-24120100-24120113-24120115.zip` | - `mingw32-make test` báo 6/6 `DAT`<br>- Bỏ `-Wno-unused-parameter`, dịch không còn cảnh báo<br>- Dịch được từ tệp zip trên máy Windows khác; dịch thử thêm trên Linux<br>- Tên và cấu trúc zip đúng đề, không kèm `.exe` |
-| NV7 | Báo cáo PDF | | | NV1–NV6 | 15/11 | Tệp PDF trong `project_01_report/` | - Đủ 6 mục của đề 2.5, gồm cả mục số ngẫu nhiên để lấy điểm cộng<br>- Mục mô tả chương trình ghi rõ cách cài công cụ và chạy trên Windows<br>- Có thông tin nhóm và bảng mức độ đóng góp<br>- Mọi kết quả và số đo lấy từ lần chạy thật<br>- Có nguồn tham khảo |
+| NV1 | Kiểu số lớn `uint512_t` | Võ Văn Cường | Lê Tấn Phát | Không | 06/11 | `src/u512.cpp` | - Cài đủ 16 hàm ở mục 4.1<br>- Giữ đúng tên kiểu `uint512_t` của mẫu<br>- Đúng ở các biên: 0, 2^512 − 1, số nhớ và số mượn<br>- `test_u512` báo `DAT` (hơn 7.000 kiểm tra, đối chiếu Python) |
+| NV2 | Lũy thừa mô-đun | Võ Văn Cường | Trần Hoàng Nhi | NV1 | 08/11 | `src/modexp.cpp`<br>Số đo thời gian lũy thừa | - Cài đủ 4 hàm ở mục 4.2<br>- `modular_exponentiation` dùng phân tích số mũ thành lũy thừa của 2<br>- Không tràn khi mô-đun đủ 512 bit<br>- Đúng ở các biên: exponent = 0, mod = 1, base ≥ mod<br>- `test_modexp` báo `DAT`<br>- Duyệt bit trái sang phải, gọi `mul_mod(r, base, m)` với cơ số ở tham số thứ hai<br>- Sau 08/11: thêm Montgomery vào `modular_exponentiation`, giữ `mul_mod` cộng-dịch; có nhánh dự phòng và test cho mô-đun chẵn |
+| NV3 | Kiểm tra nguyên tố và sinh safe prime | Trần Hoàng Nhi | Tô Tuệ Nghi | NV1, NV2, NV4 | 11/11 | `src/prime.cpp`<br>Số đo thời gian sinh safe prime | - Cài đủ 3 hàm ở mục 4.3<br>- Miller-Rabin chuẩn, cơ số ngẫu nhiên, đổi được số vòng; không dùng `primeTest` trên slide<br>- Có sàng số nguyên tố nhỏ trước Miller-Rabin<br>- Lọc Fermat cơ số 2 trên cả q và p trước 20 vòng Miller-Rabin<br>- Không dùng thư viện hỗ trợ<br>- `python tests/run_tests.py 512` báo `test_prime` là `DAT`, Python xác nhận p là safe prime |
+| NV4 | Ngẫu nhiên và khóa riêng | Lê Tấn Phát | Trần Hoàng Nhi | NV1 | 07/11 | `src/random.cpp` | - Cài đủ 5 hàm ở mục 4.4<br>- Chế độ mặc định lấy seed 32 byte từ hệ điều hành<br>- Sinh số không lệch phân bố, không dùng phép mod<br>- Khóa riêng luôn nằm trong [2, p − 2]<br>- Không dùng `rand()`, `mt19937`, seed theo thời gian<br>- `test_random` báo `DAT` |
+| NV5 | Trao đổi khóa Diffie-Hellman | Tô Tuệ Nghi | Võ Văn Cường | NV2, NV3, NV4 | 11/11 | `src/dh.cpp`, `src/main.cpp`<br>Kết quả chạy mẫu cho báo cáo | - Cài `find_generator` ở mục 4.5<br>- `main` in p, g, A, B và hai bí mật chung<br>- Đổi được `bit_size`, tối thiểu 512 bit<br>- Bí mật chung trùng khớp qua ít nhất 10 lần chạy với seed khác nhau<br>- `test_dh` và `dh` báo `DAT` |
+| NV6 | Tích hợp, kiểm thử, đóng gói | Tô Tuệ Nghi | Võ Văn Cường | NV1–NV5 | 13/11 | `Makefile`, `tests/`<br>`24120029-24120100-24120113-24120115.zip` | - `mingw32-make test` báo 6/6 `DAT`<br>- Bỏ `-Wno-unused-parameter`, dịch không còn cảnh báo<br>- Dịch được từ tệp zip trên máy Windows khác; dịch thử thêm trên Linux<br>- Tên và cấu trúc zip đúng đề, không kèm `.exe`<br>- Thêm kiểm tra 10 seed vào `tests/run_tests.py`<br>- Chạy toàn bộ test một lần với `LIMBS = 16` |
+| NV7 | Báo cáo PDF | Lê Tấn Phát | Cả nhóm | NV1–NV6 | 15/11 | Tệp PDF trong `project_01_report/` | - Đủ 6 mục của đề 2.5, gồm cả mục số ngẫu nhiên để lấy điểm cộng<br>- Mục mô tả chương trình ghi rõ cách cài công cụ và chạy trên Windows<br>- Có thông tin nhóm và bảng mức độ đóng góp<br>- Mọi kết quả và số đo lấy từ lần chạy thật<br>- Có nguồn tham khảo<br>- Chỉ ghi các kích thước số đã chạy thật<br>- Mục tự đánh giá nêu việc g làm lộ tính chẵn lẻ của khóa riêng |
+
+### Phân công theo người
+
+Nhiệm vụ và mục báo cáo lấy theo bình chọn của nhóm trên Zalo. Mục 1 không có trong bình chọn nên giao cho người làm NV1. Kiểm tra chéo theo nguyên tắc ai dùng trực tiếp phần nào thì kiểm tra phần đó; NV5 và NV6 cùng một người làm nên do Võ Văn Cường kiểm tra, NV7 do cả nhóm đọc chéo.
+
+| Nhóm | Người | Nhiệm vụ | Mục báo cáo | Kiểm tra chéo |
+|---|---|---|---|---|
+| 1 | Võ Văn Cường | NV1, NV2 (gồm Montgomery) | 1 | NV5, NV6 |
+| 2 | Trần Hoàng Nhi | NV3 | 2 | NV2, NV4 |
+| 3 | Tô Tuệ Nghi | NV5, NV6 | 4, 5 | NV3 |
+| 4 | Lê Tấn Phát | NV4, NV7 (điều phối, biên tập) | 3, 6 | NV1 |
 
 ## 4. Khung mã và danh sách hàm cần làm
 
@@ -150,7 +161,7 @@ Nhóm làm việc trên Windows.
 | Git | Kho riêng tư | Quản lý mã nguồn |
 | WSL Ubuntu | Không bắt buộc, chỉ cần một người có | Dịch thử trên Linux trước khi nộp |
 
-Trình soạn thảo và công cụ viết báo cáo do mỗi người tự chọn, miễn báo cáo xuất ra PDF.
+Trình soạn thảo do mỗi người tự chọn. Báo cáo viết chung bằng Word hoặc Google Docs rồi xuất PDF; dùng LaTeX nếu cả nhóm đã quen.
 
 ### Dịch không dùng Makefile
 
@@ -173,12 +184,12 @@ Mã mẫu gốc trong `prng_sample/` giữ nguyên để đối chiếu, không 
 
 | Mục theo đề 2.5 | Người viết |
 |---|---|
-| 1. Hệ thống xử lý số lớn | |
-| 2. Hàm kiểm tra số nguyên tố | |
-| 3. Số ngẫu nhiên (điểm cộng) | |
-| 4. Trao đổi khóa Diffie-Hellman và ứng dụng thực tế | |
-| 5. Mô tả chương trình đã cài đặt | |
-| 6. Tự đánh giá | |
+| 1. Hệ thống xử lý số lớn | Võ Văn Cường |
+| 2. Hàm kiểm tra số nguyên tố | Trần Hoàng Nhi |
+| 3. Số ngẫu nhiên (điểm cộng) | Lê Tấn Phát |
+| 4. Trao đổi khóa Diffie-Hellman và ứng dụng thực tế | Tô Tuệ Nghi |
+| 5. Mô tả chương trình đã cài đặt | Tô Tuệ Nghi |
+| 6. Tự đánh giá | Lê Tấn Phát |
 
 ## 7. Kế hoạch theo mốc
 
@@ -188,8 +199,8 @@ Nên nộp từ ngày 16/11, không để sát hạn 17/11/2026.
 |---|---|---|
 | 03–04/11 | Họp, phân công, dựng kho mã, cài công cụ | Mọi người chạy được `mingw32-make test` trên máy mình |
 | 05–08/11 | NV1, NV4, NV2 | Lũy thừa khớp Python trên số 512 bit |
-| 09–11/11 | NV3, NV5 | Sinh được p, bí mật chung trùng khớp |
-| 12–13/11 | NV6, sửa lỗi, nâng cấp Montgomery nếu kịp | `mingw32-make run` chạy được trên máy Windows khác |
+| 09–11/11 | NV3, NV5, thêm Montgomery vào NV2 | Sinh được p, bí mật chung trùng khớp |
+| 12–13/11 | NV6, sửa lỗi | `mingw32-make run` chạy được trên máy Windows khác |
 | 14–15/11 | NV7, đọc chéo báo cáo | Bản PDF hoàn chỉnh |
 | 16/11 | Dự phòng, đóng gói, nộp bài | Tệp zip đã giải nén thử và nộp |
 | 17/11 | Hạn nộp | Chỉ dùng khi có sự cố |
@@ -197,7 +208,7 @@ Nên nộp từ ngày 16/11, không để sát hạn 17/11/2026.
 ## 8. Quy ước làm việc
 
 - **Môi trường:** mọi người làm trên Windows với công cụ ở mục 5.
-- **Mã nguồn:** dùng kho Git riêng tư, mỗi nhiệm vụ một nhánh.
+- **Mã nguồn:** dùng kho Git riêng tư, mỗi thành viên một nhánh, mỗi nhiệm vụ một pull request.
 - **Nhập mã:** người kiểm tra chéo đọc và chạy kiểm thử trước khi nhập vào nhánh chính.
 - **Hoàn thành nhiệm vụ:** chỉ tính là xong khi đạt hết yêu cầu ở mục 3 và đã qua kiểm tra chéo.
 - **Báo tiến độ:** cập nhật bảng ở mục 9 sau mỗi mốc; báo sớm cho nhóm nếu trễ quá 1 ngày.

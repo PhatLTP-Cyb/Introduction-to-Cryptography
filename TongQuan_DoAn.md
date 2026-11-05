@@ -74,21 +74,29 @@ Các vấn đề của mã mẫu gốc, đã xử lý trong khung:
 - `src/main_prng.cpp` chỉ ghi 5 byte vào `seed[32]`, phần còn lại chưa khởi tạo. Hàm seed trong khung phải khởi tạo đủ 32 byte.
 - `Makefile` có nhắc NTL và GMP. Khung đã bỏ, vì đề cấm thư viện hỗ trợ cho phần sinh số nguyên tố.
 
-## 6. Hướng kỹ thuật đề xuất
+## 6. Hướng kỹ thuật đã chốt
 
-Nhóm chốt các mục này trong buổi họp.
-
-| Vấn đề | Đề xuất |
+| Vấn đề | Quyết định |
 |---|---|
 | Số lớn | `struct uint512_t` với hằng `LIMBS`, đổi 8 thành 16 để có 1024 bit |
-| Tính số mũ lớn | Phân tích lũy thừa của 2, duyệt bit trái sang phải |
-| Nhân mô-đun | Cộng-dịch trước, nâng cấp Montgomery nếu kịp |
-| Kiểm tra nguyên tố | Lọc Fermat cơ số 2, sau đó 20 vòng Miller-Rabin cơ số ngẫu nhiên |
-| Sinh safe prime | Sàng số nguyên tố nhỏ trên q và 2q + 1 trước Miller-Rabin |
+| Tính số mũ lớn | Phân tích số mũ thành lũy thừa của 2, duyệt bit trái sang phải. Gọi `mul_mod(r, base, m)` với cơ số ở tham số thứ hai, vì `mul_mod` duyệt bit của tham số này |
+| Nhân mô-đun | Cộng-dịch trong `mul_mod` trước. Sau 08/11, thêm Montgomery vào `modular_exponentiation`, có nhánh dự phòng và test cho mô-đun chẵn |
+| Kiểm tra nguyên tố | Lọc Fermat cơ số 2 trên cả q và p, sau đó 20 vòng Miller-Rabin cơ số ngẫu nhiên |
+| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 2000 trên q và 2q + 1 trước khi kiểm tra |
 | Chọn g | Tìm g thỏa g² ≠ 1 và g^q ≠ 1 (mod p), với q = (p − 1)/2 |
 | Ngẫu nhiên | Seed từ hệ điều hành, sinh bằng SHAKE128; seed cố định chỉ để kiểm thử |
 
-Số đo tham khảo từ một bản cài đặt thử dùng `mul_mod` cộng-dịch, không nằm trong khung: cả chương trình 512 bit chạy trong 0,6–6,8 giây qua 3 lần trên Windows. Thời gian dao động mạnh vì số ứng viên phải thử là ngẫu nhiên, nên cộng-dịch đủ dùng cho 512 bit và Montgomery chỉ là nâng cấp.
+g tìm theo cách trên là phần tử sinh của toàn nhóm, nên `A^q mod p` cho biết khóa riêng a chẵn hay lẻ. Mục tự đánh giá của báo cáo cần nêu điểm này.
+
+Các mục trên được chốt dựa trên số đo từ một bản thử riêng, không nằm trong khung, chạy trên Windows với GCC 16.2. Mỗi ô là thời gian sinh safe prime trung bình, trong ngoặc là thấp nhất và cao nhất, kèm số lần chạy:
+
+| Cách làm | 512 bit | 1024 bit | 2048 bit |
+|---|---|---|---|
+| Cộng-dịch, sàng, 20 vòng | 26 giây (1–86), 20 lần | Chưa đo | Chưa đo |
+| Cộng-dịch, sàng, Fermat | 11 giây (1–35), 20 lần | 308 giây (138–467), 3 lần | Khoảng 45 phút, ước tính |
+| Montgomery, sàng, Fermat | 0,6 giây (0–2,5), 200 lần | 6,6 giây (0,5–16), 20 lần | 104 giây (37–274), 5 lần |
+
+Thời gian dao động mạnh vì số ứng viên phải thử là ngẫu nhiên. Nhiều phép đo chạy cùng lúc nên máy rảnh có thể nhanh hơn. Cộng-dịch đủ dùng cho 512 bit, còn 2048 bit gần như chỉ khả thi với Montgomery. Số liệu trong báo cáo phải đo lại trên mã thật và chỉ ghi các kích thước đã chạy thật.
 
 ## 7. Môi trường và cách chạy
 
@@ -155,7 +163,7 @@ Miller-Rabin chuẩn: viết n − 1 = 2^r · m với m lẻ. Số n qua vòng k
 | Hạn nộp | Đã xác nhận: 17/11/2026 |
 | Makefile | Đã xác nhận: không bắt buộc nhưng nên có |
 | `project_01_source` có được chứa `.h`, `.c`, Makefile không | Đã xác nhận: được chứa |
-| Bài được chấm trên Linux hay Windows | Chưa rõ |
+| Bài được chấm trên Linux hay Windows | Chưa rõ, cần gửi mail hỏi. Trong lúc chờ, bắt buộc dịch thử trên Linux |
 
 Câu hỏi còn lại gửi tới cả hai địa chỉ theo đề: nvqhuy@fit.hcmus.edu.vn và ndhy@fit.hcmus.edu.vn.
 
