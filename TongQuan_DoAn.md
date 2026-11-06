@@ -79,24 +79,24 @@ Các vấn đề của mã mẫu gốc, đã xử lý trong khung:
 | Vấn đề | Quyết định |
 |---|---|
 | Số lớn | `struct uint512_t` với hằng `LIMBS`, đổi 8 thành 16 để có 1024 bit |
-| Tính số mũ lớn | Phân tích số mũ thành lũy thừa của 2, duyệt bit trái sang phải. Gọi `mul_mod(r, base, m)` với cơ số ở tham số thứ hai, vì `mul_mod` duyệt bit của tham số này |
-| Nhân mô-đun | Cộng-dịch trong `mul_mod` trước. Sau 08/11, thêm Montgomery vào `modular_exponentiation`, có nhánh dự phòng và test cho mô-đun chẵn |
-| Kiểm tra nguyên tố | Lọc Fermat cơ số 2 trên cả q và p, sau đó 20 vòng Miller-Rabin cơ số ngẫu nhiên |
-| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 2000 trên q và 2q + 1 trước khi kiểm tra |
+| Tính số mũ lớn | Phân tích số mũ thành lũy thừa của 2, duyệt bit trái sang phải |
+| Nhân mô-đun | Cộng-dịch trong `mul_mod` trước, nâng cấp Montgomery nếu kịp (12–13/11) |
+| Kiểm tra nguyên tố | Lọc Fermat cơ số 2 trước, sau đó 20 vòng Miller-Rabin cơ số ngẫu nhiên |
+| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 2000 trên q và 2q + 1 trước khi kiểm tra; kiểm tra p bằng định lý Pocklington |
 | Chọn g | Tìm g thỏa g² ≠ 1 và g^q ≠ 1 (mod p), với q = (p − 1)/2 |
 | Ngẫu nhiên | Seed từ hệ điều hành, sinh bằng SHAKE128; seed cố định chỉ để kiểm thử |
 
-g tìm theo cách trên là phần tử sinh của toàn nhóm, nên `A^q mod p` cho biết khóa riêng a chẵn hay lẻ. Mục tự đánh giá của báo cáo cần nêu điểm này.
+Số đo tham khảo từ một bản cài đặt thử dùng `mul_mod` cộng-dịch, không nằm trong khung: cả chương trình 512 bit chạy trong 0,6–6,8 giây qua 3 lần trên Windows.
 
-Các mục trên được chốt dựa trên số đo từ một bản thử riêng, không nằm trong khung, chạy trên Windows với GCC 16.2. Mỗi ô là thời gian sinh safe prime trung bình, trong ngoặc là thấp nhất và cao nhất, kèm số lần chạy:
+Số đo thêm từ một bản thử khác, cũng không nằm trong khung, chạy trên Windows với GCC 16.2. Mỗi ô là thời gian sinh safe prime trung bình, trong ngoặc là thấp nhất và cao nhất, kèm số lần chạy:
 
 | Cách làm | 512 bit | 1024 bit | 2048 bit |
 |---|---|---|---|
 | Cộng-dịch, sàng, 20 vòng | 26 giây (1–86), 20 lần | Chưa đo | Chưa đo |
-| Cộng-dịch, sàng, Fermat | 11 giây (1–35), 20 lần | 308 giây (138–467), 3 lần | Khoảng 45 phút, ước tính |
+| Cộng-dịch, sàng, Fermat | 11 giây (1–35), 20 lần | 308 giây (138–467), 3 lần | Khoảng 1–2 giờ, ước tính |
 | Montgomery, sàng, Fermat | 0,6 giây (0–2,5), 200 lần | 6,6 giây (0,5–16), 20 lần | 104 giây (37–274), 5 lần |
 
-Thời gian dao động mạnh vì số ứng viên phải thử là ngẫu nhiên. Nhiều phép đo chạy cùng lúc nên máy rảnh có thể nhanh hơn. Cộng-dịch đủ dùng cho 512 bit, còn 2048 bit gần như chỉ khả thi với Montgomery. Số liệu trong báo cáo phải đo lại trên mã thật và chỉ ghi các kích thước đã chạy thật.
+Thời gian dao động mạnh vì số ứng viên phải thử là ngẫu nhiên. Nhiều phép đo chạy cùng lúc nên máy rảnh có thể nhanh hơn. Cộng-dịch đủ dùng cho 512 bit và Montgomery chỉ là nâng cấp, còn 2048 bit gần như chỉ khả thi với Montgomery. Số liệu trong báo cáo phải đo lại trên mã thật.
 
 ## 7. Môi trường và cách chạy
 
