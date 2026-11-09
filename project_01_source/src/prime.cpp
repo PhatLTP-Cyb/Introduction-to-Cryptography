@@ -7,11 +7,11 @@
 
 namespace
 {
-constexpr uint64_t SMALL_PRIME_LIMIT = 2000;
+constexpr uint64_t SMALL_PRIME_LIMIT = 20000;
 constexpr size_t MIN_SAFE_PRIME_BITS = 16;
 constexpr int SAFE_PRIME_ROUNDS = 20;
 
-// Sinh danh sách 303 số nguyên tố nhỏ hơn SMALL_PRIME_LIMIT bằng sàng Eratosthenes.
+// Sinh danh sách 2262 số nguyên tố nhỏ hơn SMALL_PRIME_LIMIT bằng sàng Eratosthenes.
 std::vector<uint64_t> build_small_primes()
 {
     std::vector<bool> is_composite(SMALL_PRIME_LIMIT, false);
@@ -105,11 +105,12 @@ uint512_t generate_candidate_q(prng_ctx *ctx, size_t q_bits)
     return q;
 }
 
-// Sàng kết hợp cho cả q và p = 2q + 1 với các số nguyên tố nhỏ s < 2000.
+// Sàng kết hợp cho cả q và p = 2q + 1 với các số nguyên tố nhỏ s < 20000.
 // Lý do:
-// - q chia hết cho s khi rem = q mod s == 0.
+// - q chia hết cho s khi rem = q mod s == 0 (loại khi q != s để không loại nhầm bản thân số nguyên tố s).
 // - p = 2q + 1 chia hết cho s khi 2q + 1 = 0 (mod s), tức 2q = -1 = s - 1 (mod s).
 //   Với mọi số nguyên tố lẻ s, vì gcd(2, s) = 1 nên chia 2 hai vế ta được q = (s - 1) / 2 (mod s).
+//   (loại khi q != (s - 1) / 2 để không loại nhầm trường hợp p chính là số nguyên tố s).
 //   (Với s = 2, q lẻ nên rem = 1, còn (2 - 1)/2 = 0, điều kiện không bị kích hoạt nhầm).
 // Nhờ đó, chỉ một lần tính mod_u64 trên q là kiểm tra được ước nguyên tố nhỏ cho cả q và p
 // mà không cần tính riêng cho p, giúp loại bỏ sớm ứng viên hợp số.
@@ -117,8 +118,10 @@ bool has_small_factor_for_safe_prime(const uint512_t &q)
 {
     for (uint64_t s : small_primes())
     {
-        uint64_t remainder = q.mod_u64(s);
-        if (remainder == 0 || remainder == (s - 1) / 2)
+        const uint64_t remainder = q.mod_u64(s);
+        const bool q_divisible_by_s = (remainder == 0 && q != uint512_t(s));
+        const bool p_divisible_by_s = (remainder == (s - 1) / 2 && q != uint512_t((s - 1) / 2));
+        if (q_divisible_by_s || p_divisible_by_s)
         {
             return true;
         }
@@ -166,7 +169,7 @@ bool is_probable_prime(prng_ctx *ctx, const uint512_t &n, int rounds)
         return false;
     }
 
-    // Với n >= 5 lẻ: loại nhanh các hợp số chia hết cho các số nguyên tố nhỏ < 2000
+    // Với n >= 5 lẻ: loại nhanh các hợp số chia hết cho các số nguyên tố nhỏ < 20000
     if (has_small_factor(n))
     {
         return false;
@@ -200,7 +203,8 @@ bool is_probable_prime(prng_ctx *ctx, const uint512_t &n, int rounds)
 uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize)
 {
     // Ràng buộc kích thước:
-    // - bitsize tối thiểu là MIN_SAFE_PRIME_BITS (16) để q >= 2^14 > 2000 (vượt mốc sàng nguyên tố nhỏ).
+    // - bitsize tối thiểu là MIN_SAFE_PRIME_BITS (16) với q >= 2^14 = 16384. Hàm sàng has_small_factor_for_safe_prime
+    //   đã xử lý không loại nhầm khi q hoặc p trùng số nguyên tố nhỏ trong bảng (s < 20000).
     // - bitsize tối đa là BIGINT_BITS vì p = 2q + 1 phải vừa trong độ rộng cố định của uint512_t.
     if (bitsize < MIN_SAFE_PRIME_BITS || bitsize > BIGINT_BITS)
     {
