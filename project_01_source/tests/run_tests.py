@@ -54,10 +54,14 @@ def write_u512(path, rng):
 
 
 def write_modexp(path, rng):
+    # Nửa số ca mô-đun lẻ như p, nửa còn lại để nguyên nên có cả mô-đun chẵn.
+    # Thêm các mô-đun biên: 2, 2^BITS - 1, 2^BITS - 2 và 2^(BITS-1).
+    special = [2, MASK, MASK - 1, 1 << (BITS - 1)]
+    moduli = [rand_value(rng) | (i % 2) for i in range(CASES)]
+    moduli += [m for m in special for _ in range(CASES // 40)]
     with open(path, "w", encoding="utf-8") as f:
-        for _ in range(CASES):
-            m = rand_value(rng) | 1
-            if m == 1:
+        for i, m in enumerate(moduli):
+            if m < 2:
                 m = 3
             full = rand_value(rng)
             a, b = rng.randrange(m), rng.randrange(m)
@@ -65,6 +69,9 @@ def write_modexp(path, rng):
             f.write(f"add {a:x} {b:x} {m:x} {(a + b) % m:x}\n")
             f.write(f"mul {a:x} {b:x} {m:x} {a * b % m:x}\n")
             f.write(f"pow {full:x} {b:x} {m:x} {pow(full, b, m):x}\n")
+            if i >= CASES:  # mô-đun biên: thêm số mũ bất kỳ, có thể lớn hơn mô-đun
+                e = rand_value(rng)
+                f.write(f"pow {a:x} {e:x} {m:x} {pow(a, e, m):x}\n")
 
 
 def is_prime(n, rng, rounds=40):
