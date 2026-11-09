@@ -44,6 +44,10 @@ Kiểm tra safe prime đúng kích thước của đề:
 python tests/run_tests.py 512
 ```
 
+## Đo thời gian
+
+`mingw32-make bench` đo thời gian lũy thừa mô-đun và `mul_mod` với mô-đun lẻ đủ `BIGINT_BITS` bit, in trung vị, lần nhanh nhất và trung bình. Bộ số cố định nên các lần đo so sánh được với nhau; xung nhịp CPU thay đổi nên đo vài lần và cắm sạc nếu dùng laptop.
+
 ## Đổi kích thước số
 
 Đổi `LIMBS` trong `src/u512.h` (16 là 1024 bit) và `bit_size` trong `src/main.cpp`.

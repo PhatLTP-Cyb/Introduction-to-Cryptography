@@ -7,3 +7,4 @@ test_modexp
 test_random
 test_prime
 test_dh
+bench_modexp
