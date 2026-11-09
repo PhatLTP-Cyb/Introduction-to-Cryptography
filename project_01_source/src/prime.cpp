@@ -2,11 +2,53 @@
 #include "dh.h"
 #include "common.h"
 
+#include <vector>
+
+namespace
+{
+constexpr uint64_t SMALL_PRIME_LIMIT = 2000;
+
+// Sinh danh sách 303 số nguyên tố nhỏ hơn SMALL_PRIME_LIMIT bằng sàng Eratosthenes.
+std::vector<uint64_t> build_small_primes()
+{
+    std::vector<bool> is_composite(SMALL_PRIME_LIMIT, false);
+    std::vector<uint64_t> primes;
+    for (uint64_t candidate = 2; candidate < SMALL_PRIME_LIMIT; ++candidate)
+    {
+        if (!is_composite[candidate])
+        {
+            primes.push_back(candidate);
+            for (uint64_t multiple = candidate * candidate; multiple < SMALL_PRIME_LIMIT; multiple += candidate)
+            {
+                is_composite[multiple] = true;
+            }
+        }
+    }
+    return primes;
+}
+
+// Giữ bảng nguyên tố nhỏ dạng static để chỉ sàng một lần duy nhất trong suốt chương trình.
+const std::vector<uint64_t> &small_primes()
+{
+    static const std::vector<uint64_t> primes = build_small_primes();
+    return primes;
+}
+} // namespace
+
 // Trả về true nếu n chia hết cho một số nguyên tố nhỏ khác chính n.
 bool has_small_factor(const uint512_t &n)
 {
-    // TODO: dùng n.mod_u64(s) với các số nguyên tố s < 2000.
-    not_implemented("has_small_factor");
+    // Loại sớm các hợp số có ước nguyên tố nhỏ trước khi chạy Miller-Rabin tốn kém.
+    // So sánh n != uint512_t(s) để bản thân số nguyên tố nhỏ s không bị kết luận nhầm là hợp số,
+    // đồng thời n = 0 chia hết cho 2 và 0 != 2 nên trả về true.
+    for (uint64_t s : small_primes())
+    {
+        if (n.mod_u64(s) == 0 && n != uint512_t(s))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Miller-Rabin với cơ số ngẫu nhiên. Trả về false khi n chắc chắn là hợp số.
