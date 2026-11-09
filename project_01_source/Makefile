@@ -1,5 +1,5 @@
-# Windows: mingw32-make [run | test | clean]
-# Linux:   make [run | test | clean]
+# Windows: mingw32-make [run | test | bench | clean]
+# Linux:   make [run | test | bench | clean]
 CXX := g++
 # Bỏ -Wno-unused-parameter khi đã cài xong mọi hàm trong khung.
 CXXFLAGS := -std=c++14 -O3 -Wall -Wextra -Wpedantic -Wno-unused-parameter -I src -I lib/fips202
@@ -13,7 +13,7 @@ else
   EXE :=
   LDLIBS :=
   PYTHON := python3
-  CLEAN := rm -f dh test_u512 test_modexp test_random test_prime test_dh
+  CLEAN := rm -f dh test_u512 test_modexp test_random test_prime test_dh bench_modexp
 endif
 
 HEADERS := src/common.h src/u512.h src/dh.h lib/fips202/prng.h lib/fips202/fips202.h
@@ -29,13 +29,19 @@ dh$(EXE): src/main.cpp $(LIB_SRCS) $(HEADERS)
 test_%$(EXE): tests/test_%.cpp tests/test_util.h $(LIB_SRCS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) -I tests $< $(LIB_SRCS) -o $@ $(LDLIBS)
 
+bench_modexp$(EXE): tests/bench_modexp.cpp $(LIB_SRCS) $(HEADERS)
+	$(CXX) $(CXXFLAGS) $< $(LIB_SRCS) -o $@ $(LDLIBS)
+
 run: dh$(EXE)
 	./dh$(EXE)
 
 test: dh$(EXE) $(TEST_BINS)
 	$(PYTHON) tests/run_tests.py
 
+bench: bench_modexp$(EXE)
+	./bench_modexp$(EXE)
+
 clean:
 	$(CLEAN)
 
-.PHONY: all run test clean
+.PHONY: all run test bench clean
