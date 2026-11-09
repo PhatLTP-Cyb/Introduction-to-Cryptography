@@ -45,12 +45,15 @@ struct DecomposedExponent
 };
 
 // Phân tích số chẵn value = 2^r * m với m lẻ bằng cách đếm các bit 0 liên tiếp từ bit thấp nhất.
-// Lý do: theo định lý Fermat nhỏ, nếu n nguyên tố thì b^(n - 1) = b^(2^r * m) = 1 (mod n).
-// Trong một trường hữu hạn F_p, nghiệm duy nhất của x^2 = 1 là x = 1 hoặc x = -1 (tức n - 1).
-// Do đó dãy bình phương liên tiếp từ b^m đến b^(2^(r-1)*m) chỉ có thể bằng 1 nếu bắt đầu bằng 1
-// hoặc giá trị ngay trước khi đạt 1 là n - 1.
+// Lý do: kiểm tra Miller-Rabin trên số lẻ n cần phân tích n - 1 = 2^r * m để tính lũy thừa khởi đầu
+// b^m (mod n) và sau đó bình phương liên tiếp tối đa r - 1 lần.
 DecomposedExponent decompose_even(const uint512_t &even_value)
 {
+    if (even_value.is_zero())
+    {
+        // Lý do: số 0 không có bit 1 nào để dừng vòng đếm, sẽ lặp vô hạn.
+        throw std::invalid_argument("decompose_even: even_value khong duoc bang 0");
+    }
     size_t r = 0;
     while (!even_value.bit(r))
     {
@@ -84,14 +87,32 @@ bool miller_rabin_test(const uint512_t &base, const DecomposedExponent &decomp, 
     return false;
 }
 
+// Phân tích n - 1 và thực hiện một vòng kiểm tra Miller-Rabin với cơ số 2.
+// Lý do: hầu hết hợp số lẻ bị loại ngay ở cơ số 2, giúp lọc nhanh trước khi chạy các vòng ngẫu nhiên.
+bool passes_base_two_round(const uint512_t &n)
+{
+    const uint512_t n_minus_1 = n - uint512_t(1);
+    const DecomposedExponent decomp = decompose_even(n_minus_1);
+    return miller_rabin_test(uint512_t(2), decomp, n);
+}
+
+// Sinh số lẻ ngẫu nhiên q có đúng q_bits bit (bit cao nhất và bit thấp nhất đều bằng 1).
+uint512_t generate_candidate_q(prng_ctx *ctx, size_t q_bits)
+{
+    uint512_t q = random_bits(ctx, q_bits);
+    q.set_bit(q_bits - 1); // Đảm bảo bit cao nhất bằng 1 để q có đúng q_bits bit
+    q.set_bit(0);          // Đảm bảo q là số lẻ
+    return q;
+}
+
 // Sàng kết hợp cho cả q và p = 2q + 1 với các số nguyên tố nhỏ s < 2000.
 // Lý do:
 // - q chia hết cho s khi rem = q mod s == 0.
 // - p = 2q + 1 chia hết cho s khi 2q + 1 = 0 (mod s), tức 2q = -1 = s - 1 (mod s).
 //   Với mọi số nguyên tố lẻ s, vì gcd(2, s) = 1 nên chia 2 hai vế ta được q = (s - 1) / 2 (mod s).
 //   (Với s = 2, q lẻ nên rem = 1, còn (2 - 1)/2 = 0, điều kiện không bị kích hoạt nhầm).
-// Nhờ đó, chỉ cần tính q.mod_u64(s) một lần là kiểm tra được cả hai số q và p,
-// giúp loại bỏ sớm khoảng 85% ứng viên hợp số mà không cần tính mod_u64 riêng cho p.
+// Nhờ đó, chỉ một lần tính mod_u64 trên q là kiểm tra được ước nguyên tố nhỏ cho cả q và p
+// mà không cần tính riêng cho p, giúp loại bỏ sớm ứng viên hợp số.
 bool has_small_factor_for_safe_prime(const uint512_t &q)
 {
     for (uint64_t s : small_primes())
@@ -186,47 +207,23 @@ uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize)
         throw std::invalid_argument("generate_safe_prime: bitsize phai trong [16, BIGINT_BITS]");
     }
 
-    const uint512_t two(2);
     const uint512_t one(1);
-
     for (;;)
     {
-        // 1. Sinh q lẻ ngẫu nhiên có đúng bitsize - 1 bit
-        uint512_t q = random_bits(ctx, bitsize - 1);
-        q.set_bit(bitsize - 2); // Đảm bảo bit cao nhất của q bằng 1 (đúng bitsize - 1 bit)
-        q.set_bit(0);           // Đảm bảo q là số lẻ
+        const uint512_t q = generate_candidate_q(ctx, bitsize - 1);
+        const uint512_t p = (q << 1) + one;
 
-        // 2. Tính p = 2q + 1 (đúng bitsize bit vì q có bitsize - 1 bit và bit cao = 1)
-        uint512_t p = (q << 1) + one;
-
-        // 3. Sàng kết hợp cả q và p với các số nguyên tố nhỏ s < 2000
         if (has_small_factor_for_safe_prime(q))
         {
             continue;
         }
 
-        // 4. Lọc sơ bộ bằng một vòng Miller-Rabin cơ số 2 cho q rồi cho p.
-        // Hầu hết hợp số vượt qua sàng nhỏ sẽ bị loại ngay ở vòng cơ số 2 này,
-        // giúp tránh chạy đủ 20 vòng Miller-Rabin tốn kém trên các hợp số.
-        const DecomposedExponent decomp_q = decompose_even(q - one);
-        if (!miller_rabin_test(two, decomp_q, q))
+        if (!passes_base_two_round(q) || !passes_base_two_round(p))
         {
             continue;
         }
 
-        const DecomposedExponent decomp_p = decompose_even(p - one);
-        if (!miller_rabin_test(two, decomp_p, p))
-        {
-            continue;
-        }
-
-        // 5. Kiểm tra đầy đủ 20 vòng Miller-Rabin cho q rồi cho p
-        if (!is_probable_prime(ctx, q, SAFE_PRIME_ROUNDS))
-        {
-            continue;
-        }
-
-        if (!is_probable_prime(ctx, p, SAFE_PRIME_ROUNDS))
+        if (!is_probable_prime(ctx, q, SAFE_PRIME_ROUNDS) || !is_probable_prime(ctx, p, SAFE_PRIME_ROUNDS))
         {
             continue;
         }
