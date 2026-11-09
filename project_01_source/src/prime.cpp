@@ -8,6 +8,8 @@
 namespace
 {
 constexpr uint64_t SMALL_PRIME_LIMIT = 2000;
+constexpr size_t MIN_SAFE_PRIME_BITS = 16;
+constexpr int SAFE_PRIME_ROUNDS = 20;
 
 // Sinh danh sách 303 số nguyên tố nhỏ hơn SMALL_PRIME_LIMIT bằng sàng Eratosthenes.
 std::vector<uint64_t> build_small_primes()
@@ -79,6 +81,27 @@ bool miller_rabin_test(const uint512_t &base, const DecomposedExponent &decomp, 
         }
     }
 
+    return false;
+}
+
+// Sàng kết hợp cho cả q và p = 2q + 1 với các số nguyên tố nhỏ s < 2000.
+// Lý do:
+// - q chia hết cho s khi rem = q mod s == 0.
+// - p = 2q + 1 chia hết cho s khi 2q + 1 = 0 (mod s), tức 2q = -1 = s - 1 (mod s).
+//   Với mọi số nguyên tố lẻ s, vì gcd(2, s) = 1 nên chia 2 hai vế ta được q = (s - 1) / 2 (mod s).
+//   (Với s = 2, q lẻ nên rem = 1, còn (2 - 1)/2 = 0, điều kiện không bị kích hoạt nhầm).
+// Nhờ đó, chỉ cần tính q.mod_u64(s) một lần là kiểm tra được cả hai số q và p,
+// giúp loại bỏ sớm khoảng 85% ứng viên hợp số mà không cần tính mod_u64 riêng cho p.
+bool has_small_factor_for_safe_prime(const uint512_t &q)
+{
+    for (uint64_t s : small_primes())
+    {
+        uint64_t remainder = q.mod_u64(s);
+        if (remainder == 0 || remainder == (s - 1) / 2)
+        {
+            return true;
+        }
+    }
     return false;
 }
 } // namespace
@@ -155,7 +178,59 @@ bool is_probable_prime(prng_ctx *ctx, const uint512_t &n, int rounds)
 // Trả về p đúng bitsize bit sao cho p và (p - 1) / 2 đều nguyên tố.
 uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize)
 {
-    // TODO: chọn q lẻ đúng bitsize - 1 bit, đặt p = 2q + 1.
-    // Loại nhanh bằng has_small_factor trên q và p, rồi mới Miller-Rabin.
-    not_implemented("generate_safe_prime");
+    // Ràng buộc kích thước:
+    // - bitsize tối thiểu là MIN_SAFE_PRIME_BITS (16) để q >= 2^14 > 2000 (vượt mốc sàng nguyên tố nhỏ).
+    // - bitsize tối đa là BIGINT_BITS vì p = 2q + 1 phải vừa trong độ rộng cố định của uint512_t.
+    if (bitsize < MIN_SAFE_PRIME_BITS || bitsize > BIGINT_BITS)
+    {
+        throw std::invalid_argument("generate_safe_prime: bitsize phai trong [16, BIGINT_BITS]");
+    }
+
+    const uint512_t two(2);
+    const uint512_t one(1);
+
+    for (;;)
+    {
+        // 1. Sinh q lẻ ngẫu nhiên có đúng bitsize - 1 bit
+        uint512_t q = random_bits(ctx, bitsize - 1);
+        q.set_bit(bitsize - 2); // Đảm bảo bit cao nhất của q bằng 1 (đúng bitsize - 1 bit)
+        q.set_bit(0);           // Đảm bảo q là số lẻ
+
+        // 2. Tính p = 2q + 1 (đúng bitsize bit vì q có bitsize - 1 bit và bit cao = 1)
+        uint512_t p = (q << 1) + one;
+
+        // 3. Sàng kết hợp cả q và p với các số nguyên tố nhỏ s < 2000
+        if (has_small_factor_for_safe_prime(q))
+        {
+            continue;
+        }
+
+        // 4. Lọc sơ bộ bằng một vòng Miller-Rabin cơ số 2 cho q rồi cho p.
+        // Hầu hết hợp số vượt qua sàng nhỏ sẽ bị loại ngay ở vòng cơ số 2 này,
+        // giúp tránh chạy đủ 20 vòng Miller-Rabin tốn kém trên các hợp số.
+        const DecomposedExponent decomp_q = decompose_even(q - one);
+        if (!miller_rabin_test(two, decomp_q, q))
+        {
+            continue;
+        }
+
+        const DecomposedExponent decomp_p = decompose_even(p - one);
+        if (!miller_rabin_test(two, decomp_p, p))
+        {
+            continue;
+        }
+
+        // 5. Kiểm tra đầy đủ 20 vòng Miller-Rabin cho q rồi cho p
+        if (!is_probable_prime(ctx, q, SAFE_PRIME_ROUNDS))
+        {
+            continue;
+        }
+
+        if (!is_probable_prime(ctx, p, SAFE_PRIME_ROUNDS))
+        {
+            continue;
+        }
+
+        return p;
+    }
 }
