@@ -1,6 +1,5 @@
 // NV3: Kiểm tra nguyên tố và sinh safe prime. Kiểm thử: tests/test_prime.cpp
 #include "dh.h"
-#include "common.h"
 
 #include <stdexcept>
 #include <vector>
@@ -179,15 +178,9 @@ bool is_probable_prime(prng_ctx *ctx, const uint512_t &n, int rounds)
     const uint512_t n_minus_1 = n - uint512_t(1);
     const DecomposedExponent decomp = decompose_even(n_minus_1);
 
-    // Vòng đầu tiên dùng cơ số b = 2 (lọc nhanh các số không vượt qua phép thử cơ sở 2)
-    if (!miller_rabin_test(two, decomp, n))
-    {
-        return false;
-    }
-
-    // Các vòng sau chọn ngẫu nhiên b trong khoảng đóng [2, n - 2]
+    // Mọi vòng kiểm tra Miller-Rabin thuần đều chọn ngẫu nhiên cơ số b trong khoảng đóng [2, n - 2]
     const uint512_t max_base = n - two;
-    for (int round = 1; round < rounds; ++round)
+    for (int round = 0; round < rounds; ++round)
     {
         const uint512_t random_base = random_range(ctx, two, max_base);
         if (!miller_rabin_test(random_base, decomp, n))

@@ -72,6 +72,10 @@ int main(int argc, char **argv)
     CHECK(!has_small_factor(uint512_t(83)));
     CHECK(!has_small_factor(uint512_t::from_hex("7fffffffffffffffffffffffffffffff")));
 
+    // Kiểm tra hợp số giả nguyên tố mạnh cơ sở 2 và số nguyên tố 512-bit (2^512 - 569)
+    CHECK(!is_probable_prime(&ctx, uint512_t::from_hex("351591274f9af9fb")));
+    CHECK(is_probable_prime(&ctx, uint512_t::from_hex("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdc7")));
+
     // Quét toàn bộ số nguyên tố an toàn 16-bit để đảm bảo thuật toán sinh không loại nhầm
     const std::set<uint64_t> expected_16bit_safe_primes = collect_expected_16bit_safe_primes();
     CHECK(expected_16bit_safe_primes.size() == 193);
