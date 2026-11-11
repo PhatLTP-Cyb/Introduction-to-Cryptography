@@ -1,4 +1,4 @@
-\section{Hàm kiểm tra số nguyên tố và sinh số nguyên tố an toàn}
+﻿\section{Hàm kiểm tra số nguyên tố và sinh số nguyên tố an toàn}
 \label{sec:kiem-tra-nguyen-to}
 
 \noindent\textbf{Người phụ trách viết:} Trần Hoàng Nhi.
@@ -116,31 +116,106 @@ bool is_probable_prime(prng_ctx *ctx, const uint512_t &n, int rounds) {
 }
 \end{lstlisting}
 
-\subsection{Thuật toán sinh số nguyên tố an toàn \texttt{generate\_safe\_prime}}
-% TODO(Nhi): Định nghĩa số nguyên tố an toàn (Safe Prime) p = 2q + 1 với q là số nguyên tố Sophie Germain.
-% Kỹ thuật sàng kết hợp: một lần tính q.mod_u64(s) kiểm tra được cả q chia hết cho s (rem == 0) và p chia hết cho s (rem == (s - 1)/2).
-% Kỹ thuật lọc sơ bộ: chạy 1 vòng Miller-Rabin cơ số 2 cho q rồi p trước khi chạy đủ 20 vòng, giúp tiết kiệm thời gian đáng kể.
+\subsection{Thuật toán sinh số nguyên tố an toàn \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime}}
 
-\begin{figure}[h!]
-\centering
-% \includegraphics[width=0.75\textwidth]{figures/safe_prime_flowchart.png}
-\caption{Lưu đồ thuật toán sinh số nguyên tố an toàn $p = 2q + 1$}
-\label{fig:safe-prime-flowchart}
-\end{figure}
+Số nguyên tố an toàn (safe prime) $p$ là số nguyên tố có dạng $p = 2q + 1$, trong đó $q$ cũng là một số nguyên tố (được gọi là số nguyên tố Sophie Germain). Hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime(prng\_\allowbreak{}ctx *ctx, size\_\allowbreak{}t bitsize)} trong \texttt{src/prime.cpp} sinh số nguyên tố an toàn $p$ có kích thước $\texttt{bitsize}$ bit (với ràng buộc $\texttt{bitsize} \in [16, 512]$) qua các bước:
+\begin{enumerate}
+    \item \textbf{Sinh ứng viên $q$:} Hàm \texttt{generate\_\allowbreak{}candidate\_\allowbreak{}q(ctx, bitsize - 1)} sinh một số ngẫu nhiên $q$ có độ dài $\texttt{bitsize} - 1$ bit bằng hàm \texttt{random\_\allowbreak{}bits(ctx, q\_\allowbreak{}bits)}. Hàm thiết lập bit cao nhất qua \texttt{q.set\_\allowbreak{}bit(q\_\allowbreak{}bits - 1)} để đảm bảo đúng kích thước bit và thiết lập bit thấp nhất qua \texttt{q.set\_\allowbreak{}bit(0)} để $q$ là số lẻ. Sau đó tính ứng viên $p = 2q + 1 = (q \ll 1) + 1$.
+    \item \textbf{Sàng kết hợp ước số nhỏ:} Hàm \texttt{has\_\allowbreak{}small\_\allowbreak{}factor\_\allowbreak{}for\_\allowbreak{}safe\_\allowbreak{}prime(q)} duyệt qua các số nguyên tố nhỏ $s < 20000$ từ bảng sàng \texttt{small\_\allowbreak{}primes()}. Chỉ với một phép chia lấy dư $\texttt{remainder} = q \bmod s$ bằng phương thức \texttt{q.mod\_\allowbreak{}u64(s)}, hàm kiểm tra đồng thời cho cả $q$ và $p$:
+    \begin{itemize}
+        \item $q$ chia hết cho $s$ khi $\texttt{remainder} == 0$ và $q \neq s$.
+        \item $p = 2q + 1$ chia hết cho $s$ khi $2q + 1 \equiv 0 \pmod s \iff 2q \equiv s - 1 \pmod s \iff q \equiv (s - 1)/2 \pmod s$ (với mọi số nguyên tố lẻ $s$). Điều kiện kiểm tra tương ứng là $\texttt{remainder} == (s - 1)/2$ và $q \neq (s - 1)/2$.
+    \end{itemize}
+    Nếu $q$ hoặc $p$ chia hết cho $s$, hàm trả về \texttt{true} để loại bỏ ứng viên và chuyển sang ứng viên tiếp theo.
+    \item \textbf{Lọc sơ bộ bằng vòng Miller-Rabin cơ số 2:} Ứng viên lần lượt trải qua vòng kiểm tra cơ số 2 cho $q$ (\texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}round(q)}) và cho $p$ (\texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}and\_\allowbreak{}certifies(p)}). Nếu không thỏa mãn, ứng viên bị loại.
+    \item \textbf{Kiểm tra xác suất 20 vòng:} Nếu vượt qua các bước lọc sơ bộ, hàm gọi \texttt{is\_\allowbreak{}probable\_\allowbreak{}prime(ctx, q, 20)} và \texttt{is\_\allowbreak{}probable\_\allowbreak{}prime(ctx, p, 20)}. Khi cả $q$ và $p$ đều vượt qua 20 vòng kiểm tra độc lập, hàm trả về giá trị $p$.
+\end{enumerate}
+
+\subsubsection{Chứng nhận Pocklington}
+
+Hàm \texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}and\_\allowbreak{}certifies(p)} tích hợp bước chứng nhận Pocklington có điều kiện dựa trên $q$:
+\begin{itemize}
+    \item Với $p = 2q + 1$ và $q$ lẻ, phân tích $p - 1 = 2^1 \cdot q$ có số mũ của 2 là $r = 1$. Vòng Miller-Rabin cơ số 2 tính $x = 2^q \bmod p$. Điều kiện vượt qua vòng cơ số 2 là $x \in \{1, p - 1\}$. Khi đó, điều kiện Fermat $2^{p-1} \equiv 1 \pmod p$ được suy ra trực tiếp từ $x^2 \equiv 1 \pmod p$ mà không cần thực hiện thêm phép lũy thừa riêng.
+    \item Điều kiện $\gcd(3, p) = 1$ được kiểm tra qua $\texttt{p.mod\_\allowbreak{}u64(3) != 0}$.
+    \item Bước chứng nhận này là bước bổ sung có điều kiện: tính nguyên tố của $p$ phụ thuộc vào giả định $q$ là số nguyên tố (được xác nhận bằng thuật toán xác suất Miller-Rabin).
+    \item Kiểm nghiệm bằng Python trên 37.214 hợp số $p = 2q + 1 < 10^6$ với $q$ nguyên tố: không số nào qua được vòng Miller-Rabin cơ số 2 (điều kiện $2^q \bmod p \in \{1, p-1\}$). Điều kiện Fermat của chứng nhận suy ra từ chính vòng này, nên trên tập đã kiểm bước chứng nhận không loại thêm hợp số nào.
+\end{itemize}
+
+\subsubsection{Lũy thừa cơ số 2}
+
+Hàm \texttt{modular\_\allowbreak{}exponentiation\_\allowbreak{}base\_\allowbreak{}two(exp, mod)} tính giá trị $2^{\text{exp}} \bmod \text{mod}$:
+\begin{itemize}
+    \item Với mô-đun $\text{mod}$ là số lẻ, hàm chuyển sang tính toán trong không gian Montgomery thông qua phương thức \texttt{Montgomery::pow\_\allowbreak{}base\_\allowbreak{}two(exp)}. Thuật toán duyệt bit của số mũ $\text{exp}$ từ trái sang phải: ở mỗi bit, kết quả được bình phương bằng phép nhân Montgomery \texttt{mul(result, result)}; khi gặp bit 1, phép nhân đôi được thực hiện bằng hàm cộng mô-đun \texttt{add\_\allowbreak{}mod\_\allowbreak{}reduced(result, result, m)} thay vì gọi phép nhân \texttt{mul}.
+    \item Với mô-đun $\text{mod}$ là số chẵn, hàm gọi lại \texttt{modular\_\allowbreak{}exponentiation(uint512\_\allowbreak{}t(2), exp, mod)}.
+\end{itemize}
+
+Thuật toán sinh số nguyên tố an toàn được thể hiện qua đoạn mã giả tại Liệt kê \ref{lst:generate-safe-prime}.
+
+\begin{lstlisting}[language=C++, caption={Thuật toán sinh số nguyên tố an toàn trong \texttt{prime.cpp}}, label={lst:generate-safe-prime}]
+uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize) {
+    if (bitsize < 16 || bitsize > 512) {
+        throw std::invalid_argument("bitsize phai trong [16, 512]");
+    }
+    for (;;) {
+        uint512_t q = generate_candidate_q(ctx, bitsize - 1);
+        uint512_t p = (q << 1) + 1;
+
+        if (has_small_factor_for_safe_prime(q)) {
+            continue;
+        }
+        if (!passes_base_two_round(q) || !passes_base_two_and_certifies(p)) {
+            continue;
+        }
+        if (!is_probable_prime(ctx, q, 20) || !is_probable_prime(ctx, p, 20)) {
+            continue;
+        }
+        return p;
+    }
+}
+\end{lstlisting}
 
 \subsection{Kết quả thực nghiệm và đo lường thời gian}
-% TODO(Nhi): Trình bày bảng dữ liệu thực nghiệm đo được trên máy (lấy từ báo cáo nv3-e.md và nv3-f.md).
-% Bảng so sánh giữa fake_random (mt19937) và random.cpp thật của NV4.
+
+Các phép đo lường thời gian thực thi của hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime} trên kích thước 512 bit được thực hiện trên cùng một máy tính và cùng một hệ điều hành. Mỗi lần đo sử dụng một tập gồm 20 số nguyên tố an toàn $p$ sinh từ cùng một giá trị seed ngẫu nhiên, đo lặp lại qua 3 lượt tuần tự (tổng cộng 60 lượt sinh, không phải 60 giá trị $p$ độc lập). 20 chuỗi giá trị $p$ sinh ra trùng khớp từng ký tự giữa các bản thực thi. Hai đợt đo được thực hiện ở hai phiên làm việc độc lập nên các tỉ số không nhân chéo với nhau. Ngoài ra, một lần đo độc lập khác của thành viên nhóm (5 lượt xen kẽ ở kích thước 512 bit) ghi nhận không thấy khác biệt rõ. Ở lượt 2 của phép đo bản Pocklington cũ có hai mẫu chênh rõ so với các lượt khác (p thứ 7: 57,9 ms so với khoảng 37 ms; p thứ 8: 302 ms so với khoảng 173 ms), nên các bảng chỉ dùng tỉ số tổng và trung vị.
+
+Bảng \ref{tab:pock-bench} ghi nhận tỉ số tổng thời gian giữa bản có chứng nhận Pocklington (\texttt{pock}) so với bản không có chứng nhận Pocklington (\texttt{main}). Thứ tự chạy của đợt đo này là cố định (\texttt{main} chạy trước, \texttt{pock} chạy sau ở mỗi lượt).
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{lcccccc}
+\begin{tabular}{lc}
 \toprule
-\textbf{Bộ sinh ngẫu nhiên} & \textbf{Kích thước} & \textbf{Số mẫu} & \textbf{Min (ms)} & \textbf{Trung vị (ms)} & \textbf{Trung bình (ms)} & \textbf{Max (ms)} \\
+\textbf{Lượt} & \textbf{Tỉ số tổng (\texttt{pock}/\texttt{main})} \\
 \midrule
-% TODO(Nhi): điền số liệu đo thật
+Lượt 1 & 1{,}0064 \\
+Lượt 2 & 1{,}0720 \\
+Lượt 3 & 1{,}0313 \\
+\midrule
+Gộp (3 lượt) & 1{,}0358 \\
+\midrule
+Trung vị 20 tỉ số theo $p$ & 1{,}0167 \\
 \bottomrule
 \end{tabular}
-\caption{Thời gian thực thi sinh số nguyên tố an toàn qua các kích thước bit (chạy thật)}
-\label{tab:safe-prime-bench}
+\caption{Tỉ số thời gian thực thi giữa bản Pocklington và bản gốc (\texttt{main})}
+\label{tab:pock-bench}
+\end{table}
+
+Bảng \ref{tab:base2-bench} ghi nhận tỉ số tổng thời gian giữa bản sử dụng lũy thừa cơ số 2 (\texttt{new}) so với bản Pocklington trước đó (\texttt{pock}). Thứ tự chạy của đợt đo này được xen kẽ qua từng lượt (Lượt 1: \texttt{pock} trước; Lượt 2: \texttt{new} trước; Lượt 3: \texttt{pock} trước).
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{Lượt} & \textbf{Tỉ số tổng (\texttt{new}/\texttt{pock})} \\
+\midrule
+Lượt 1 & 0{,}9147 \\
+Lượt 2 & 0{,}9272 \\
+Lượt 3 & 0{,}9305 \\
+\midrule
+Gộp (3 lượt) & 0{,}9241 \\
+\midrule
+Trung vị 20 tỉ số theo $p$ & 0{,}9203 \\
+\bottomrule
+\end{tabular}
+\caption{Tỉ số thời gian thực thi khi áp dụng lũy thừa cơ số 2 (\texttt{new}/\texttt{pock})}
+\label{tab:base2-bench}
 \end{table}
