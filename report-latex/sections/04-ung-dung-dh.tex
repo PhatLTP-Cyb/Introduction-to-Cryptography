@@ -1,0 +1,49 @@
+\section{Giao thức trao đổi khóa Diffie-Hellman và ứng dụng thực tế}
+\label{sec:ung-dung-dh}
+
+\noindent\textbf{Người phụ trách viết:} Tô Tuệ Nghi.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{14.5cm}|}
+\hline
+\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
+\textit{``4. Trao đổi khóa Diffie-Hellman: Tìm hiểu và trình bày một ứng dụng thực tế của giao thức này.''} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+
+\subsection{Nguyên lý toán học của giao thức Diffie-Hellman}
+% TODO(Nghi): Trình bày giao thức trao đổi khóa nguyên bản Diffie-Hellman (1976) \cite{diffie1976new}.
+% 1. Thiết lập tham số công khai: Số nguyên tố an toàn p = 2q + 1 và phần tử sinh g.
+% 2. Alice chọn khóa riêng a trong [2, p - 2], tính khóa công khai A = g^a mod p.
+% 3. Bob chọn khóa riêng b trong [2, p - 2], tính khóa công khai B = g^b mod p.
+% 4. Hai bên trao đổi A và B, cùng tính bí mật chung K = B^a mod p = A^b mod p = g^{ab} mod p.
+% Giải thích độ an toàn dựa trên Bài toán Logarithm rời rạc (Discrete Logarithm Problem - DLP) và bài toán Computational Diffie-Hellman (CDH).
+
+\subsection{Thuật toán tìm phần tử sinh \texttt{find\_generator}}
+% TODO(Nghi): Giải thích vì sao cần dùng số nguyên tố an toàn p = 2q + 1:
+% Cấp của nhóm Z_p^* là p - 1 = 2q. Do q là số nguyên tố lẻ, các ước nguyên số của p - 1 chỉ có 2 và q.
+% Để một phần tử g là phần tử sinh của nhóm con cấp q (nhóm con nguyên tố lớn tránh Small Subgroup Attack), ta chỉ cần kiểm tra:
+% g^2 mod p != 1 và g^q mod p != 1.
+% Cài đặt hàm find_generator thử các giá trị g = 2, 3, 4, ... cho đến khi thỏa mãn điều kiện.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{figures/dh_exchange_sequence.png}
+\caption{Sơ đồ tuần tự của giao thức trao đổi khóa Diffie-Hellman}
+\label{fig:dh-sequence}
+\end{figure}
+
+\subsection{Ứng dụng thực tế: Giao thức bảo mật tầng truyền vận TLS 1.3}
+% TODO(Nghi): Trình bày ứng dụng thực tế nổi bật nhất của Diffie-Hellman hiện nay: Giao thức TLS 1.3 (RFC 8446) \cite{rfc8446}.
+% - Phân tích cơ chế Ephemeral Diffie-Hellman (DHE / ECDHE) trong quá trình bắt tay TLS (TLS Handshake).
+% - Tính chất bảo mật chuyển tiếp hoàn hảo (Perfect Forward Secrecy - PFS): Khóa phiên được tạo từ các khóa riêng tạm thời (ephemeral keys), ngay cả khi khóa dài hạn của máy chủ bị lộ trong tương lai thì các phiên mã hóa trong quá khứ vẫn an toàn.
+% - Ứng dụng trong giao thức SSH (Secure Shell) và phần mềm nhắn tin bảo mật Signal / WhatsApp.
+
+\subsection{Các nguy cơ an ninh và biện pháp phòng chống}
+% TODO(Nghi): Phân tích các dạng tấn công điển hình:
+% 1. Tấn công kẻ đứng giữa (Man-in-the-Middle - MitM): do Diffie-Hellman thuần túy không có xác thực (No Authentication). Cách phòng chống: kết hợp chữ ký số (RSA / ECDSA) hoặc chứng chỉ số X.509.
+% 2. Tấn công nhóm con nhỏ (Small Subgroup Confinement Attack): cách phòng chống bằng cách kiểm tra khóa công khai nhận được nằm trong phạm vi hợp lệ và nhóm con cấp q.

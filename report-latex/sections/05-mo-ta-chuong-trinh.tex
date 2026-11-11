@@ -1,0 +1,59 @@
+\section{Mô tả chương trình đã cài đặt và hướng dẫn sử dụng}
+\label{sec:mo-ta-chuong-trinh}
+
+\noindent\textbf{Người phụ trách viết:} Tô Tuệ Nghi.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{14.5cm}|}
+\hline
+\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
+\textit{``5. Mô tả chương trình đã cài đặt: Viết chi tiết cách chạy chương trình đã cài đặt, cách thay đổi các tham số để điều chỉnh độ lớn của số nguyên tố hoặc các thành phần khác trong chương trình của sinh viên.''} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+
+\subsection{Cấu trúc thư mục mã nguồn và tổ chức dự án}
+% TODO(Nghi): Giới thiệu cấu trúc phân tầng của mã nguồn:
+% - src/u512.h, src/u512.cpp: Thư viện số lớn uint512_t (NV1).
+% - src/modexp.cpp: Các phép toán chia dư và lũy thừa mô-đun (NV2).
+% - src/prime.cpp: Kiểm tra số nguyên tố và sinh safe prime (NV3).
+% - src/random.cpp: Bộ sinh số ngẫu nhiên CSPRNG (NV4).
+% - src/dh.cpp, src/main.cpp: Triển khai giao thức Diffie-Hellman và chương trình mô phỏng (NV5).
+% - lib/fips202/: Mã nguồn chuẩn mở rộng Keccak SHAKE128.
+% - tests/: Bộ kịch bản kiểm thử đơn vị và kiểm thử tích hợp tự động.
+
+\subsection{Hướng dẫn cài đặt môi trường và biên dịch}
+% TODO(Nghi): Hướng dẫn chi tiết từng bước biên dịch:
+% 1. Trên Windows: Sử dụng MinGW-w64 (g++ 64-bit), lệnh:
+%    mingw32-make run
+%    hoặc lệnh g++ trực tiếp có cờ -O3 và liên kết -lbcrypt:
+%    g++ -std=c++14 -O3 -I src -I lib/fips202 src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp src/prime.cpp src/dh.cpp lib/fips202/prng.cpp lib/fips202/fips202.c -o dh.exe -lbcrypt
+% 2. Trên Linux: Sử dụng make run với trình biên dịch g++.
+
+\subsection{Kết quả thực thi chương trình mẫu}
+% TODO(Nghi): Chèn kết quả chạy thực tế của chương trình dh.exe trên môi trường Windows.
+% Minh họa các giá trị in ra: p (512-bit hex), g (hex), private key a, b, public key A, B, và shared secret K_A, K_B trùng khớp.
+
+\begin{figure}[h!]
+
+% TODO(Nghi): dán nguyên văn log chạy thật của dh.exe
+\begin{lstlisting}
+\end{lstlisting}
+\caption{Đầu ra thực tế khi chạy mô phỏng Diffie-Hellman}
+\label{lst:dh-output}
+\end{figure}
+
+\subsection{Hướng dẫn điều chỉnh tham số độ dài số nguyên tố}
+% TODO(Nghi): Hướng dẫn chi tiết cách thay đổi:
+% 1. Thay đổi kích thước bit sinh số nguyên tố (bit_size): trong file main.cpp hoặc hàm generate_safe_prime(ctx, bitsize).
+% 2. Thay đổi kích thước số lớn tối đa: thay đổi hằng số LIMBS trong src/u512.h (mặc định LIMBS = 8 tương ứng 512 bit, có thể tăng lên LIMBS = 16 tương ứng 1024 bit).
+% Ghi rõ các lưu ý khi thay đổi kích thước và cách biên dịch lại chương trình.
+
+\subsection{Hướng dẫn chạy bộ kiểm thử tự động}
+% TODO(Nghi): Hướng dẫn chạy kiểm thử tự động toàn diện:
+% - Lệnh: mingw32-make test
+% - Hoặc: python tests/run_tests.py
+% TODO(Nghi): ghi kết quả test thật sau khi NV5 hoàn thành.

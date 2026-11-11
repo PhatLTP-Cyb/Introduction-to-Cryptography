@@ -1,0 +1,76 @@
+\begin{titlepage}
+\centering
+{\large \textbf{ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}} \\
+{\large \textbf{TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}} \\
+{\large \textbf{KHOA CÔNG NGHỆ THÔNG TIN}} \\
+\vspace{0.5cm}
+\begin{center}
+    % \includegraphics[width=0.25\textwidth]{figures/logo-khtn.png}
+\end{center}
+\vspace{1.5cm}
+
+{\Large \textbf{BÁO CÁO THỰC HÀNH LAB 01}} \\
+\vspace{0.5cm}
+{\huge \textbf{GIAO THỨC TRAO ĐỔI KHÓA DIFFIE-HELLMAN VÀ HỆ THỐNG XỬ LÝ SỐ NGUYÊN TỐ LỚN}} \\
+\vspace{1cm}
+{\large Môn học: \textbf{Mã hóa và Mật mã học}} \\
+{\large Giảng viên hướng dẫn: Bộ môn An toàn Thông tin} \\
+\vspace{2cm}
+
+\begin{flushleft}
+\textbf{Thông tin nhóm: Nhóm 15} \\
+\vspace{0.2cm}
+\textbf{Thành viên nhóm:}
+\begin{itemize}
+    \item 24120029 -- Võ Văn Cường
+    \item 24120100 -- Tô Tuệ Nghi
+    \item 24120113 -- Trần Hoàng Nhi
+    \item 24120115 -- Lê Tấn Phát (Nhóm trưởng)
+\end{itemize}
+\end{flushleft}
+
+\vfill
+{\large Thành phố Hồ Chí Minh, Tháng 11/2026}
+\end{titlepage}
+
+\section*{Thông tin nhóm và Bảng mức độ đóng góp}
+\addcontentsline{toc}{section}{Thông tin nhóm và Bảng mức độ đóng góp}
+
+\subsection*{1. Danh sách thành viên và phân công nhiệm vụ}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{ccllp{4cm}c}
+\toprule
+\textbf{STT} & \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Vai trò} & \textbf{Nhiệm vụ chính} & \textbf{Mục báo cáo} \\
+\midrule
+1 & 24120029 & Võ Văn Cường & Thành viên & NV1: Số lớn \texttt{uint512\_t}; NV2: Lũy thừa mô-đun & Mục 1 \\
+2 & 24120100 & Tô Tuệ Nghi & Thành viên & NV5: Diffie-Hellman; NV6: Tích hợp, đóng gói & Mục 4, 5 \\
+3 & 24120113 & Trần Hoàng Nhi & Thành viên & NV3: Sàng số nhỏ, Miller-Rabin, sinh safe prime & Mục 2 \\
+4 & 24120115 & Lê Tấn Phát & Nhóm trưởng & NV4: Sinh số ngẫu nhiên CSPRNG; NV7: Điều phối & Mục 3, 6 \\
+\bottomrule
+\end{tabular}
+\caption{Bảng phân công nhiệm vụ đồ án Lab 01}
+\label{tab:phan-cong}
+\end{table}
+
+\subsection*{2. Bảng tự đánh giá mức độ đóng góp}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cclcc}
+\toprule
+\textbf{STT} & \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Mức độ đóng góp} & \textbf{Ghi chú / Ký xác nhận} \\
+\midrule
+1 & 24120029 & Võ Văn Cường & 100\% & Hoàn thành NV1, NV2 đúng hạn \\
+2 & 24120100 & Tô Tuệ Nghi & 100\% & Hoàn thành NV5, NV6 đúng hạn \\
+3 & 24120113 & Trần Hoàng Nhi & 100\% & Hoàn thành NV3 đúng hạn \\
+4 & 24120115 & Lê Tấn Phát & 100\% & Hoàn thành NV4, điều phối NV7 đúng hạn \\
+\bottomrule
+\end{tabular}
+\caption{Đánh giá mức độ đóng góp của từng thành viên}
+\label{tab:muc-dong-gop}
+\end{table}
+
+\noindent\textbf{Cam kết tính trung thực:} Tất cả thành viên trong nhóm cam kết toàn bộ mã nguồn do nhóm tự tìm hiểu và triển khai (không sử dụng thư viện xử lý số lớn hay thư viện mật mã có sẵn). Toàn bộ số đo thời gian, kết quả kiểm thử và số liệu trong báo cáo đều được trích xuất từ các lần chạy thực nghiệm thực tế trên hệ thống máy tính của nhóm.
