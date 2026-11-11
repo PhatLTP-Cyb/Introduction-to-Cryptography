@@ -165,6 +165,27 @@ struct Montgomery
         }
         return result;
     }
+
+    // Trả về 2^exp ở dạng Montgomery.
+    // Giống pow nhưng với cơ số 2: duyệt bit của exp từ trái sang phải, mỗi bit bình phương
+    // kết quả bằng mul(result, result); gặp bit 1 thì nhân đôi bằng add_mod_reduced(result, result, m).
+    // Phép nhân đôi ở dạng Montgomery: nếu số x có dạng Montgomery là x~ = (x * R) mod m,
+    // thì dạng Montgomery của 2x là ((2x) * R) mod m = (2 * (x * R)) mod m = (x~ + x~) mod m.
+    // Do đó, nhân đôi một số ở dạng Montgomery chính là cộng nó với chính nó theo mod m,
+    // không cần gọi hàm mul và không cần đổi cơ số sang dạng Montgomery.
+    uint512_t pow_base_two(const uint512_t &exp) const
+    {
+        uint512_t result = one;
+        for (size_t i = exp.bit_length(); i-- > 0;)
+        {
+            result = mul(result, result);
+            if (exp.bit(i))
+            {
+                result = add_mod_reduced(result, result, m);
+            }
+        }
+        return result;
+    }
 };
 } // namespace
 
@@ -255,4 +276,23 @@ uint512_t modular_exponentiation(const uint512_t &base, const uint512_t &exp, co
         }
     }
     return result;
+}
+
+// Trả về (2 ^ exp) mod mod.
+uint512_t modular_exponentiation_base_two(const uint512_t &exp, const uint512_t &mod)
+{
+    require_modulus(mod, "modular_exponentiation_base_two");
+    if (mod == uint512_t(1))
+    {
+        return uint512_t(0); // mọi số mod 1 đều bằng 0, kể cả 2^0
+    }
+
+    if (mod.is_odd())
+    {
+        const Montgomery mont(mod);
+        const uint512_t result_mont = mont.pow_base_two(exp);
+        return mont.mul(result_mont, uint512_t(1));
+    }
+
+    return modular_exponentiation(uint512_t(2), exp, mod);
 }

@@ -81,6 +81,64 @@ int main(int argc, char **argv)
     CHECK(modular_exponentiation(uint512_t(3), p512 - one, p512) == one);
     CHECK(mul_mod(p512 - one, p512 - one, p512) == one);
 
+    // Kiểm thử modular_exponentiation_base_two (2^exp mod mod)
+    // (a) Mô-đun lẻ 23, 97, max với exp trong 0..200: so sánh với modular_exponentiation(2, exp, mod)
+    uint512_t m97(97);
+    for (uint64_t e = 0; e <= 200; ++e)
+    {
+        uint512_t exp(e);
+        CHECK(modular_exponentiation_base_two(exp, m23) == modular_exponentiation(uint512_t(2), exp, m23));
+        CHECK(modular_exponentiation_base_two(exp, m97) == modular_exponentiation(uint512_t(2), exp, m97));
+        CHECK(modular_exponentiation_base_two(exp, max) == modular_exponentiation(uint512_t(2), exp, max));
+    }
+
+    // (b) Mô-đun chẵn 24 và 2 với exp trong 0..50: so sánh với modular_exponentiation(2, exp, mod)
+    uint512_t m24(24);
+    uint512_t m2(2);
+    for (uint64_t e = 0; e <= 50; ++e)
+    {
+        uint512_t exp(e);
+        CHECK(modular_exponentiation_base_two(exp, m24) == modular_exponentiation(uint512_t(2), exp, m24));
+        CHECK(modular_exponentiation_base_two(exp, m2) == modular_exponentiation(uint512_t(2), exp, m2));
+    }
+
+    // (c) mod = 1 trả 0
+    CHECK(modular_exponentiation_base_two(zero, one).is_zero());
+    CHECK(modular_exponentiation_base_two(one, one).is_zero());
+    CHECK(modular_exponentiation_base_two(uint512_t(13), one).is_zero());
+
+    // (d) exp = 0 với mod > 1 trả 1
+    CHECK(modular_exponentiation_base_two(zero, m23) == one);
+    CHECK(modular_exponentiation_base_two(zero, m24) == one);
+    CHECK(modular_exponentiation_base_two(zero, max) == one);
+    CHECK(modular_exponentiation_base_two(zero, top) == one);
+    CHECK(modular_exponentiation_base_two(zero, top_plus_1) == one);
+
+    // (e) mod = 0 ném std::invalid_argument
+    CHECK(throws_on_zero([&] { modular_exponentiation_base_two(one, zero); }));
+    CHECK(throws_on_zero([&] { modular_exponentiation_base_two(zero, zero); }));
+
+    // (f) 2^BIGINT_BITS mod max == 1
+    CHECK(modular_exponentiation_base_two(uint512_t(BIGINT_BITS), max) == one);
+
+    // (g) với mod = top_plus_1 (mô-đun BIGINT_BITS bit lẻ có sẵn trong test)
+    for (uint64_t e = 0; e <= 50; ++e)
+    {
+        uint512_t exp(e);
+        CHECK(modular_exponentiation_base_two(exp, top_plus_1) == modular_exponentiation(uint512_t(2), exp, top_plus_1));
+    }
+
+    // (h) số mũ cỡ 512 bit: đúng trường hợp prime.cpp dùng
+    const uint512_t big_exps[] = {p512 - one, p512 - uint512_t(2), max, max - uint512_t(12345), top, top_plus_1, one << 300};
+    for (const uint512_t &e : big_exps)
+    {
+        CHECK(modular_exponentiation_base_two(e, p512) == modular_exponentiation(uint512_t(2), e, p512));
+        CHECK(modular_exponentiation_base_two(e, max) == modular_exponentiation(uint512_t(2), e, max));
+        CHECK(modular_exponentiation_base_two(e, top_plus_1) == modular_exponentiation(uint512_t(2), e, top_plus_1));
+        CHECK(modular_exponentiation_base_two(e, m97) == modular_exponentiation(uint512_t(2), e, m97));
+    }
+    CHECK(modular_exponentiation_base_two(p512 - one, p512) == one); // Fermat: 2^(p-1) = 1 (mod p)
+
     if (argc > 1)
     {
         std::ifstream f(argv[1]);

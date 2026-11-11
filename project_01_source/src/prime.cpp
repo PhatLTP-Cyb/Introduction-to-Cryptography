@@ -61,14 +61,12 @@ DecomposedExponent decompose_even(const uint512_t &even_value)
     return DecomposedExponent{r, even_value >> r};
 }
 
-// Thực hiện một vòng kiểm tra Miller-Rabin với cơ số b cho trước trên số lẻ n.
-// Cơ số b được chọn trong khoảng [2, n - 2] vì:
-// - b = 1 hoặc b = n - 1 luôn cho b^2 = 1 (mod n) tầm thường, không có tác dụng kiểm tra.
-// - Nếu gcd(b, n) > 1 thì lũy thừa mod n không thể bằng 1 hoặc n - 1, thuật toán tự động phát hiện hợp số.
-bool miller_rabin_test(const uint512_t &base, const DecomposedExponent &decomp, const uint512_t &n)
+// Tiếp tục kiểm tra Miller-Rabin từ giá trị lũy thừa đầu tiên x = base^d mod n.
+// Tách hàm để vòng cơ số 2 dùng lũy thừa riêng cho cơ số 2.
+bool miller_rabin_from_first_power(const uint512_t &first_power, const DecomposedExponent &decomp, const uint512_t &n)
 {
     const uint512_t n_minus_1 = n - uint512_t(1);
-    uint512_t x = modular_exponentiation(base, decomp.odd_factor, n);
+    uint512_t x = first_power;
     if (x == uint512_t(1) || x == n_minus_1)
     {
         return true;
@@ -86,13 +84,22 @@ bool miller_rabin_test(const uint512_t &base, const DecomposedExponent &decomp, 
     return false;
 }
 
+// Thực hiện một vòng kiểm tra Miller-Rabin với cơ số b cho trước trên số lẻ n.
+// Cơ số b được chọn trong khoảng [2, n - 2] vì:
+// - b = 1 hoặc b = n - 1 luôn cho b^2 = 1 (mod n) tầm thường, không có tác dụng kiểm tra.
+// - Nếu gcd(b, n) > 1 thì lũy thừa mod n không thể bằng 1 hoặc n - 1, thuật toán tự động phát hiện hợp số.
+bool miller_rabin_test(const uint512_t &base, const DecomposedExponent &decomp, const uint512_t &n)
+{
+    return miller_rabin_from_first_power(modular_exponentiation(base, decomp.odd_factor, n), decomp, n);
+}
+
 // Phân tích n - 1 và thực hiện một vòng kiểm tra Miller-Rabin với cơ số 2.
 // Lý do: hầu hết hợp số lẻ bị loại ngay ở cơ số 2, giúp lọc nhanh trước khi chạy các vòng ngẫu nhiên.
 bool passes_base_two_round(const uint512_t &n)
 {
     const uint512_t n_minus_1 = n - uint512_t(1);
     const DecomposedExponent decomp = decompose_even(n_minus_1);
-    return miller_rabin_test(uint512_t(2), decomp, n);
+    return miller_rabin_from_first_power(modular_exponentiation_base_two(decomp.odd_factor, n), decomp, n);
 }
 
 // Sinh số lẻ ngẫu nhiên q có đúng q_bits bit (bit cao nhất và bit thấp nhất đều bằng 1).
@@ -132,7 +139,7 @@ bool has_small_factor_for_safe_prime(const uint512_t &q)
 uint512_t two_to_half_exponent_mod(const uint512_t &p)
 {
     const uint512_t half_exp = (p - uint512_t(1)) >> 1;
-    return modular_exponentiation(uint512_t(2), half_exp, p);
+    return modular_exponentiation_base_two(half_exp, p);
 }
 
 // Kiểm tra vòng Miller-Rabin cơ số 2 đồng thời xác nhận điều kiện định lý Pocklington cho p = 2q + 1.
