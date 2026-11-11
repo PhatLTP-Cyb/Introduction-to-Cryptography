@@ -11,6 +11,7 @@ uint512_t reduce_mod(const uint512_t &a, const uint512_t &m);
 uint512_t add_mod(const uint512_t &a, const uint512_t &b, const uint512_t &m);
 uint512_t mul_mod(const uint512_t &a, const uint512_t &b, const uint512_t &m);
 uint512_t modular_exponentiation(const uint512_t &base, const uint512_t &exp, const uint512_t &mod);
+uint512_t modular_exponentiation_base_two(const uint512_t &exp, const uint512_t &mod);
 
 // NV4 - src/random.cpp
 void seed_from_os(prng_ctx *ctx);
