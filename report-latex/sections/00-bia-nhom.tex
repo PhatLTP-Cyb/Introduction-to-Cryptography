@@ -95,10 +95,10 @@
 \toprule
 \textbf{STT} & \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Đóng góp} & \textbf{Ghi chú / Ký xác nhận} \\
 \midrule
-1 & 24120029 & Võ Văn Cường & 100\% & Hoàn thành NV1, NV2 đúng hạn \\
-2 & 24120100 & Tô Tuệ Nghi & 100\% & Hoàn thành NV5, NV6 đúng hạn \\
-3 & 24120113 & Trần Hoàng Nhi & 100\% & Hoàn thành NV3 đúng hạn \\
-4 & 24120115 & Lê Tấn Phát & 100\% & Hoàn thành NV4, điều phối NV7 đúng hạn \\
+1 & 24120029 & Võ Văn Cường & 100\% & Phụ trách NV1, NV2 \\
+2 & 24120100 & Tô Tuệ Nghi & 100\% & Phụ trách NV5, NV6 \\
+3 & 24120113 & Trần Hoàng Nhi & 100\% & Phụ trách NV3 \\
+4 & 24120115 & Lê Tấn Phát & 100\% & Phụ trách NV4, điều phối NV7 \\
 \bottomrule
 \end{tabular}
 
@@ -106,4 +106,5 @@
 \label{tab:muc-dong-gop}
 \end{table}
 
-\noindent\textbf{Cam kết tính trung thực:} Tất cả thành viên trong nhóm cam kết toàn bộ mã nguồn do nhóm tự tìm hiểu và triển khai (không sử dụng thư viện xử lý số lớn hay thư viện mật mã có sẵn). Toàn bộ số đo thời gian, kết quả kiểm thử và số liệu trong báo cáo đều được trích xuất từ các lần chạy thực nghiệm thực tế trên hệ thống máy tính của nhóm.
+\noindent\textbf{Cam kết tính trung thực:} Phần số lớn, lũy thừa mô-đun, kiểm tra nguyên tố, sinh số nguyên tố an toàn và trao đổi khóa Diffie-Hellman do nhóm tự cài đặt, không dùng thư viện số lớn. Nhóm chỉ dùng hai thành phần có sẵn: SHAKE128 và PRNG trong \texttt{lib/fips202} (từ mã mẫu của đề bài), và hàm lấy dữ liệu ngẫu nhiên của hệ điều hành (qua \texttt{bcrypt} trên Windows) để tạo seed. % KIEM CHUNG: Phat (NV4) xac nhan dung cho nay.
+Toàn bộ số đo thời gian, kết quả kiểm thử và số liệu trong báo cáo đều được trích xuất từ các lần chạy thực nghiệm thực tế trên hệ thống máy tính của nhóm.

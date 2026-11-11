@@ -1,8 +1,6 @@
 % ============================================================
 % Báo cáo mục 4: Trao đổi khóa Diffie-Hellman và ứng dụng thực tế
-% Người viết: Tô Tuệ Nghi. Đây là ĐOẠN NỘI DUNG, không có preamble.
-% Cần gói: amsmath, booktabs, hyperref (hoặc url). Trích dẫn dùng \cite{...};
-% các \bibitem tương ứng nằm trong file tham-khao-muc4-5.tex.
+% Người viết: Tô Tuệ Nghi. Nguồn tham khảo nằm trong references.bib (BibTeX).
 % Dòng "% KIEM CHUNG" là chỗ phải đối chiếu lại trước khi nộp.
 % ============================================================
 
@@ -33,6 +31,51 @@ Bước & Alice & Bob \\
 \label{tab:dh-steps}
 \end{table}
 
+Sơ đồ trong Hình~\ref{fig:dh-flow} mô tả cùng quá trình theo trình tự thời gian.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[>=latex, font=\small]
+  % Hai bên
+  \node[draw, rounded corners, minimum width=3cm, minimum height=0.8cm] (A) at (0,0) {Alice};
+  \node[draw, rounded corners, minimum width=3cm, minimum height=0.8cm] (B) at (10,0) {Bob};
+  \draw[dashed] (0,-0.4) -- (0,-9.4);
+  \draw[dashed] (10,-0.4) -- (10,-9.4);
+
+  % Tham số công khai
+  \node[draw, fill=gray!10, rounded corners, align=center, text width=8cm]
+       at (5,-1.5) {Tham số công khai: số nguyên tố an toàn $p$ và phần tử sinh $g$};
+
+  % Khóa riêng
+  \node[draw, fill=white, rounded corners, align=center, text width=3.9cm]
+       at (0,-3.1) {Chọn khóa riêng $x$\\(giữ bí mật)};
+  \node[draw, fill=white, rounded corners, align=center, text width=3.9cm]
+       at (10,-3.1) {Chọn khóa riêng $y$\\(giữ bí mật)};
+
+  % Giá trị công khai
+  \node[draw, fill=white, rounded corners, align=center, text width=3.9cm]
+       at (0,-4.7) {$k_A \equiv g^x \pmod p$};
+  \node[draw, fill=white, rounded corners, align=center, text width=3.9cm]
+       at (10,-4.7) {$k_B \equiv g^y \pmod p$};
+
+  % Trao đổi qua kênh công khai
+  \draw[->, thick] (0,-5.8) -- node[above] {$k_A$} (10,-5.8);
+  \draw[<-, thick] (0,-6.6) -- node[above] {$k_B$} (10,-6.6);
+  \node[align=center, text width=5.4cm, font=\footnotesize\itshape] at (5,-7.35)
+       {kênh công khai: kẻ nghe lén chỉ thấy $p$, $g$, $k_A$, $k_B$};
+
+  % Bí mật chung
+  \node[draw, fill=white, rounded corners, align=center, text width=3.9cm]
+       at (0,-8.3) {$k \equiv k_B^{\,x} \pmod p$};
+  \node[draw, fill=white, rounded corners, align=center, text width=3.9cm]
+       at (10,-8.3) {$k' \equiv k_A^{\,y} \pmod p$};
+  \node[draw, fill=gray!10, rounded corners, align=center, text width=6cm]
+       at (5,-9.9) {$k = k' \equiv g^{xy} \pmod p$ (bí mật chung)};
+\end{tikzpicture}
+\caption{Sơ đồ trao đổi khóa Diffie-Hellman giữa Alice và Bob.}
+\label{fig:dh-flow}
+\end{figure}
+
 Hai bên thu được cùng một giá trị vì
 \[
 k \equiv k_B^{\,x} \equiv (g^y)^x \equiv g^{xy} \equiv (g^x)^y \equiv k_A^{\,y} \equiv k' \pmod p.
@@ -47,6 +90,7 @@ Chương trình của nhóm cài đúng các bước trên: sinh số nguyên t�
 (\texttt{generate\_\allowbreak private\_\allowbreak key}), rồi dùng \texttt{modular\_\allowbreak exponentiation} để
 tính $k_A$, $k_B$ và hai bí mật chung. Tên các hàm đã được đối chiếu với tệp
 \texttt{dh.h} của bản mã nộp.
+% KIEM CHUNG: doi chieu lai voi dh.cpp/main.cpp tren main sau khi PR NV5 (#34) da merge.
 
 \subsection{Ứng dụng chính: thiết lập khóa phiên trong TLS 1.3}
 
@@ -76,6 +120,7 @@ Nghĩa là nếu khóa dài hạn của máy chủ bị lộ sau này, các phi�
 \cite{rfc7919}. RFC~9846 còn cấm dùng lại một phần chia sẻ khóa cho nhiều kết nối
 \cite{rfc9846}. Vì vậy chương trình của nhóm sinh khóa riêng mới cho mỗi lần chạy
 thay vì dùng khóa cố định.
+% KIEM CHUNG: chi giu cau nay neu main.cpp lay seed tu he dieu hanh moi lan chay (khong co seed co dinh mac dinh).
 
 \paragraph{Các nhóm chuẩn.}
 TLS 1.3 đã bỏ các nhóm Diffie-Hellman tùy chọn, chỉ dùng các nhóm có tên; với
@@ -127,7 +172,9 @@ $p-1$ và thử $g^{(p-1)/p_i} \bmod p$ với từng ước $p_i$ \cite{slide-ba
 nguyên tố an toàn, chỉ có hai ước là $2$ và $q$, nên chỉ cần kiểm tra
 $g^2 \not\equiv 1$ và $g^q \not\equiv 1 \pmod p$. Nếu $p$ bất kỳ thì phải phân
 tích $p-1$ ra thừa số nguyên tố, việc này khó khi $p$ lớn. Hàm
-\texttt{find\_\allowbreak generator} của nhóm làm đúng như vậy. Vì nhóm có $\varphi(p-1)=q-1$
+\texttt{find\_\allowbreak generator} của nhóm làm đúng như vậy.
+% KIEM CHUNG: doi chieu find_generator trong dh.cpp (q = (p-1)/2, kiem tra g^2 != 1 va g^q != 1).
+Vì nhóm có $\varphi(p-1)=q-1$
 phần tử sinh trong tổng số $p-1$ phần tử, mỗi lần thử một $g$ ngẫu nhiên thành
 công với xác suất xấp xỉ $1/2$.
 
@@ -164,6 +211,8 @@ thức từ \texttt{diffie-hellman-\allowbreak group14-\allowbreak sha256} đế
 (\texttt{IKE\_\allowbreak SA\_\allowbreak INIT}) thương lượng tham số bảo mật, gửi số dùng một lần và gửi
 các giá trị Diffie-Hellman \cite{rfc7296}; IKEv2 dùng DH hoặc ECDH để thiết lập
 bí mật chung \cite{rfc9370}. Nghiên cứu Logjam cũng chỉ ra rằng một số ít nhóm cố
-định được dùng cho hàng triệu máy chủ, nên tính trước cho khoảng mười nhóm đã đủ
-để giải mã lưu lượng của tới 66\% máy chủ IPsec VPN và 26\% máy chủ SSH
-\cite{logjam}.
+định hoặc chuẩn hóa được dùng cho hàng triệu máy chủ: tính trước cho một nhóm
+1024 bit đã đủ để nghe lén thụ động 18\% trang HTTPS phổ biến, và một nhóm thứ hai
+đủ để giải mã lưu lượng của 66\% IPsec VPN và 26\% máy chủ SSH
+\cite{logjam-cacm}.
+% DA KIEM CHUNG 11/11/2026 voi tom tat bai bao Logjam (CACM 2019): 82%, mot tuan/mot phut, 18%, 66%, 26%.
