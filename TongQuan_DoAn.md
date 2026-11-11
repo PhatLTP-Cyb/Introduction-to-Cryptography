@@ -81,8 +81,8 @@ Các vấn đề của mã mẫu gốc, đã xử lý trong khung:
 | Số lớn | `struct uint512_t` với hằng `LIMBS`, đổi 8 thành 16 để có 1024 bit |
 | Tính số mũ lớn | Phân tích số mũ thành lũy thừa của 2, duyệt bit trái sang phải |
 | Nhân mô-đun | Nhân Montgomery khi mô-đun lẻ (như p và q); cộng-dịch khi mô-đun chẵn |
-| Kiểm tra nguyên tố | Lọc Fermat cơ số 2 trước, sau đó 20 vòng Miller-Rabin cơ số ngẫu nhiên |
-| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 20000 trên q và 2q + 1 trước khi kiểm tra; q và p đều qua 20 vòng Miller-Rabin, không dùng định lý Pocklington |
+| Kiểm tra nguyên tố | 20 vòng Miller-Rabin cơ số ngẫu nhiên; vòng cơ số 2 làm bộ lọc trong generate_safe_prime |
+| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 20000 trên q và 2q + 1 trước khi kiểm tra; q và p đều qua 20 vòng Miller-Rabin; chứng nhận p bằng định lý Pocklington (có điều kiện theo q) |
 | Chọn g | Tìm g thỏa g² ≠ 1 và g^q ≠ 1 (mod p), với q = (p − 1)/2 |
 | Ngẫu nhiên | Seed từ hệ điều hành, sinh bằng SHAKE128; seed cố định chỉ để kiểm thử |
 
