@@ -82,7 +82,7 @@ Các vấn đề của mã mẫu gốc, đã xử lý trong khung:
 | Tính số mũ lớn | Phân tích số mũ thành lũy thừa của 2, duyệt bit trái sang phải |
 | Nhân mô-đun | Cộng-dịch trong `mul_mod` trước, nâng cấp Montgomery nếu kịp (12–13/11) |
 | Kiểm tra nguyên tố | Lọc Fermat cơ số 2 trước, sau đó 20 vòng Miller-Rabin cơ số ngẫu nhiên |
-| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 2000 trên q và 2q + 1 trước khi kiểm tra; kiểm tra p bằng định lý Pocklington |
+| Sinh safe prime | Sàng số nguyên tố nhỏ hơn 20000 trên q và 2q + 1 trước khi kiểm tra; q và p đều qua 20 vòng Miller-Rabin, không dùng định lý Pocklington |
 | Chọn g | Tìm g thỏa g² ≠ 1 và g^q ≠ 1 (mod p), với q = (p − 1)/2 |
 | Ngẫu nhiên | Seed từ hệ điều hành, sinh bằng SHAKE128; seed cố định chỉ để kiểm thử |
 
