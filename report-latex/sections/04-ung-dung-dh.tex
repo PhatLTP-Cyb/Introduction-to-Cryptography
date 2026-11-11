@@ -88,9 +88,11 @@ Chương trình của nhóm cài đúng các bước trên: sinh số nguyên t�
 (\texttt{generate\_\allowbreak safe\_\allowbreak prime}), chọn phần tử sinh $g$
 (\texttt{find\_\allowbreak generator}), sinh khóa riêng trong đoạn $[2,\,p-2]$
 (\texttt{generate\_\allowbreak private\_\allowbreak key}), rồi dùng \texttt{modular\_\allowbreak exponentiation} để
-tính $k_A$, $k_B$ và hai bí mật chung. Tên các hàm đã được đối chiếu với tệp
+tính $k_A$, $k_B$ và hai bí mật chung. Khóa riêng được chọn trong $[2,\,p-2]$ vì với $x \in \{0,\,1,\,p-1\}$ thì
+$g^x \bmod p$ bằng $1$ hoặc bằng chính $g$, làm lộ khóa. Tên các hàm đã được đối chiếu với tệp
 \texttt{dh.h} của bản mã nộp.
-% KIEM CHUNG: doi chieu lai voi dh.cpp/main.cpp tren main sau khi PR NV5 (#34) da merge.
+% DA KIEM CHUNG 11/11/2026 voi main.cpp va dh.cpp tren main: ten ham va thu tu cac buoc dung.
+% DA KIEM CHUNG 11/11/2026 voi random.cpp tren main: generate_private_key tra ve khoa rieng trong [2, p-2] (random_range lay mau loai bo, khoang dong).
 
 \subsection{Ứng dụng chính: thiết lập khóa phiên trong TLS 1.3}
 
@@ -118,9 +120,10 @@ thiết lập khóa dựa trên khóa công khai đều có forward secrecy \cit
 Nghĩa là nếu khóa dài hạn của máy chủ bị lộ sau này, các phiên đã ghi lại trước
 đó vẫn không giải mã được, miễn là hai bên hủy khóa tạm thời ngay khi dùng xong
 \cite{rfc7919}. RFC~9846 còn cấm dùng lại một phần chia sẻ khóa cho nhiều kết nối
-\cite{rfc9846}. Vì vậy chương trình của nhóm sinh khóa riêng mới cho mỗi lần chạy
-thay vì dùng khóa cố định.
-% KIEM CHUNG: chi giu cau nay neu main.cpp lay seed tu he dieu hanh moi lan chay (khong co seed co dinh mac dinh).
+\cite{rfc9846}. Vì vậy ở chế độ mặc định, chương trình của nhóm lấy seed từ hệ điều hành và sinh
+khóa riêng mới cho mỗi lần chạy thay vì dùng khóa cố định; tham số \texttt{--seed}
+dùng seed cố định và chỉ phục vụ kiểm thử.
+% DA KIEM CHUNG 11/11/2026 voi main.cpp tren main (seed_from_os la che do mac dinh).
 
 \paragraph{Các nhóm chuẩn.}
 TLS 1.3 đã bỏ các nhóm Diffie-Hellman tùy chọn, chỉ dùng các nhóm có tên; với
@@ -172,8 +175,9 @@ $p-1$ và thử $g^{(p-1)/p_i} \bmod p$ với từng ước $p_i$ \cite{slide-ba
 nguyên tố an toàn, chỉ có hai ước là $2$ và $q$, nên chỉ cần kiểm tra
 $g^2 \not\equiv 1$ và $g^q \not\equiv 1 \pmod p$. Nếu $p$ bất kỳ thì phải phân
 tích $p-1$ ra thừa số nguyên tố, việc này khó khi $p$ lớn. Hàm
-\texttt{find\_\allowbreak generator} của nhóm làm đúng như vậy.
-% KIEM CHUNG: doi chieu find_generator trong dh.cpp (q = (p-1)/2, kiem tra g^2 != 1 va g^q != 1).
+\texttt{find\_\allowbreak generator} của nhóm làm đúng như vậy: chọn $g$ ngẫu nhiên,
+kiểm tra hai điều kiện trên và lặp lại đến khi thỏa.
+% DA KIEM CHUNG 11/11/2026 voi dh.cpp tren main (q = (p-1)>>1, kiem tra g^2 != 1 va g^q != 1).
 Vì nhóm có $\varphi(p-1)=q-1$
 phần tử sinh trong tổng số $p-1$ phần tử, mỗi lần thử một $g$ ngẫu nhiên thành
 công với xác suất xấp xỉ $1/2$.

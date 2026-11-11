@@ -107,5 +107,5 @@
 \label{tab:muc-dong-gop}
 \end{table}
 
-\noindent\textbf{Cam kết tính trung thực:} Phần số lớn, lũy thừa mô-đun, kiểm tra nguyên tố, sinh số nguyên tố an toàn và trao đổi khóa Diffie-Hellman do nhóm tự cài đặt, không dùng thư viện số lớn. Nhóm chỉ dùng hai thành phần có sẵn: SHAKE128 và PRNG trong \texttt{lib/fips202} (từ mã mẫu của đề bài), và hàm lấy dữ liệu ngẫu nhiên của hệ điều hành (qua \texttt{bcrypt} trên Windows) để tạo seed. % KIEM CHUNG: Phat (NV4) xac nhan dung cho nay.
+\noindent\textbf{Cam kết tính trung thực:} Phần số lớn, lũy thừa mô-đun, kiểm tra nguyên tố, sinh số nguyên tố an toàn và trao đổi khóa Diffie-Hellman do nhóm tự cài đặt, không dùng thư viện số lớn. Nhóm chỉ dùng hai thành phần có sẵn: SHAKE128 và PRNG trong \texttt{lib/fips202} (từ mã mẫu của đề bài), và hàm lấy dữ liệu ngẫu nhiên của hệ điều hành (\texttt{BCryptGenRandom} trên Windows, \texttt{getrandom} trên Linux) để tạo seed. % KIEM CHUNG: Phat xac nhan lib/fips202 la ma mau cua de bai.
 Toàn bộ số đo thời gian, kết quả kiểm thử và số liệu trong báo cáo đều được trích xuất từ các lần chạy thực nghiệm thực tế trên hệ thống máy tính của nhóm.
