@@ -1,4 +1,4 @@
-\section{Hàm kiểm tra số nguyên tố và sinh số nguyên tố an toàn}
+﻿\section{Hàm kiểm tra số nguyên tố và sinh số nguyên tố an toàn}
 \label{sec:kiem-tra-nguyen-to}
 
 \noindent\textbf{Người phụ trách viết:} Trần Hoàng Nhi.
@@ -16,47 +16,206 @@
 \noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
 
 \subsection{Cơ sở lý thuyết kiểm tra tính nguyên tố}
-% TODO(Nhi): Trình bày định lý Fermat nhỏ và hiện tượng số giả nguyên tố Fermat (Pseudoprime, số Carmichael).
-% Giới thiệu thuật toán kiểm tra xác suất Miller-Rabin \cite{rabin1980}.
-% Phân tích sai số: với k vòng Miller-Rabin độc lập, xác suất kết luận nhầm hợp số thành số nguyên tố không vượt quá (1/4)^k. Với k = 20 vòng, xác suất lỗi <= 2^{-40} < 10^{-12}, hoàn toàn đạt chuẩn mật mã \cite{menezes1996handbook}.
+
+Định lý nhỏ Fermat phát biểu rằng nếu $p$ là một số nguyên tố và $a$ là một số nguyên không chia hết cho $p$ ($\gcd(a, p) = 1$), thì:
+\begin{equation}
+a^{p-1} \equiv 1 \pmod p
+\end{equation}
+Phép thử tính nguyên tố Fermat dựa trên định lý này để kiểm tra tính nguyên tố của một số nguyên lẻ $n$: chọn một cơ số $a \in [2, n - 2]$, nếu $a^{n-1} \not\equiv 1 \pmod n$ thì $n$ chắc chắn là hợp số. Tuy nhiên, chiều ngược lại không đúng: nếu $a^{n-1} \equiv 1 \pmod n$, chưa thể khẳng định $n$ là số nguyên tố. Một hợp số lẻ $n$ thỏa mãn $a^{n-1} \equiv 1 \pmod n$ đối với một cơ số $a$ nhất định được gọi là số giả nguyên tố Fermat cơ số $a$. Ví dụ, số $n = 341 = 11 \times 31$ là một hợp số, nhưng $2^{340} \equiv 1 \pmod{341}$, do đó $341$ là số giả nguyên tố Fermat cơ số $2$ và vượt qua phép thử Fermat cơ số $2$.
+
+Ngoài ra, tồn tại các hợp số lẻ $n$ thỏa mãn $a^{n-1} \equiv 1 \pmod n$ với mọi cơ số $a$ nguyên tố cùng nhau với $n$ ($\gcd(a, n) = 1$). Những số này được gọi là số Carmichael \cite{menezes1996handbook}. Ví dụ, số Carmichael nhỏ nhất là $n = 561 = 3 \times 11 \times 17$. Với mọi số nguyên $a$ thỏa mãn $\gcd(a, 561) = 1$, ta luôn có $a^{560} \equiv 1 \pmod{561}$. Do đó, phép thử Fermat không thể phát hiện $561$ là hợp số khi chọn các cơ số nguyên tố cùng nhau với $561$.
+
+Thuật toán xác suất Miller-Rabin \cite{rabin1980} khắc phục hạn chế trên bằng cách kiểm tra thêm các căn bậc hai của $1$ theo mô-đun $n$. Trong vành số học $\mathbb{Z}_p$ với $p$ là số nguyên tố lẻ, phương trình $x^2 \equiv 1 \pmod p \iff (x - 1)(x + 1) \equiv 0 \pmod p$ chỉ có đúng hai nghiệm là $x \equiv 1 \pmod p$ và $x \equiv -1 \equiv p - 1 \pmod p$. Nếu $n$ là hợp số lẻ có từ hai ước nguyên tố lẻ trở lên, theo định lý phần dư Trung Hoa, phương trình $x^2 \equiv 1 \pmod n$ có ít nhất bốn nghiệm. Một giá trị $x \in \mathbb{Z}_n$ thỏa mãn $x^2 \equiv 1 \pmod n$ nhưng $x \not\equiv \pm 1 \pmod n$ được gọi là căn bậc hai không tầm thường của $1$ theo mô-đun $n$. Nếu phát hiện một căn bậc hai không tầm thường như vậy, thuật toán kết luận $n$ là hợp số.
+
+Cụ thể, thuật toán phân tích $n - 1 = 2^r \cdot m$ với $m$ lẻ và $r \ge 1$. Với mỗi cơ số $b \in [2, n - 2]$, thuật toán tính giá trị $x = b^m \bmod n$. Nếu $x = 1$ hoặc $x = n - 1$, $n$ vượt qua vòng kiểm tra đối với cơ số $b$. Nếu không, thuật toán thực hiện bình phương liên tiếp $x \leftarrow x^2 \bmod n$ tối đa $r - 1$ lần: nếu thu được $x = n - 1$ trước khi gặp $1$, $n$ vượt qua vòng kiểm tra; nếu sau $r - 1$ lần bình phương vẫn không gặp $n - 1$, thì $b$ là chứng nhân hợp số (witness) và $n$ chắc chắn là hợp số. Với mỗi cơ số chọn ngẫu nhiên, Miller-Rabin phát hiện hợp số lẻ, kể cả số Carmichael, với xác suất ít nhất $3/4$.
+
+Đối với một hợp số lẻ $n$, số cơ số khiến $n$ vượt qua một vòng kiểm tra không quá một phần tư các cơ số trong $[1, n - 1]$ \cite{rabin1980}. Khi thực hiện $k$ vòng kiểm tra độc lập với các cơ số được chọn ngẫu nhiên độc lập trong $[2, n - 2]$, xác suất một hợp số lẻ vượt qua cả $k$ vòng không vượt quá:
+\begin{equation}
+\varepsilon \le \left(\frac{1}{4}\right)^k = 2^{-2k}
+\end{equation}
+Với $k = 20$ vòng kiểm tra, xác suất kết luận nhầm hợp số thành số nguyên tố không vượt quá $2^{-40} \approx 9{,}09 \times 10^{-13} < 10^{-12}$ \cite{menezes1996handbook}.
 
 \subsection{Chiến lược sàng số nguyên tố nhỏ \texttt{has\_small\_factor}}
-% TODO(Nhi): Giải thích nguyên lý sàng số nguyên tố nhỏ để loại bỏ sớm các hợp số tầm thường trước khi gọi Miller-Rabin tốn kém.
-% Bảng tĩnh 303 số nguyên tố nhỏ s < 2000 sinh bằng sàng Eratosthenes.
-% Hàm mod_u64(s) kiểm tra số dư n mod s; nếu n chia hết cho s và n != s thì trả về true (có ước nhỏ).
+
+Phép kiểm tra Miller-Rabin trên số nguyên lớn 512 bit đòi hỏi các phép lũy thừa mô-đun với khối lượng tính toán lớn. Đa số các số lẻ ngẫu nhiên là hợp số có ước nguyên tố nhỏ (như $3, 5, 7, \dots$). Do đó, việc kiểm tra tính chia hết cho một danh sách số nguyên tố nhỏ trước khi thực hiện Miller-Rabin cho phép phát hiện sớm các hợp số tầm thường.
+
+Chương trình sử dụng hàm \texttt{build\_small\_primes} cài đặt thuật toán sàng Eratosthenes để tạo danh sách toàn bộ các số nguyên tố nhỏ hơn ngưỡng $\texttt{SMALL\_PRIME\_LIMIT} = 20000$. Bảng này gồm đúng $2262$ số nguyên tố (bắt đầu từ số $2$ và kết thúc tại $19997$). Để bảng sàng chỉ sinh một lần duy nhất trong toàn bộ thời gian chạy chương trình, danh sách được lưu trữ trong một biến tĩnh (\texttt{static const std::vector<uint64\_t> primes}) bên trong hàm \texttt{small\_primes()}.
+
+Hàm \texttt{has\_small\_factor(const uint512\_t \&n)} duyệt qua từng số nguyên tố $s$ trong bảng $2262$ số nguyên tố nhỏ và tính số dư của $n$ khi chia cho $s$ thông qua phương thức \texttt{n.mod\_u64(s)}. Điều kiện xác định $n$ có ước nguyên tố nhỏ là:
+\begin{center}
+\texttt{n.mod\_u64(s) == 0 \&\& n != uint512\_t(s)}
+\end{center}
+Nếu cả hai vế của điều kiện trên đồng thời thỏa mãn, hàm lập tức trả về \texttt{true}.
+
+Điều kiện so sánh $\texttt{n != uint512\_t(s)}$ là bắt buộc nhằm tránh trường hợp số cần kiểm tra $n$ chính là một trong các số nguyên tố nhỏ nằm trong bảng ($n < 20000$, ví dụ $n = 2, 3, 5, \dots$). Khi đó, phép chia dư \texttt{n.mod\_u64(s)} với $s = n$ sẽ cho kết quả bằng $0$; nếu không có điều kiện so sánh khác $s$, hàm sẽ kết luận nhầm bản thân số nguyên tố nhỏ $n$ là hợp số. Ngoài ra, với trường hợp $n = 0$, ta có $0 \bmod 2 = 0$ và $0 \neq 2$, do đó hàm trả về \texttt{true} một cách chính xác.
 
 \subsection{Thuật toán xác suất Miller-Rabin \texttt{is\_probable\_prime}}
-% TODO(Nhi): Trình bày chi tiết các bước cài đặt:
-% 1. Xử lý biên: loại số chẵn, kiểm tra 2 và 3, sàng số nhỏ has_small_factor.
-% 2. Phân tích n - 1 = 2^r * m với m lẻ (hàm decompose_even, kiểm tra ném ngoại lệ khi n - 1 = 0).
-% 3. Vòng kiểm tra 1: dùng cơ số cố định b = 2 (lọc nhanh phần lớn hợp số).
-% 4. Các vòng tiếp theo (2 đến 20): chọn cơ số ngẫu nhiên b trong [2, n - 2] bằng CSPRNG (tránh b = 1, n - 1).
 
-\subsection{Thuật toán sinh số nguyên tố an toàn \texttt{generate\_safe\_prime}}
-% TODO(Nhi): Định nghĩa số nguyên tố an toàn (Safe Prime) p = 2q + 1 với q là số nguyên tố Sophie Germain.
-% Kỹ thuật sàng kết hợp: một lần tính q.mod_u64(s) kiểm tra được cả q chia hết cho s (rem == 0) và p chia hết cho s (rem == (s - 1)/2).
-% Kỹ thuật lọc sơ bộ: chạy 1 vòng Miller-Rabin cơ số 2 cho q rồi p trước khi chạy đủ 20 vòng, giúp tiết kiệm thời gian đáng kể.
+Hàm \texttt{is\_probable\_prime(prng\_ctx *ctx, const uint512\_t \&n, int rounds)} trong \texttt{project\_01\_source/src/prime.cpp} cài đặt thuật toán kiểm tra tính nguyên tố Miller-Rabin với các bước xử lý như sau:
+\begin{enumerate}
+    \item \textbf{Kiểm tra tham số:} Nếu $\texttt{rounds} < 1$, hàm ném ngoại lệ \texttt{std::invalid\_argument} (yêu cầu số vòng kiểm tra phải $\ge 1$).
+    \item \textbf{Xử lý giá trị nhỏ và tính chẵn lẻ:}
+    \begin{itemize}
+        \item Nếu $n < 2$, trả về \texttt{false}.
+        \item Nếu $n = 2$ hoặc $n = 3$, trả về \texttt{true}.
+        \item Nếu $n$ là số chẵn ($n \ge 4$, kiểm tra qua \texttt{!n.is\_odd()}), trả về \texttt{false}.
+    \end{itemize}
+    \item \textbf{Lọc ước nguyên tố nhỏ:} Với các số lẻ $n \ge 5$, hàm gọi \texttt{has\_small\_factor(n)}. Nếu trả về \texttt{true}, hàm kết luận ngay \texttt{false}.
+    \item \textbf{Phân tích $n - 1 = 2^r \cdot m$ ($m$ lẻ):} Hàm \texttt{decompose\_even(n - 1)} duyệt các bit từ bit thấp nhất đến khi gặp bit $1$ đầu tiên (\texttt{!even\_value.bit(r)}) để xác định số mũ $r$, sau đó tính $m = (n - 1) \gg r$. Nếu đầu vào của \texttt{decompose\_even} bằng $0$, hàm ném ngoại lệ \texttt{std::invalid\_argument} nhằm tránh lặp vô hạn.
+    \item \textbf{Các vòng kiểm tra Miller-Rabin:} Vòng lặp chạy đúng \texttt{rounds} lần ($\texttt{round} = 0, 1, \dots, \texttt{rounds} - 1$). Trong mỗi vòng kiểm tra:
+    \begin{itemize}
+        \item Chọn ngẫu nhiên cơ số $b$ trong đoạn $[2, n - 2]$ bằng hàm \texttt{random\_range} (với cận dưới $2$ và cận trên $n - 2$). Mọi vòng kiểm tra đều chọn cơ số ngẫu nhiên mới độc lập.
+        \item Tính lũy thừa khởi đầu $x = b^m \bmod n$ bằng hàm \texttt{modular\_exponentiation}.
+        \item Nếu $x = 1$ hoặc $x = n - 1$, ứng viên vượt qua vòng kiểm tra hiện tại.
+        \item Nếu chưa thỏa mãn, thực hiện vòng lặp bình phương liên tiếp tối đa $r - 1$ lần bằng hàm \texttt{mul\_mod(x, x, n)}:
+        $$x \leftarrow \texttt{mul\_mod}(x, x, n)$$
+        Nếu gặp $x = n - 1$, ứng viên vượt qua vòng này và chuyển sang vòng tiếp theo.
+        \item Nếu kết thúc vòng lặp bình phương mà không gặp $n - 1$, cơ số $b$ là chứng nhân hợp số, hàm trả về \texttt{false}.
+    \end{itemize}
+    \item \textbf{Kết luận:} Nếu vượt qua toàn bộ \texttt{rounds} vòng với các cơ số ngẫu nhiên độc lập, hàm trả về \texttt{true} (xác nhận $n$ là số nguyên tố xác suất).
+\end{enumerate}
 
-\begin{figure}[h!]
-\centering
-% \includegraphics[width=0.75\textwidth]{figures/safe_prime_flowchart.png}
-\caption{Lưu đồ thuật toán sinh số nguyên tố an toàn $p = 2q + 1$}
-\label{fig:safe-prime-flowchart}
-\end{figure}
+Thuật toán \texttt{is\_probable\_prime} được thể hiện qua đoạn mã giả tại Liệt kê \ref{lst:miller-rabin}.
+
+\begin{lstlisting}[language=C++, caption={Thuật toán kiểm tra nguyên tố Miller-Rabin trong \texttt{prime.cpp}}, label={lst:miller-rabin}]
+bool is_probable_prime(prng_ctx *ctx, const uint512_t &n, int rounds) {
+    if (rounds < 1) {
+        throw std::invalid_argument("rounds phai >= 1");
+    }
+    if (n < 2) return false;
+    if (n == 2 || n == 3) return true;
+    if (!n.is_odd()) return false;
+    if (has_small_factor(n)) return false;
+
+    // Phan tich n - 1 = 2^r * m (m le)
+    DecomposedExponent decomp = decompose_even(n - 1);
+    uint512_t max_base = n - 2;
+
+    for (int round = 0; round < rounds; ++round) {
+        // Moi vong deu chon co so ngau nhien b trong [2, n - 2]
+        uint512_t b = random_range(ctx, 2, max_base);
+        uint512_t x = modular_exponentiation(b, decomp.odd_factor, n);
+
+        if (x == 1 || x == n - 1) {
+            continue;
+        }
+
+        bool passed = false;
+        for (size_t step = 1; step < decomp.trailing_zeros; ++step) {
+            x = mul_mod(x, x, n);
+            if (x == n - 1) {
+                passed = true;
+                break;
+            }
+        }
+        if (!passed) {
+            return false;
+        }
+    }
+    return true;
+}
+\end{lstlisting}
+
+\subsection{Thuật toán sinh số nguyên tố an toàn \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime}}
+
+Số nguyên tố an toàn (safe prime) $p$ là số nguyên tố có dạng $p = 2q + 1$, trong đó $q$ cũng là một số nguyên tố (được gọi là số nguyên tố Sophie Germain). Hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime(prng\_\allowbreak{}ctx *ctx, size\_\allowbreak{}t bitsize)} trong \texttt{src/prime.cpp} sinh số nguyên tố an toàn $p$ có kích thước $\texttt{bitsize}$ bit (với ràng buộc $\texttt{bitsize} \in [16, 512]$) qua các bước:
+\begin{enumerate}
+    \item \textbf{Sinh ứng viên $q$:} Hàm \texttt{generate\_\allowbreak{}candidate\_\allowbreak{}q(ctx, bitsize - 1)} sinh một số ngẫu nhiên $q$ có độ dài $\texttt{bitsize} - 1$ bit bằng hàm \texttt{random\_\allowbreak{}bits(ctx, q\_\allowbreak{}bits)}. Hàm thiết lập bit cao nhất qua \texttt{q.set\_\allowbreak{}bit(q\_\allowbreak{}bits - 1)} để đảm bảo đúng kích thước bit và thiết lập bit thấp nhất qua \texttt{q.set\_\allowbreak{}bit(0)} để $q$ là số lẻ. Sau đó tính ứng viên $p = 2q + 1 = (q \ll 1) + 1$.
+    \item \textbf{Sàng kết hợp ước số nhỏ:} Hàm \texttt{has\_\allowbreak{}small\_\allowbreak{}factor\_\allowbreak{}for\_\allowbreak{}safe\_\allowbreak{}prime(q)} duyệt qua các số nguyên tố nhỏ $s < 20000$ từ bảng sàng \texttt{small\_\allowbreak{}primes()}. Chỉ với một phép chia lấy dư $\texttt{remainder} = q \bmod s$ bằng phương thức \texttt{q.mod\_\allowbreak{}u64(s)}, hàm kiểm tra đồng thời cho cả $q$ và $p$:
+    \begin{itemize}
+        \item $q$ chia hết cho $s$ khi $\texttt{remainder} == 0$ và $q \neq s$.
+        \item $p = 2q + 1$ chia hết cho $s$ khi $2q + 1 \equiv 0 \pmod s \iff 2q \equiv s - 1 \pmod s \iff q \equiv (s - 1)/2 \pmod s$ (với mọi số nguyên tố lẻ $s$). Điều kiện kiểm tra tương ứng là $\texttt{remainder} == (s - 1)/2$ và $q \neq (s - 1)/2$.
+    \end{itemize}
+    Nếu $q$ hoặc $p$ chia hết cho $s$, hàm trả về \texttt{true} để loại bỏ ứng viên và chuyển sang ứng viên tiếp theo.
+    \item \textbf{Lọc sơ bộ bằng vòng Miller-Rabin cơ số 2:} Ứng viên lần lượt trải qua vòng kiểm tra cơ số 2 cho $q$ (\texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}round(q)}) và cho $p$ (\texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}and\_\allowbreak{}certifies(p)}). Nếu không thỏa mãn, ứng viên bị loại.
+    \item \textbf{Kiểm tra xác suất 20 vòng:} Nếu vượt qua các bước lọc sơ bộ, hàm gọi \texttt{is\_\allowbreak{}probable\_\allowbreak{}prime(ctx, q, 20)} và \texttt{is\_\allowbreak{}probable\_\allowbreak{}prime(ctx, p, 20)}. Khi cả $q$ và $p$ đều vượt qua 20 vòng kiểm tra độc lập, hàm trả về giá trị $p$.
+\end{enumerate}
+
+\subsubsection{Chứng nhận Pocklington}
+
+Hàm \texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}and\_\allowbreak{}certifies(p)} tích hợp bước chứng nhận Pocklington có điều kiện dựa trên $q$:
+\begin{itemize}
+    \item Với $p = 2q + 1$ và $q$ lẻ, phân tích $p - 1 = 2^1 \cdot q$ có số mũ của 2 là $r = 1$. Vòng Miller-Rabin cơ số 2 tính $x = 2^q \bmod p$. Điều kiện vượt qua vòng cơ số 2 là $x \in \{1, p - 1\}$. Khi đó, điều kiện Fermat $2^{p-1} \equiv 1 \pmod p$ được suy ra trực tiếp từ $x^2 \equiv 1 \pmod p$ mà không cần thực hiện thêm phép lũy thừa riêng.
+    \item Điều kiện $\gcd(3, p) = 1$ được kiểm tra qua $\texttt{p.mod\_\allowbreak{}u64(3) != 0}$.
+    \item Bước chứng nhận này là bước bổ sung có điều kiện: tính nguyên tố của $p$ phụ thuộc vào giả định $q$ là số nguyên tố (được xác nhận bằng thuật toán xác suất Miller-Rabin).
+    \item Kiểm nghiệm bằng Python trên 37.214 hợp số $p = 2q + 1 < 10^6$ với $q$ nguyên tố: không số nào qua được vòng Miller-Rabin cơ số 2 (điều kiện $2^q \bmod p \in \{1, p-1\}$). Điều kiện Fermat của chứng nhận suy ra từ chính vòng này, nên trên tập đã kiểm bước chứng nhận không loại thêm hợp số nào.
+\end{itemize}
+
+\subsubsection{Lũy thừa cơ số 2}
+
+Hàm \texttt{modular\_\allowbreak{}exponentiation\_\allowbreak{}base\_\allowbreak{}two(exp, mod)} tính giá trị $2^{\text{exp}} \bmod \text{mod}$:
+\begin{itemize}
+    \item Với mô-đun $\text{mod}$ là số lẻ, hàm chuyển sang tính toán trong không gian Montgomery thông qua phương thức \texttt{Montgomery::pow\_\allowbreak{}base\_\allowbreak{}two(exp)}. Thuật toán duyệt bit của số mũ $\text{exp}$ từ trái sang phải: ở mỗi bit, kết quả được bình phương bằng phép nhân Montgomery \texttt{mul(result, result)}; khi gặp bit 1, phép nhân đôi được thực hiện bằng hàm cộng mô-đun \texttt{add\_\allowbreak{}mod\_\allowbreak{}reduced(result, result, m)} thay vì gọi phép nhân \texttt{mul}.
+    \item Với mô-đun $\text{mod}$ là số chẵn, hàm gọi lại \texttt{modular\_\allowbreak{}exponentiation(uint512\_\allowbreak{}t(2), exp, mod)}.
+\end{itemize}
+
+Thuật toán sinh số nguyên tố an toàn được thể hiện qua đoạn mã giả tại Liệt kê \ref{lst:generate-safe-prime}.
+
+\begin{lstlisting}[language=C++, caption={Thuật toán sinh số nguyên tố an toàn trong \texttt{prime.cpp}}, label={lst:generate-safe-prime}]
+uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize) {
+    if (bitsize < 16 || bitsize > 512) {
+        throw std::invalid_argument("bitsize phai trong [16, 512]");
+    }
+    for (;;) {
+        uint512_t q = generate_candidate_q(ctx, bitsize - 1);
+        uint512_t p = (q << 1) + 1;
+
+        if (has_small_factor_for_safe_prime(q)) {
+            continue;
+        }
+        if (!passes_base_two_round(q) || !passes_base_two_and_certifies(p)) {
+            continue;
+        }
+        if (!is_probable_prime(ctx, q, 20) || !is_probable_prime(ctx, p, 20)) {
+            continue;
+        }
+        return p;
+    }
+}
+\end{lstlisting}
 
 \subsection{Kết quả thực nghiệm và đo lường thời gian}
-% TODO(Nhi): Trình bày bảng dữ liệu thực nghiệm đo được trên máy (lấy từ báo cáo nv3-e.md và nv3-f.md).
-% Bảng so sánh giữa fake_random (mt19937) và random.cpp thật của NV4.
+
+Các phép đo lường thời gian thực thi của hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime} trên kích thước 512 bit được thực hiện trên cùng một máy tính và cùng một hệ điều hành. Mỗi lần đo sử dụng một tập gồm 20 số nguyên tố an toàn $p$ sinh từ cùng một giá trị seed ngẫu nhiên, đo lặp lại qua 3 lượt tuần tự (tổng cộng 60 lượt sinh, không phải 60 giá trị $p$ độc lập). 20 chuỗi giá trị $p$ sinh ra trùng khớp từng ký tự giữa các bản thực thi. Hai đợt đo được thực hiện ở hai phiên làm việc độc lập nên các tỉ số không nhân chéo với nhau. Ngoài ra, một lần đo độc lập khác của thành viên nhóm (5 lượt xen kẽ ở kích thước 512 bit) ghi nhận không thấy khác biệt rõ. Ở lượt 2 của phép đo bản Pocklington cũ có hai mẫu chênh rõ so với các lượt khác (p thứ 7: 57,9 ms so với khoảng 37 ms; p thứ 8: 302 ms so với khoảng 173 ms), nên các bảng chỉ dùng tỉ số tổng và trung vị.
+
+Bảng \ref{tab:pock-bench} ghi nhận tỉ số tổng thời gian giữa bản có chứng nhận Pocklington (\texttt{pock}) so với bản không có chứng nhận Pocklington (\texttt{main}). Thứ tự chạy của đợt đo này là cố định (\texttt{main} chạy trước, \texttt{pock} chạy sau ở mỗi lượt).
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{lcccccc}
+\begin{tabular}{lc}
 \toprule
-\textbf{Bộ sinh ngẫu nhiên} & \textbf{Kích thước} & \textbf{Số mẫu} & \textbf{Min (ms)} & \textbf{Trung vị (ms)} & \textbf{Trung bình (ms)} & \textbf{Max (ms)} \\
+\textbf{Lượt} & \textbf{Tỉ số tổng (\texttt{pock}/\texttt{main})} \\
 \midrule
-% TODO(Nhi): điền số liệu đo thật
+Lượt 1 & 1{,}0064 \\
+Lượt 2 & 1{,}0720 \\
+Lượt 3 & 1{,}0313 \\
+\midrule
+Gộp (3 lượt) & 1{,}0358 \\
+\midrule
+Trung vị 20 tỉ số theo $p$ & 1{,}0167 \\
 \bottomrule
 \end{tabular}
-\caption{Thời gian thực thi sinh số nguyên tố an toàn qua các kích thước bit (chạy thật)}
-\label{tab:safe-prime-bench}
+\caption{Tỉ số thời gian thực thi giữa bản Pocklington và bản gốc (\texttt{main})}
+\label{tab:pock-bench}
+\end{table}
+
+Bảng \ref{tab:base2-bench} ghi nhận tỉ số tổng thời gian giữa bản sử dụng lũy thừa cơ số 2 (\texttt{new}) so với bản Pocklington trước đó (\texttt{pock}). Thứ tự chạy của đợt đo này được xen kẽ qua từng lượt (Lượt 1: \texttt{pock} trước; Lượt 2: \texttt{new} trước; Lượt 3: \texttt{pock} trước).
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{Lượt} & \textbf{Tỉ số tổng (\texttt{new}/\texttt{pock})} \\
+\midrule
+Lượt 1 & 0{,}9147 \\
+Lượt 2 & 0{,}9272 \\
+Lượt 3 & 0{,}9305 \\
+\midrule
+Gộp (3 lượt) & 0{,}9241 \\
+\midrule
+Trung vị 20 tỉ số theo $p$ & 0{,}9203 \\
+\bottomrule
+\end{tabular}
+\caption{Tỉ số thời gian thực thi khi áp dụng lũy thừa cơ số 2 (\texttt{new}/\texttt{pock})}
+\label{tab:base2-bench}
 \end{table}
