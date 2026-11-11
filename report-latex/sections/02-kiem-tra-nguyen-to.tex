@@ -13,7 +13,7 @@
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+% \noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
 
 \subsection{Cơ sở lý thuyết kiểm tra tính nguyên tố}
 
@@ -174,9 +174,103 @@ uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize) {
 }
 \end{lstlisting}
 
+Hình \ref{fig:flow-safe-prime} mô tả thứ tự các bước kiểm tra của hàm \texttt{generate\_safe\_prime} trong mã nguồn.
+
+\begin{figure}[h!]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.5cm,
+    box/.style={
+        rectangle,
+        draw=black,
+        rounded corners=3pt,
+        align=center,
+        text width=7.6cm,
+        minimum height=0.9cm,
+        font=\small
+    },
+    decision/.style={
+        rectangle,
+        draw=black,
+        rounded corners=3pt,
+        fill=blue!5,
+        align=center,
+        text width=7.6cm,
+        minimum height=0.9cm,
+        font=\small
+    },
+    error/.style={
+        rectangle,
+        draw=red!80!black,
+        rounded corners=3pt,
+        fill=red!10,
+        align=center,
+        text width=4.5cm,
+        minimum height=0.8cm,
+        font=\small
+    },
+    terminal/.style={
+        rectangle,
+        draw=black,
+        rounded corners=6pt,
+        fill=green!10,
+        align=center,
+        text width=5.0cm,
+        minimum height=0.8cm,
+        font=\small
+    },
+    arrow/.style={-Latex, thick},
+    line/.style={thick}
+]
+
+% Cac hop theo thu tu trong code
+\node (b1) [box] {(1) Kiểm tra $bitsize \in [16, 512]$};
+\node (err) [error, right=1.5cm of b1] {Báo lỗi\\(\texttt{throw std::invalid\_argument})};
+\node (b2) [box, below=of b1] {(2) Sinh $q = \texttt{generate\_candidate\_q}(ctx, bitsize - 1)$\\Tính $p = 2q + 1 = (q \ll 1) + 1$};
+\node (b3) [decision, below=of b2] {(3) \texttt{has\_small\_factor\_for\_safe\_prime}(q)\\($q$ và $p$ không có ước nguyên tố $s < 20000$?)};
+\node (b4) [decision, below=of b3] {(4) \texttt{passes\_base\_two\_round}(q)\\($q$ qua vòng Miller-Rabin cơ số 2?)};
+\node (b5) [decision, below=of b4] {(5) \texttt{passes\_base\_two\_and\_certifies}(p)\\$\texttt{p.mod\_u64}(3) \neq 0$ và\\$x = \texttt{two\_to\_half\_exponent\_mod}(p)$\\$(x == 1 \lor x == p - 1) \land \texttt{mul\_mod}(x, x, p) == 1$};
+\node (b6) [decision, below=of b5] {(6) \texttt{is\_probable\_prime}(ctx, q, 20) $\land$\\ \texttt{is\_probable\_prime}(ctx, p, 20)\\($q$ và $p$ qua 20 vòng Miller-Rabin?)};
+\node (b7) [terminal, below=of b6] {(7) Trả về $p$ (\texttt{return p})};
+
+% Mui ten dat
+\draw [arrow] (b1) -- node[right, font=\footnotesize] {Đạt} (b2);
+\draw [arrow] (b1) -- node[above, font=\footnotesize] {Ngoài khoảng} (err);
+\draw [arrow] (b2) -- (b3);
+\draw [arrow] (b3) -- node[right, font=\footnotesize] {Đạt} (b4);
+\draw [arrow] (b4) -- node[right, font=\footnotesize] {Đạt} (b5);
+\draw [arrow] (b5) -- node[right, font=\footnotesize] {Đạt} (b6);
+\draw [arrow] (b6) -- node[right, font=\footnotesize] {Đạt} (b7);
+
+% Mui ten khong dat quay ve hop (2)
+\coordinate (bus) at ($(b2.west) + (-1.6cm, 0)$);
+
+\draw [line] (b3.west) -- node[above, font=\footnotesize] {Không đạt} (b3.west -| bus);
+\draw [line] (b4.west) -- node[above, font=\footnotesize] {Không đạt} (b4.west -| bus);
+\draw [line] (b5.west) -- node[above, font=\footnotesize] {Không đạt} (b5.west -| bus);
+\draw [line] (b6.west) -- node[above, font=\footnotesize] {Không đạt} (b6.west -| bus);
+
+\draw [arrow] (b6.west -| bus) -- (bus) -- (b2.west);
+
+\end{tikzpicture}%
+}
+\caption{Lưu đồ hàm \texttt{generate\_safe\_prime} theo \texttt{src/prime.cpp}.}
+\label{fig:flow-safe-prime}
+\end{figure}
+
 \subsection{Kết quả thực nghiệm và đo lường thời gian}
 
 Các phép đo lường thời gian thực thi của hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime} trên kích thước 512 bit được thực hiện trên cùng một máy tính và cùng một hệ điều hành. Mỗi lần đo sử dụng một tập gồm 20 số nguyên tố an toàn $p$ sinh từ cùng một giá trị seed ngẫu nhiên, đo lặp lại qua 3 lượt tuần tự (tổng cộng 60 lượt sinh, không phải 60 giá trị $p$ độc lập). 20 chuỗi giá trị $p$ sinh ra trùng khớp từng ký tự giữa các bản thực thi. Hai đợt đo được thực hiện ở hai phiên làm việc độc lập nên các tỉ số không nhân chéo với nhau. Ngoài ra, một lần đo độc lập khác của thành viên nhóm (5 lượt xen kẽ ở kích thước 512 bit) ghi nhận không thấy khác biệt rõ. Ở lượt 2 của phép đo bản Pocklington cũ có hai mẫu chênh rõ so với các lượt khác (p thứ 7: 57,9 ms so với khoảng 37 ms; p thứ 8: 302 ms so với khoảng 173 ms), nên các bảng chỉ dùng tỉ số tổng và trung vị.
+
+Hình \ref{fig:test-prime-128} là kết quả chạy chương trình kiểm thử \texttt{test\_prime} với số nguyên tố an toàn sinh ở kích thước 128 bit.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\linewidth]{figures/test_prime_128bit.png}
+\caption{Kết quả chạy \texttt{test\_prime} (p sinh ở kích thước 128 bit).}
+\label{fig:test-prime-128}
+\end{figure}
 
 Bảng \ref{tab:pock-bench} ghi nhận tỉ số tổng thời gian giữa bản có chứng nhận Pocklington (\texttt{pock}) so với bản không có chứng nhận Pocklington (\texttt{main}). Thứ tự chạy của đợt đo này là cố định (\texttt{main} chạy trước, \texttt{pock} chạy sau ở mỗi lượt).
 
