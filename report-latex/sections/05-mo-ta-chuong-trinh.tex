@@ -32,7 +32,8 @@ cộng, trừ, dịch bit, so sánh, đọc và in hệ 16. \\
 \texttt{src/modexp.cpp} &
 \texttt{reduce\_mod}, \texttt{add\_mod}, \texttt{mul\_mod},
 \texttt{modular\_exponentiation} (bình phương và nhân, duyệt bit từ trái sang
-phải); có thêm nhân Montgomery cho mô-đun lẻ. \\
+phải), \texttt{modular\_exponentiation\_base\_two}; mô-đun lẻ (như $p$ và $q$)
+dùng nhân Montgomery, mô-đun chẵn dùng nhân cộng-dịch. \\
 \texttt{src/random.cpp} &
 Seed từ hệ điều hành, \texttt{random\_bits}, \texttt{random\_range},
 \texttt{generate\_private\_key}. \\
@@ -53,8 +54,8 @@ Các chương trình kiểm thử và \texttt{run\_tests.py} đối chiếu kế
 \caption{Cấu trúc mã nguồn.}
 \label{tab:cautruc}
 \end{table}
-% KIEM CHUNG: nhan Montgomery trong modexp.cpp (commit "NV2: nhan Montgomery cho mo-dun le",
-% PR #33): hoi Cuong xac nhan mo ta nay co khop code khong.
+% Da doi chieu voi modexp.cpp ngay 11/11/2026: struct Montgomery chi dung khi mo-dun le,
+% mo-dun chan dung nhan cong-dich; modular_exponentiation_base_two nam trong modexp.cpp.
 
 Mục này mô tả cách cài đặt chương trình và cách chạy nó; phần giải thích cách
 cài đặt số lớn, kiểm tra nguyên tố và sinh số ngẫu nhiên nằm ở các mục 1, 2 và 3.
