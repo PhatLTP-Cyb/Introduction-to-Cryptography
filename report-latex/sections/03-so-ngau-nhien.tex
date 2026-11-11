@@ -43,6 +43,8 @@
 % - Giải thích vì sao việc dùng phép chia dư (modulus %): x = rand() % (high - low + 1) gây ra sai lệch phân bố (Modulo Bias).
 % - Cài đặt kỹ thuật Rejection Sampling: tính số bit cần thiết b = bit_length(span), sinh ngẫu nhiên b bit, nếu x <= span thì nhận, ngược lại loại bỏ và thử lại.
 % - Đảm bảo khóa riêng private key nằm chặt chẽ trong [2, p - 2].
+% TODO(Phát): hình - sơ đồ luồng seed từ OS -> SHAKE128 -> prng_random_bits -> random_range -> khóa riêng (figures/csprng_flow.png hoặc TikZ).
+% TODO(Phát): hình - ảnh chụp kết quả chạy test_random từ lần chạy thật (figures/test_random_output.png); điền bảng csprng-eval chỉ bằng kết quả đó.
 
 \begin{table}[h!]
 \centering

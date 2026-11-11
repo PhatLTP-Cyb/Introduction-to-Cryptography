@@ -32,6 +32,7 @@
 %    hoặc lệnh g++ trực tiếp có cờ -O3 và liên kết -lbcrypt:
 %    g++ -std=c++14 -O3 -I src -I lib/fips202 src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp src/prime.cpp src/dh.cpp lib/fips202/prng.cpp lib/fips202/fips202.c -o dh.exe -lbcrypt
 % 2. Trên Linux: Sử dụng make run với trình biên dịch g++.
+% TODO(Nghi): hình - ảnh chụp bước biên dịch thành công trên Windows (figures/build_windows.png).
 
 \subsection{Kết quả thực thi chương trình mẫu}
 % TODO(Nghi): Chèn kết quả chạy thực tế của chương trình dh.exe trên môi trường Windows.
@@ -57,3 +58,4 @@
 % - Lệnh: mingw32-make test
 % - Hoặc: python tests/run_tests.py
 % TODO(Nghi): ghi kết quả test thật sau khi NV5 hoàn thành.
+% TODO(Nghi): hình - ảnh chụp kết quả chạy tests/run_tests.py 512, cần thấy đủ 6 dòng DAT (figures/run_tests_output.png), chụp sau khi NV5 và NV6 xong.
