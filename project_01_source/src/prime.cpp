@@ -127,6 +127,32 @@ bool has_small_factor_for_safe_prime(const uint512_t &q)
     }
     return false;
 }
+
+// Tính 2^((p - 1) / 2) mod p.
+uint512_t two_to_half_exponent_mod(const uint512_t &p)
+{
+    const uint512_t half_exp = (p - uint512_t(1)) >> 1;
+    return modular_exponentiation(uint512_t(2), half_exp, p);
+}
+
+// Kiểm tra vòng Miller-Rabin cơ số 2 đồng thời xác nhận điều kiện định lý Pocklington cho p = 2q + 1.
+// Khi q lẻ, phân tích p - 1 = 2^1 * q (r = 1), do đó vòng Miller-Rabin cơ số 2 tính x = 2^q mod p
+// và chỉ cần kiểm tra x == 1 hoặc x == p - 1. Khi đó, điều kiện Fermat 2^(p-1) == 1 (mod p) được suy ra
+// trực tiếp từ x^2 == 1 (mod p) mà không cần tính thêm một phép lũy thừa modulo 512-bit riêng biệt.
+// Điều kiện gcd(3, p) == 1 tương đương p mod 3 != 0.
+// Lưu ý: Chứng nhận Pocklington này CÓ ĐIỀU KIỆN dựa trên giả định q là số nguyên tố (được Miller-Rabin xác nhận).
+// Tiền điều kiện: p = 2q + 1 với q lẻ (p ≡ 3 mod 4); hàm không dùng được cho p tùy ý.
+bool passes_base_two_and_certifies(const uint512_t &p)
+{
+    if (p.mod_u64(3) == 0)
+    {
+        return false;
+    }
+    const uint512_t one(1);
+    const uint512_t p_minus_one = p - one;
+    const uint512_t x = two_to_half_exponent_mod(p);
+    return (x == one || x == p_minus_one) && mul_mod(x, x, p) == one;
+}
 } // namespace
 
 // Trả về true nếu n chia hết cho một số nguyên tố nhỏ khác chính n.
@@ -215,7 +241,7 @@ uint512_t generate_safe_prime(prng_ctx *ctx, size_t bitsize)
             continue;
         }
 
-        if (!passes_base_two_round(q) || !passes_base_two_round(p))
+        if (!passes_base_two_round(q) || !passes_base_two_and_certifies(p))
         {
             continue;
         }
