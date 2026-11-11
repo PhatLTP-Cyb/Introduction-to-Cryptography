@@ -86,13 +86,45 @@ bool miller_rabin_test(const uint512_t &base, const DecomposedExponent &decomp, 
     return false;
 }
 
+// Tính (2^exponent) mod modulus bằng phương pháp bình phương và nhân với cơ số 2.
+// Thay vì gọi mul_mod(result, 2, modulus), phép nhân với 2 được tối ưu thành add_mod(result, result, modulus).
+// Tiền điều kiện: modulus >= 2 (bảo đảm bởi các hàm kiểm tra nguyên tố và sinh số nguyên tố).
+uint512_t two_power_mod(const uint512_t &exponent, const uint512_t &modulus)
+{
+    uint512_t result(1);
+    for (size_t i = exponent.bit_length(); i-- > 0;)
+    {
+        result = mul_mod(result, result, modulus);
+        if (exponent.bit(i))
+        {
+            result = add_mod(result, result, modulus);
+        }
+    }
+    return result;
+}
+
 // Phân tích n - 1 và thực hiện một vòng kiểm tra Miller-Rabin với cơ số 2.
 // Lý do: hầu hết hợp số lẻ bị loại ngay ở cơ số 2, giúp lọc nhanh trước khi chạy các vòng ngẫu nhiên.
 bool passes_base_two_round(const uint512_t &n)
 {
     const uint512_t n_minus_1 = n - uint512_t(1);
     const DecomposedExponent decomp = decompose_even(n_minus_1);
-    return miller_rabin_test(uint512_t(2), decomp, n);
+    uint512_t x = two_power_mod(decomp.odd_factor, n);
+    if (x == uint512_t(1) || x == n_minus_1)
+    {
+        return true;
+    }
+
+    for (size_t step = 1; step < decomp.trailing_zeros; ++step)
+    {
+        x = mul_mod(x, x, n);
+        if (x == n_minus_1)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // Sinh số lẻ ngẫu nhiên q có đúng q_bits bit (bit cao nhất và bit thấp nhất đều bằng 1).
@@ -132,7 +164,7 @@ bool has_small_factor_for_safe_prime(const uint512_t &q)
 uint512_t two_to_half_exponent_mod(const uint512_t &p)
 {
     const uint512_t half_exp = (p - uint512_t(1)) >> 1;
-    return modular_exponentiation(uint512_t(2), half_exp, p);
+    return two_power_mod(half_exp, p);
 }
 
 // Kiểm tra vòng Miller-Rabin cơ số 2 đồng thời xác nhận điều kiện định lý Pocklington cho p = 2q + 1.
