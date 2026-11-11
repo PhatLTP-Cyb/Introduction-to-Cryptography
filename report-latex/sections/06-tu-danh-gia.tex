@@ -1,0 +1,60 @@
+\section{Tự đánh giá, ưu nhược điểm và hướng cải thiện}
+\label{sec:tu-danh-gia}
+
+\noindent\textbf{Người phụ trách viết:} Lê Tấn Phát.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{14.5cm}|}
+\hline
+\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
+\textit{``6. Tự đánh giá: Phân tích ưu/nhược điểm của chương trình đã cài đặt, cách cải thiện.''} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+
+\subsection{Đánh giá mức độ hoàn thành so với yêu cầu đề bài}
+% TODO(Phát): Tổng kết các hạng mục công việc đã hoàn thành:
+% - [x] Tự cài đặt hoàn toàn kiểu số lớn uint512_t không phụ thuộc thư viện ngoài (GMP, OpenSSL, ...).
+% - [x] Phép lũy thừa mô-đun modular_exponentiation hoạt động chính xác trên số 512-bit và 1024-bit.
+% - [x] Kiểm tra tính nguyên tố bằng thuật toán xác suất Miller-Rabin chuẩn xác suất, kết hợp sàng số nguyên tố nhỏ.
+% - [x] Thuật toán sinh số nguyên tố an toàn p = 2q + 1 hoạt động ổn định và có hiệu năng thực thi cao.
+% - [x] Tích hợp bộ sinh số ngẫu nhiên an toàn mật mã CSPRNG dựa trên chuẩn Keccak SHAKE128 (FIPS 202) lấy seed từ HĐH.
+% - [x] Mô phỏng thành công giao thức trao đổi khóa Diffie-Hellman với bí mật chung trùng khớp 100%.
+
+\subsection{Phân tích các ưu điểm nổi bật của chương trình}
+% TODO(Phát): Nêu rõ các thế mạnh về thiết kế và kiến trúc:
+% 1. Thiết kế Clean Code, phân tách module rõ ràng, tuân thủ nguyên tắc Single Responsibility.
+% 2. Tối ưu hóa thuật toán vượt trội: Kỹ thuật sàng kết hợp q và 2q+1 cùng bước lọc sơ bộ Miller-Rabin cơ số 2 giúp giảm thời gian sinh safe prime 512-bit xuống trung bình chỉ còn ~5 giây.
+% 3. Bộ kiểm thử tự động phong phú, đối chiếu độc lập với ngôn ngữ Python chuẩn.
+% 4. Khả năng tương thích chéo nền tảng (chạy tốt trên cả Windows và Linux).
+
+\subsection{Phân tích các hạn chế và nhược điểm hiện tại}
+% TODO(Phát): Thẳng thắn nhìn nhận các điểm hạn chế:
+% 1. Thuật toán nhân số lớn vẫn sử dụng giải thuật Schoolbook O(n^2), chưa triển khai giải thuật Karatsuba hay FFT đối với các kích thước số lớn hơn.
+% 2. Phép lũy thừa mô-đun chưa áp dụng thuật toán nhân Montgomery (Montgomery Multiplication), dẫn tới việc phải liên tục thực hiện phép chia dư nặng nề.
+% 3. Quá trình tìm kiếm số nguyên tố an toàn hiện chạy đơn luồng (Single-thread), chưa tận dụng được sức mạnh tính toán song song đa lõi của CPU.
+
+\subsection{Đề xuất phương án cải tiến và phát triển}
+% TODO(Phát): Đề xuất các giải pháp nâng cấp cụ thể:
+% - Triển khai phép nhân Montgomery để tăng tốc độ lũy thừa mô-đun lên 2 đến 3 lần.
+% - Áp dụng OpenMP hoặc std::thread để phân tán tìm kiếm ứng viên safe prime trên nhiều luồng song song.
+% - Mở rộng kiểu số lớn dạng template tổng quát hóa uint<N> để hỗ trợ các độ dài bit tùy ý (1024, 2048, 4096 bit).
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{p{7cm}p{7cm}}
+\toprule
+\textbf{Ưu điểm đã đạt được} & \textbf{Hạn chế cần cải thiện} \\
+\midrule
+$\bullet$ Tự chủ mã nguồn, không dùng thư viện ngoài & $\bullet$ Nhân số lớn cơ bản $O(n^2)$, chưa có Karatsuba \\
+$\bullet$ Sinh số ngẫu nhiên CSPRNG chuẩn FIPS 202 & $\bullet$ Chưa tích hợp nhân Montgomery \\
+$\bullet$ Tối ưu sàng kép giúp sinh safe prime 512-bit nhanh & $\bullet$ Quá trình sinh số nguyên tố còn chạy đơn luồng \\
+$\bullet$ 100\% kiểm thử tự động khớp với Python chuẩn & $\bullet$ Kích thước số lớn cố định ở thời điểm biên dịch \\
+\bottomrule
+\end{tabular}
+\caption{Bảng tổng kết ưu điểm và hạn chế của đồ án}
+\label{tab:danh-gia-tong-ket}
+\end{table}

@@ -1,0 +1,72 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage{lmodern}
+\usepackage[vietnamese]{babel}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!80!black,
+    citecolor=green!60!black,
+    urlcolor=teal
+}
+
+\lstset{
+    basicstyle=\small\ttfamily,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red!70!black},
+    showstringspaces=false
+}
+
+\title{\textbf{BÁO CÁO BÀI TẬP THỰC HÀNH 01} \\ \large MÃ HÓA VÀ MẬT MÃ (CRYPTO) \\ \Large Giao thức trao đổi khóa Diffie-Hellman và Kiểm tra số nguyên tố lớn}
+\author{Nhóm 24120029, 24120100, 24120113, 24120115}
+\date{Tháng 11 năm 2026}
+
+\begin{document}
+
+\input{sections/00-bia-nhom}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{sections/01-so-lon}
+\newpage
+
+\input{sections/02-kiem-tra-nguyen-to}
+\newpage
+
+\input{sections/03-so-ngau-nhien}
+\newpage
+
+\input{sections/04-ung-dung-dh}
+\newpage
+
+\input{sections/05-mo-ta-chuong-trinh}
+\newpage
+
+\input{sections/06-tu-danh-gia}
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{section}{Tài liệu tham khảo}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

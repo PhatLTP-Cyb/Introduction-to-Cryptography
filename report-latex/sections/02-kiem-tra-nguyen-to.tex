@@ -1,0 +1,62 @@
+\section{Hàm kiểm tra số nguyên tố và sinh số nguyên tố an toàn}
+\label{sec:kiem-tra-nguyen-to}
+
+\noindent\textbf{Người phụ trách viết:} Trần Hoàng Nhi.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{14.5cm}|}
+\hline
+\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
+\textit{``2. Hàm kiểm tra số nguyên tố: Viết báo cáo những gì tìm hiểu được về các thuật toán kiểm tra số nguyên tố.''} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+
+\subsection{Cơ sở lý thuyết kiểm tra tính nguyên tố}
+% TODO(Nhi): Trình bày định lý Fermat nhỏ và hiện tượng số giả nguyên tố Fermat (Pseudoprime, số Carmichael).
+% Giới thiệu thuật toán kiểm tra xác suất Miller-Rabin \cite{rabin1980}.
+% Phân tích sai số: với k vòng Miller-Rabin độc lập, xác suất kết luận nhầm hợp số thành số nguyên tố không vượt quá (1/4)^k. Với k = 20 vòng, xác suất lỗi <= 2^{-40} < 10^{-12}, hoàn toàn đạt chuẩn mật mã \cite{menezes1996handbook}.
+
+\subsection{Chiến lược sàng số nguyên tố nhỏ \texttt{has\_small\_factor}}
+% TODO(Nhi): Giải thích nguyên lý sàng số nguyên tố nhỏ để loại bỏ sớm các hợp số tầm thường trước khi gọi Miller-Rabin tốn kém.
+% Bảng tĩnh 303 số nguyên tố nhỏ s < 2000 sinh bằng sàng Eratosthenes.
+% Hàm mod_u64(s) kiểm tra số dư n mod s; nếu n chia hết cho s và n != s thì trả về true (có ước nhỏ).
+
+\subsection{Thuật toán xác suất Miller-Rabin \texttt{is\_probable\_prime}}
+% TODO(Nhi): Trình bày chi tiết các bước cài đặt:
+% 1. Xử lý biên: loại số chẵn, kiểm tra 2 và 3, sàng số nhỏ has_small_factor.
+% 2. Phân tích n - 1 = 2^r * m với m lẻ (hàm decompose_even, kiểm tra ném ngoại lệ khi n - 1 = 0).
+% 3. Vòng kiểm tra 1: dùng cơ số cố định b = 2 (lọc nhanh phần lớn hợp số).
+% 4. Các vòng tiếp theo (2 đến 20): chọn cơ số ngẫu nhiên b trong [2, n - 2] bằng CSPRNG (tránh b = 1, n - 1).
+
+\subsection{Thuật toán sinh số nguyên tố an toàn \texttt{generate\_safe\_prime}}
+% TODO(Nhi): Định nghĩa số nguyên tố an toàn (Safe Prime) p = 2q + 1 với q là số nguyên tố Sophie Germain.
+% Kỹ thuật sàng kết hợp: một lần tính q.mod_u64(s) kiểm tra được cả q chia hết cho s (rem == 0) và p chia hết cho s (rem == (s - 1)/2).
+% Kỹ thuật lọc sơ bộ: chạy 1 vòng Miller-Rabin cơ số 2 cho q rồi p trước khi chạy đủ 20 vòng, giúp tiết kiệm thời gian đáng kể.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.75\textwidth]{figures/safe_prime_flowchart.png}
+\caption{Lưu đồ thuật toán sinh số nguyên tố an toàn $p = 2q + 1$}
+\label{fig:safe-prime-flowchart}
+\end{figure}
+
+\subsection{Kết quả thực nghiệm và đo lường thời gian}
+% TODO(Nhi): Trình bày bảng dữ liệu thực nghiệm đo được trên máy (lấy từ báo cáo nv3-e.md và nv3-f.md).
+% Bảng so sánh giữa fake_random (mt19937) và random.cpp thật của NV4.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Bộ sinh ngẫu nhiên} & \textbf{Kích thước} & \textbf{Số mẫu} & \textbf{Min (ms)} & \textbf{Trung vị (ms)} & \textbf{Trung bình (ms)} & \textbf{Max (ms)} \\
+\midrule
+% TODO(Nhi): điền số liệu đo thật
+\bottomrule
+\end{tabular}
+\caption{Thời gian thực thi sinh số nguyên tố an toàn qua các kích thước bit (chạy thật)}
+\label{tab:safe-prime-bench}
+\end{table}

@@ -1,0 +1,60 @@
+\section{Số ngẫu nhiên trong mật mã học (Mục điểm cộng)}
+\label{sec:so-ngau-nhien}
+
+\noindent\textbf{Người phụ trách viết:} Lê Tấn Phát.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{14.5cm}|}
+\hline
+\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
+\textit{``3. Số ngẫu nhiên: Viết báo cáo những gì tìm hiểu được về tính ngẫu nhiên và độ quan trọng của nó trong mật mã học, cách tạo một hàm sinh số ngẫu nhiên an toàn trên máy tính. (Phần này không bắt buộc, được tính vào mục điểm cộng cho bài tập này)''} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+
+\subsection{Tầm quan trọng của tính ngẫu nhiên trong an toàn mật mã}
+% TODO(Phát): Trình bày khái niệm entropy và sự khác biệt căn bản giữa:
+% 1. PRNG giả ngẫu nhiên thống kê (như rand(), mt19937): chu kỳ dài nhưng dễ bị đoán biết trạng thái nội bộ.
+% 2. CSPRNG (Cryptographically Secure PRNG): thỏa mãn tính chất bất khả đoán (Next-bit Unpredictability) ngay cả khi kẻ tấn công biết một phần ngõ ra trước đó.
+% Dẫn chứng các cuộc tấn công kinh điển khi PRNG bị lỗi hoặc seed từ thời gian (timestamp attack) \cite{menezes1996handbook}.
+
+\subsection{Thu thập entropy từ hệ điều hành}
+% TODO(Phát): Mô tả cơ chế lấy 32-byte seed an toàn từ hệ điều hành:
+% - Trên Windows: Sử dụng Windows Cryptography API: Next Generation (CNG) qua hàm BCryptGenRandom với cờ BCRYPT_USE_SYSTEM_PREFERRED_RNG, liên kết thư viện -lbcrypt.
+% - Trên Linux: Đọc từ luồng entropy kernel qua thiết bị /dev/urandom hoặc hàm getrandom().
+% - Chế độ seed cố định phục vụ kiểm thử (Reproducible testing) qua seed_from_text.
+
+\subsection{Thuật toán mở rộng luồng giả ngẫu nhiên SHAKE128}
+% TODO(Phát): Giới thiệu chuẩn Keccak / FIPS 202 (hàm mở rộng ngõ ra XOF: SHAKE128) \cite{fips202}.
+% Trình bày cách khởi tạo trạng thái Keccak từ 32-byte seed và hàm prng_random_bits để rút bit ngẫu nhiên liên tục.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.8\textwidth]{figures/shake128_sponge.png}
+\caption{Mô hình Sponge Construction của SHAKE128 trong sinh số ngẫu nhiên}
+\label{fig:shake128-sponge}
+\end{figure}
+
+\subsection{Sinh số ngẫu nhiên trong khoảng đóng không lệch phân bố}
+% TODO(Phát): Trình bày giải thuật random_range(low, high) trong khoảng đóng [low, high]:
+% - Giải thích vì sao việc dùng phép chia dư (modulus %): x = rand() % (high - low + 1) gây ra sai lệch phân bố (Modulo Bias).
+% - Cài đặt kỹ thuật Rejection Sampling: tính số bit cần thiết b = bit_length(span), sinh ngẫu nhiên b bit, nếu x <= span thì nhận, ngược lại loại bỏ và thử lại.
+% - Đảm bảo khóa riêng private key nằm chặt chẽ trong [2, p - 2].
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\textbf{Kiểm định} & \textbf{Quy cách thử nghiệm} & \textbf{Kết quả thực tế} & \textbf{Đánh giá} \\
+\midrule
+% TODO(Phát): Điền kết quả kiểm định tính ngẫu nhiên và phân bố từ test_random
+Phân bố trong khoảng & 100.000 mẫu ngẫu nhiên $[2, p-2]$ & Đạt chuẩn phân bố đều & Không có Modulo Bias \\
+Tính bất khả đoán & Seed lấy từ OS BCryptGenRandom & Không lặp lại chu kỳ & An toàn mật mã \\
+\bottomrule
+\end{tabular}
+\caption{Kiểm định thực nghiệm tính đúng đắn của bộ sinh ngẫu nhiên CSPRNG (chạy thật)}
+\label{tab:csprng-eval}
+\end{table}

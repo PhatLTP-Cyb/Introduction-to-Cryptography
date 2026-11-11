@@ -1,0 +1,59 @@
+\section{Hệ thống xử lý số lớn}
+\label{sec:so-lon}
+
+\noindent\textbf{Người phụ trách viết:} Võ Văn Cường (\textit{Ghi chú: cần xác nhận lại phân công chi tiết}).
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{14.5cm}|}
+\hline
+\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
+\textit{``1. Hệ thống xử lý số lớn: Bài tập yêu cầu thao tác trên số nguyên tố có độ lớn ít nhất 512 bit, vì vậy, nếu sinh viên có cài đặt một kiểu dữ liệu lớn riêng cho phần bài tập này, anh/chị cần mô tả chi tiết về kiểu dữ liệu đó, cách các toán tử của nó hoạt động.''} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+
+\subsection{Thiết kế cấu trúc dữ liệu số lớn \texttt{uint512\_t}}
+% TODO(Cường): Mô tả chi tiết kiểu uint512_t được tổ chức bằng mảng cố định uint64_t[8] (8 limbs).
+% Giải thích lý do chọn limb 64-bit: tận dụng kiến trúc 64-bit hiện đại và kiểu __uint128_t của GCC để tính toán phép nhân/cộng có nhớ hiệu quả \cite{knuth1997art}.
+% Trình bày thứ tự lưu trữ (Little-endian: limb[0] là limb trọng số thấp nhất).
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.8\textwidth]{figures/u512_structure.png}
+\caption{Sơ đồ tổ chức các limb trong cấu trúc \texttt{uint512\_t}}
+\label{fig:u512-structure}
+\end{figure}
+
+\subsection{Các toán tử số học cơ bản}
+% TODO(Cường): Trình bày giải thuật và độ phức tạp cho:
+% 1. Phép cộng (+) và trừ (-): cách xử lý cờ nhớ (carry) và cờ mượn (borrow).
+% 2. Phép dịch bit (<<, >>): dịch nguyên limb và dịch bit lẻ trong limb.
+% 3. Phép so sánh (==, <): so sánh từ limb cao nhất về limb thấp nhất.
+
+\subsection{Phép nhân và chia dư mô-đun}
+% TODO(Cường): Mô tả giải thuật nhân Schoolbook (nhân hai số 512-bit ra số 1024-bit thông qua kiểu trung gian __uint128_t) \cite{menezes1996handbook}.
+% Trình bày cách thực hiện phép chia dư mod_u64 cho số nguyên 64-bit nhỏ.
+% Trình bày giải thuật chia dư đầy đủ mul_mod(a, b, m).
+
+\subsection{Giải thuật lũy thừa mô-đun \texttt{modular\_exponentiation}}
+% TODO(Cường): Trình bày giải thuật lũy thừa nhị phân (Square-and-Multiply) duyệt bit từ trái sang phải.
+% Giải thích cách xử lý các trường hợp biên: exponent = 0, mod = 1, base >= mod.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Kích thước mô-đun} & \textbf{Số mẫu thử} & \textbf{Thời gian TB (ms)} & \textbf{Nhanh nhất (ms)} & \textbf{Chậm nhất (ms)} \\
+\midrule
+% TODO(Cường): Điền số liệu đo đạc thực tế từ bench_modexp vào bảng dưới
+256 bit & -- & -- & -- & -- \\
+512 bit & -- & -- & -- & -- \\
+1024 bit & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\caption{Kết quả đo thời gian thực thi của phép lũy thừa mô-đun (chạy thật)}
+\label{tab:bench-modexp}
+\end{table}
