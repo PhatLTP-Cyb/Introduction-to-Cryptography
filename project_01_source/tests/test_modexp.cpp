@@ -63,6 +63,24 @@ int main(int argc, char **argv)
     CHECK(modular_exponentiation(uint512_t(2), uint512_t(BIGINT_BITS - 1), top).is_zero());
     CHECK(modular_exponentiation(uint512_t(7), uint512_t(5), uint512_t(2)) == one);
 
+    // Mô-đun lẻ đi qua nhân Montgomery
+    uint512_t top_plus_1 = top + one; // 2^(BITS-1) + 1, lẻ và đủ BIGINT_BITS bit
+    CHECK(mul_mod(top, top, top_plus_1) == one);                         // (-1)^2 = 1
+    CHECK(mul_mod(top, uint512_t(2), top_plus_1) == top - one);          // -2
+    CHECK(mul_mod(max, max, top_plus_1) == uint512_t(9));                // đầu vào >= m: max = -3
+    CHECK(mul_mod(top, zero, top_plus_1).is_zero());
+    CHECK(mul_mod(top, one, top_plus_1) == top);
+    CHECK(mul_mod(uint512_t(2), uint512_t(2), uint512_t(3)) == one);     // mô-đun lẻ nhỏ nhất
+    CHECK(modular_exponentiation(top, max, top_plus_1) == top);          // (-1)^lẻ = -1
+    CHECK(modular_exponentiation(zero, uint512_t(5), top_plus_1).is_zero());
+    CHECK(modular_exponentiation(zero, zero, top_plus_1) == one);
+    // Định lý Fermat nhỏ với số nguyên tố 2^127 - 1 và 2^512 - 569 (cần BIGINT_BITS >= 512)
+    uint512_t p127 = uint512_t::from_hex("7fffffffffffffffffffffffffffffff");
+    uint512_t p512 = uint512_t::from_hex("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdc7");
+    CHECK(modular_exponentiation(uint512_t(3), p127 - one, p127) == one);
+    CHECK(modular_exponentiation(uint512_t(3), p512 - one, p512) == one);
+    CHECK(mul_mod(p512 - one, p512 - one, p512) == one);
+
     if (argc > 1)
     {
         std::ifstream f(argv[1]);

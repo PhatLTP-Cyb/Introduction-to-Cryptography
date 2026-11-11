@@ -94,7 +94,7 @@ Các phép `!=`, `>`, `<=`, `>=` và in bằng `std::cout` đã viết sẵn d�
 |---|---|---|
 | ☐ | `reduce_mod(a, m)` | Tính a mod m; giữ lại bit tràn khi nhân đôi phần dư |
 | ☐ | `add_mod(a, b, m)` | Tính (a + b) mod m bằng `add_overflow` |
-| ☐ | `mul_mod(a, b, m)` | Tính (a · b) mod m bằng phân tích b thành lũy thừa của 2 |
+| ☐ | `mul_mod(a, b, m)` | Tính (a · b) mod m: nhân Montgomery khi m lẻ, phân tích b thành lũy thừa của 2 (cộng-dịch) khi m chẵn |
 | ☐ | `modular_exponentiation(base, exp, mod)` | Tính lũy thừa bằng bình phương và nhân |
 
 ### 4.3. NV3: `src/prime.cpp`
