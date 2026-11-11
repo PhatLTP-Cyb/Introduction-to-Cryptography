@@ -1,49 +1,169 @@
-\section{Giao thức trao đổi khóa Diffie-Hellman và ứng dụng thực tế}
-\label{sec:ung-dung-dh}
+% ============================================================
+% Báo cáo mục 4: Trao đổi khóa Diffie-Hellman và ứng dụng thực tế
+% Người viết: Tô Tuệ Nghi. Đây là ĐOẠN NỘI DUNG, không có preamble.
+% Cần gói: amsmath, booktabs, hyperref (hoặc url). Trích dẫn dùng \cite{...};
+% các \bibitem tương ứng nằm trong file tham-khao-muc4-5.tex.
+% Dòng "% KIEM CHUNG" là chỗ phải đối chiếu lại trước khi nộp.
+% ============================================================
 
-\noindent\textbf{Người phụ trách viết:} Tô Tuệ Nghi.
+\section{Trao đổi khóa Diffie-Hellman và ứng dụng thực tế}
+\label{sec:dh-ungdung}
 
-\begin{table}[h!]
+\subsection{Giao thức và liên hệ với chương trình}
+
+Giao thức Diffie-Hellman \cite{diffie1976new} cho phép hai bên chưa có bí mật chung
+thiết lập một khóa chung thông qua một kênh công khai. Độ an toàn dựa trên bài
+toán logarit rời rạc \cite{slide-bai2}. Hai bên dùng chung số nguyên tố lớn $p$
+và phần tử sinh $g$ của nhóm $\mathbb{Z}_p^*$; các bước được tóm tắt trong
+Bảng~\ref{tab:dh-steps}.
+
+\begin{table}[!htbp]
 \centering
-\begin{tabular}{|p{14.5cm}|}
-\hline
-\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
-\textit{``4. Trao đổi khóa Diffie-Hellman: Tìm hiểu và trình bày một ứng dụng thực tế của giao thức này.''} \\
-\hline
+\begin{tabular}{@{}lll@{}}
+\toprule
+Bước & Alice & Bob \\
+\midrule
+1. Chọn khóa riêng & chọn ngẫu nhiên $x$ & chọn ngẫu nhiên $y$ \\
+2. Tính giá trị công khai & $k_A \equiv g^x \pmod p$ & $k_B \equiv g^y \pmod p$ \\
+3. Trao đổi & gửi $k_A$ cho Bob & gửi $k_B$ cho Alice \\
+4. Tính bí mật chung & $k \equiv k_B^{\,x} \pmod p$ & $k' \equiv k_A^{\,y} \pmod p$ \\
+\bottomrule
 \end{tabular}
+\caption{Các bước của giao thức Diffie-Hellman theo \cite{slide-bai2}.}
+\label{tab:dh-steps}
 \end{table}
 
-\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+Hai bên thu được cùng một giá trị vì
+\[
+k \equiv k_B^{\,x} \equiv (g^y)^x \equiv g^{xy} \equiv (g^x)^y \equiv k_A^{\,y} \equiv k' \pmod p.
+\]
+Kẻ nghe lén biết $p$, $g$, $k_A$, $k_B$ nhưng muốn tính $g^{xy}$ thì phải giải
+bài toán logarit rời rạc; theo tài liệu môn học, phương pháp
+index-calculus được xem là mạnh nhất hiện biết cho bài toán này \cite{slide-bai2}.
 
-\subsection{Nguyên lý toán học của giao thức Diffie-Hellman}
-% TODO(Nghi): Trình bày giao thức trao đổi khóa nguyên bản Diffie-Hellman (1976) \cite{diffie1976new}.
-% 1. Thiết lập tham số công khai: Số nguyên tố an toàn p = 2q + 1 và phần tử sinh g.
-% 2. Alice chọn khóa riêng a trong [2, p - 2], tính khóa công khai A = g^a mod p.
-% 3. Bob chọn khóa riêng b trong [2, p - 2], tính khóa công khai B = g^b mod p.
-% 4. Hai bên trao đổi A và B, cùng tính bí mật chung K = B^a mod p = A^b mod p = g^{ab} mod p.
-% Giải thích độ an toàn dựa trên Bài toán Logarithm rời rạc (Discrete Logarithm Problem - DLP) và bài toán Computational Diffie-Hellman (CDH).
+Chương trình của nhóm cài đúng các bước trên: sinh số nguyên tố an toàn $p$
+(\texttt{generate\_\allowbreak safe\_\allowbreak prime}), chọn phần tử sinh $g$
+(\texttt{find\_\allowbreak generator}), sinh khóa riêng trong đoạn $[2,\,p-2]$
+(\texttt{generate\_\allowbreak private\_\allowbreak key}), rồi dùng \texttt{modular\_\allowbreak exponentiation} để
+tính $k_A$, $k_B$ và hai bí mật chung. Tên các hàm đã được đối chiếu với tệp
+\texttt{dh.h} của bản mã nộp.
 
-\subsection{Thuật toán tìm phần tử sinh \texttt{find\_generator}}
-% TODO(Nghi): Giải thích vì sao cần dùng số nguyên tố an toàn p = 2q + 1:
-% Cấp của nhóm Z_p^* là p - 1 = 2q. Do q là số nguyên tố lẻ, các ước nguyên số của p - 1 chỉ có 2 và q.
-% Để một phần tử g là phần tử sinh của nhóm con cấp q (nhóm con nguyên tố lớn tránh Small Subgroup Attack), ta chỉ cần kiểm tra:
-% g^2 mod p != 1 và g^q mod p != 1.
-% Cài đặt hàm find_generator thử các giá trị g = 2, 3, 4, ... cho đến khi thỏa mãn điều kiện.
+\subsection{Ứng dụng chính: thiết lập khóa phiên trong TLS 1.3}
 
-\begin{figure}[h!]
+TLS là giao thức bảo vệ HTTPS. Phiên bản 1.3 hiện được đặc tả trong RFC~9846
+(tháng 7/2026), thay thế RFC~8446 (tháng 8/2018); bản mới là một cập nhật nhỏ,
+giữ nguyên số phiên bản và tương thích ngược \cite{rfc9846}. Giao thức hỗ trợ ba
+chế độ thiết lập khóa: trao đổi khóa bất đối xứng, khóa chia sẻ trước (PSK) và
+kết hợp cả hai. Trao đổi khóa bất đối xứng gồm Diffie-Hellman trên trường hữu hạn
+hoặc trên đường cong elliptic \cite{rfc9846}. Chương trình của nhóm tương ứng với
+trường hợp trên trường hữu hạn $\mathbb{Z}_p^*$.
+
+Cách hoạt động khi dùng trao đổi khóa bất đối xứng \cite{rfc9846}: trong thông
+điệp \texttt{ClientHello}, máy khách gửi phần chia sẻ khóa
+(\texttt{key\_\allowbreak share}) của mình; máy chủ trả lời trong \texttt{ServerHello} bằng
+phần chia sẻ \emph{tạm thời} của máy chủ, cùng nhóm với một phần chia sẻ của máy
+khách. Từ hai phần chia sẻ này, hai bên cùng tính được bí mật chung, rồi dùng nó
+để dẫn xuất khóa bảo vệ dữ liệu. Với nhóm hữu hạn, giá trị công khai có dạng
+$Y = g^X \bmod p$, và mỗi bên \emph{phải} kiểm tra giá trị công khai nhận được
+thỏa $1 < Y < p-1$ để đối phương không ép hệ thống vào một nhóm con nhỏ
+\cite{rfc9846}.
+
+\paragraph{Khóa tạm thời và bảo mật về sau (forward secrecy).}
+TLS 1.3 đã loại bỏ các bộ mã dùng RSA tĩnh và Diffie-Hellman tĩnh; mọi cơ chế
+thiết lập khóa dựa trên khóa công khai đều có forward secrecy \cite{rfc9846}.
+Nghĩa là nếu khóa dài hạn của máy chủ bị lộ sau này, các phiên đã ghi lại trước
+đó vẫn không giải mã được, miễn là hai bên hủy khóa tạm thời ngay khi dùng xong
+\cite{rfc7919}. RFC~9846 còn cấm dùng lại một phần chia sẻ khóa cho nhiều kết nối
+\cite{rfc9846}. Vì vậy chương trình của nhóm sinh khóa riêng mới cho mỗi lần chạy
+thay vì dùng khóa cố định.
+
+\paragraph{Các nhóm chuẩn.}
+TLS 1.3 đã bỏ các nhóm Diffie-Hellman tùy chọn, chỉ dùng các nhóm có tên; với
+trường hữu hạn đó là \texttt{ffdhe2048} đến \texttt{ffdhe8192}, định nghĩa trong
+RFC~7919 \cite{rfc9846,rfc7919}. Các nhóm này dùng số nguyên tố an toàn
+\cite{rfc7919}; độ mạnh ước tính nêu ở Bảng~\ref{tab:ffdhe}.
+% DA KIEM CHUNG 11/11/2026 voi RFC 7919 Phu luc A: 103/125/150/175/192 bit dung; g = 2 cho ca 5 nhom.
+
+\begin{table}[!htbp]
 \centering
-% \includegraphics[width=0.85\textwidth]{figures/dh_exchange_sequence.png}
-\caption{Sơ đồ tuần tự của giao thức trao đổi khóa Diffie-Hellman}
-\label{fig:dh-sequence}
-\end{figure}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Nhóm & Kích thước $p$ (bit) & Độ mạnh (bit) \\
+\midrule
+\texttt{ffdhe2048} & 2048 & 103 \\
+\texttt{ffdhe3072} & 3072 & 125 \\
+\texttt{ffdhe4096} & 4096 & 150 \\
+\texttt{ffdhe6144} & 6144 & 175 \\
+\texttt{ffdhe8192} & 8192 & 192 \\
+\bottomrule
+\end{tabular}
+\caption{Các nhóm Diffie-Hellman hữu hạn trong RFC~7919 \cite{rfc7919}. Độ mạnh là số bit khóa đối xứng có độ an toàn tương đương.}
+\label{tab:ffdhe}
+\end{table}
 
-\subsection{Ứng dụng thực tế: Giao thức bảo mật tầng truyền vận TLS 1.3}
-% TODO(Nghi): Trình bày ứng dụng thực tế nổi bật nhất của Diffie-Hellman hiện nay: Giao thức TLS 1.3 (RFC 8446) \cite{rfc8446}.
-% - Phân tích cơ chế Ephemeral Diffie-Hellman (DHE / ECDHE) trong quá trình bắt tay TLS (TLS Handshake).
-% - Tính chất bảo mật chuyển tiếp hoàn hảo (Perfect Forward Secrecy - PFS): Khóa phiên được tạo từ các khóa riêng tạm thời (ephemeral keys), ngay cả khi khóa dài hạn của máy chủ bị lộ trong tương lai thì các phiên mã hóa trong quá khứ vẫn an toàn.
-% - Ứng dụng trong giao thức SSH (Secure Shell) và phần mềm nhắn tin bảo mật Signal / WhatsApp.
+\subsection{Tấn công man-in-the-middle và vai trò của xác thực}
 
-\subsection{Các nguy cơ an ninh và biện pháp phòng chống}
-% TODO(Nghi): Phân tích các dạng tấn công điển hình:
-% 1. Tấn công kẻ đứng giữa (Man-in-the-Middle - MitM): do Diffie-Hellman thuần túy không có xác thực (No Authentication). Cách phòng chống: kết hợp chữ ký số (RSA / ECDSA) hoặc chứng chỉ số X.509.
-% 2. Tấn công nhóm con nhỏ (Small Subgroup Confinement Attack): cách phòng chống bằng cách kiểm tra khóa công khai nhận được nằm trong phạm vi hợp lệ và nhóm con cấp q.
+Giao thức ở Bảng~\ref{tab:dh-steps} không có bước xác thực danh tính: $k_A$ và
+$k_B$ được gửi đi nguyên dạng. Một kẻ tấn công chủ động nằm giữa đường truyền có
+thể giả làm Bob với Alice và giả làm Alice với Bob, tự thiết lập một khóa chung
+riêng với mỗi bên, rồi đọc và sửa mọi dữ liệu chuyển tiếp. Đây là phân tích của
+nhóm dựa trên mô tả giao thức, không phải kết luận trích từ một nguồn cụ thể.
+
+TLS chặn tấn công này bằng cách kết hợp trao đổi khóa với xác thực. Máy chủ gửi
+chứng chỉ, một chữ ký trên toàn bộ quá trình bắt tay (\texttt{CertificateVerify})
+và một mã xác thực (\texttt{Finished}), nhờ đó định danh của máy chủ được gắn với
+khóa vừa thỏa thuận \cite{rfc9846}. Cơ chế chữ ký số này chính là nội dung của
+bài \emph{Chữ ký số} trong tài liệu môn học \cite{slide-bai4}: người gửi ký bằng
+khóa cá nhân, người nhận xác minh bằng khóa công khai.
+
+\subsection{Vì sao cần số nguyên tố an toàn}
+
+Số nguyên tố $p$ là \emph{số nguyên tố an toàn} nếu $q = (p-1)/2$ cũng nguyên tố,
+khi đó $p-1 = 2q$. Có hai lợi ích cụ thể.
+
+\paragraph{Tìm phần tử sinh dễ dàng.}
+Thuật toán tìm phần tử sinh trong tài liệu môn học cần các ước nguyên tố của
+$p-1$ và thử $g^{(p-1)/p_i} \bmod p$ với từng ước $p_i$ \cite{slide-bai2}. Với số
+nguyên tố an toàn, chỉ có hai ước là $2$ và $q$, nên chỉ cần kiểm tra
+$g^2 \not\equiv 1$ và $g^q \not\equiv 1 \pmod p$. Nếu $p$ bất kỳ thì phải phân
+tích $p-1$ ra thừa số nguyên tố, việc này khó khi $p$ lớn. Hàm
+\texttt{find\_\allowbreak generator} của nhóm làm đúng như vậy. Vì nhóm có $\varphi(p-1)=q-1$
+phần tử sinh trong tổng số $p-1$ phần tử, mỗi lần thử một $g$ ngẫu nhiên thành
+công với xác suất xấp xỉ $1/2$.
+
+\paragraph{Kiểm tra giá trị công khai đơn giản.}
+Khi biết nhóm dùng số nguyên tố an toàn, nhóm có kích thước $p-1$ hoặc $(p-1)/2$,
+và chỉ cần kiểm tra $1 < Y < p-1$ để biết đối phương không ép hệ thống vào nhóm
+con hai phần tử \cite{rfc9846,rfc7919}. Ngược lại, với nhóm tùy chọn do máy chủ gửi, máy
+khách không biết cấu trúc của nhóm, và nếu thấy nhóm không đủ mạnh ($p$ quá nhỏ,
+$p$ không nguyên tố, hoặc có nhóm con nhỏ khó tránh) thì chỉ còn cách từ chối kết
+nối \cite{rfc7919}.
+
+\subsection{Kích thước tham số trong thực tế}
+
+Đề bài yêu cầu $p$ tối thiểu 512 bit; đây là mức dành cho bài tập, không phải mức
+dùng trong thực tế. Nghiên cứu Logjam cho thấy sau một tuần tính trước cho một
+nhóm 512 bit cố định, có thể tính logarit rời rạc bất kỳ trong nhóm đó chỉ khoảng
+một phút; 82\% máy chủ dễ tổn thương dùng cùng một nhóm 512 bit, và các trình
+duyệt lớn đã đổi sang từ chối nhóm ngắn \cite{logjam-cacm}. Nguyên nhân sâu xa là
+kẻ tấn công chỉ cần tính trước một lần cho một số nguyên tố $p$ rồi dùng lại cho
+mọi mục tiêu dùng chung $p$ đó \cite{logjam-cacm}. RFC~7919 yêu cầu máy khách phải
+từ chối nhóm tùy chọn có $|p| < 768$ bit và nên từ chối nhóm dưới 1024 bit; với
+hệ thống tương lai, ENISA khuyến nghị nhóm từ 3072 bit trở lên \cite{rfc7919}.
+% DA KIEM CHUNG 11/11/2026: nguong 768/1024 bit o RFC 7919 muc 3.1; khuyen nghi ENISA 3072 bit o muc 8.2.
+
+\subsection{Các ứng dụng khác}
+
+Diffie-Hellman còn là cơ chế trao đổi khóa trong hai giao thức quen thuộc khác.
+\emph{SSH}: RFC~4253 mô tả trao đổi khóa Diffie-Hellman (mục 8) và định nghĩa các
+phương thức \texttt{diffie-hellman-\allowbreak group1-\allowbreak sha1} và
+\texttt{diffie-hellman-\allowbreak group14-\allowbreak sha1} \cite{rfc4253}; RFC~8268 bổ sung các phương
+thức từ \texttt{diffie-hellman-\allowbreak group14-\allowbreak sha256} đến
+\texttt{diffie-hellman-\allowbreak group18-\allowbreak sha512} với nhóm lớn hơn và hàm băm SHA-2
+\cite{rfc8268}. \emph{IPsec}: trong giao thức IKEv2, lần trao đổi đầu tiên
+(\texttt{IKE\_\allowbreak SA\_\allowbreak INIT}) thương lượng tham số bảo mật, gửi số dùng một lần và gửi
+các giá trị Diffie-Hellman \cite{rfc7296}; IKEv2 dùng DH hoặc ECDH để thiết lập
+bí mật chung \cite{rfc9370}. Nghiên cứu Logjam cũng chỉ ra rằng một số ít nhóm cố
+định được dùng cho hàng triệu máy chủ, nên tính trước cho khoảng mười nhóm đã đủ
+để giải mã lưu lượng của tới 66\% máy chủ IPsec VPN và 26\% máy chủ SSH
+\cite{logjam}.
