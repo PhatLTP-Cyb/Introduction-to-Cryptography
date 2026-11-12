@@ -17,37 +17,64 @@
 
 \subsection{Cơ sở lý thuyết kiểm tra tính nguyên tố}
 
-Định lý nhỏ Fermat phát biểu rằng nếu $p$ là một số nguyên tố và $a$ là một số nguyên không chia hết cho $p$ ($\gcd(a, p) = 1$), thì:
+\paragraph{Định lý nhỏ Fermat.} Nếu $p$ là số nguyên tố và $a$ là số nguyên không chia hết cho $p$ ($\gcd(a, p) = 1$) thì:
 \begin{equation}
 a^{p-1} \equiv 1 \pmod p
 \end{equation}
-Phép thử tính nguyên tố Fermat dựa trên định lý này để kiểm tra tính nguyên tố của một số nguyên lẻ $n$: chọn một cơ số $a \in [2, n - 2]$, nếu $a^{n-1} \not\equiv 1 \pmod n$ thì $n$ chắc chắn là hợp số. Tuy nhiên, chiều ngược lại không đúng: nếu $a^{n-1} \equiv 1 \pmod n$, chưa thể khẳng định $n$ là số nguyên tố. Một hợp số lẻ $n$ thỏa mãn $a^{n-1} \equiv 1 \pmod n$ đối với một cơ số $a$ nhất định được gọi là số giả nguyên tố Fermat cơ số $a$. Ví dụ, số $n = 341 = 11 \times 31$ là một hợp số, nhưng $2^{340} \equiv 1 \pmod{341}$, do đó $341$ là số giả nguyên tố Fermat cơ số $2$ và vượt qua phép thử Fermat cơ số $2$.
 
-Ngoài ra, tồn tại các hợp số lẻ $n$ thỏa mãn $a^{n-1} \equiv 1 \pmod n$ với mọi cơ số $a$ nguyên tố cùng nhau với $n$ ($\gcd(a, n) = 1$). Những số này được gọi là số Carmichael \cite{menezes1996handbook}. Ví dụ, số Carmichael nhỏ nhất là $n = 561 = 3 \times 11 \times 17$. Với mọi số nguyên $a$ thỏa mãn $\gcd(a, 561) = 1$, ta luôn có $a^{560} \equiv 1 \pmod{561}$. Do đó, phép thử Fermat không thể phát hiện $561$ là hợp số khi chọn các cơ số nguyên tố cùng nhau với $561$.
+\paragraph{Phép thử Fermat.} Với số nguyên lẻ $n$, chọn cơ số $a \in [2, n - 2]$ rồi tính $a^{n-1} \bmod n$:
+\begin{itemize}
+    \item Nếu $a^{n-1} \not\equiv 1 \pmod n$ thì $n$ chắc chắn là hợp số.
+    \item Nếu $a^{n-1} \equiv 1 \pmod n$ thì chưa thể khẳng định $n$ là số nguyên tố. Hợp số lẻ $n$ thỏa điều kiện này với cơ số $a$ được gọi là số giả nguyên tố Fermat cơ số $a$.
+\end{itemize}
+Ví dụ: $n = 341 = 11 \times 31$ là hợp số nhưng $2^{340} \equiv 1 \pmod{341}$, nên $341$ vượt qua phép thử Fermat cơ số $2$.
 
-Thuật toán xác suất Miller-Rabin \cite{rabin1980} khắc phục hạn chế trên bằng cách kiểm tra thêm các căn bậc hai của $1$ theo mô-đun $n$. Trong vành số học $\mathbb{Z}_p$ với $p$ là số nguyên tố lẻ, phương trình $x^2 \equiv 1 \pmod p \iff (x - 1)(x + 1) \equiv 0 \pmod p$ chỉ có đúng hai nghiệm là $x \equiv 1 \pmod p$ và $x \equiv -1 \equiv p - 1 \pmod p$. Nếu $n$ là hợp số lẻ có từ hai ước nguyên tố lẻ trở lên, theo định lý phần dư Trung Hoa, phương trình $x^2 \equiv 1 \pmod n$ có ít nhất bốn nghiệm. Một giá trị $x \in \mathbb{Z}_n$ thỏa mãn $x^2 \equiv 1 \pmod n$ nhưng $x \not\equiv \pm 1 \pmod n$ được gọi là căn bậc hai không tầm thường của $1$ theo mô-đun $n$. Nếu phát hiện một căn bậc hai không tầm thường như vậy, thuật toán kết luận $n$ là hợp số.
+\paragraph{Số Carmichael.} Tồn tại hợp số lẻ $n$ thỏa $a^{n-1} \equiv 1 \pmod n$ với mọi cơ số $a$ nguyên tố cùng nhau với $n$ ($\gcd(a, n) = 1$). Những số này được gọi là số Carmichael \cite{menezes1996handbook}. Ví dụ, số Carmichael nhỏ nhất là $n = 561 = 3 \times 11 \times 17$: với mọi $a$ thỏa $\gcd(a, 561) = 1$ ta có $a^{560} \equiv 1 \pmod{561}$. Do đó phép thử Fermat không phát hiện $561$ là hợp số khi chọn các cơ số nguyên tố cùng nhau với $561$.
 
-Cụ thể, thuật toán phân tích $n - 1 = 2^r \cdot m$ với $m$ lẻ và $r \ge 1$. Với mỗi cơ số $b \in [2, n - 2]$, thuật toán tính giá trị $x = b^m \bmod n$. Nếu $x = 1$ hoặc $x = n - 1$, $n$ vượt qua vòng kiểm tra đối với cơ số $b$. Nếu không, thuật toán thực hiện bình phương liên tiếp $x \leftarrow x^2 \bmod n$ tối đa $r - 1$ lần: nếu thu được $x = n - 1$ trước khi gặp $1$, $n$ vượt qua vòng kiểm tra; nếu sau $r - 1$ lần bình phương vẫn không gặp $n - 1$, thì $b$ là chứng nhân hợp số (witness) và $n$ chắc chắn là hợp số. Với mỗi cơ số chọn ngẫu nhiên, Miller-Rabin phát hiện hợp số lẻ, kể cả số Carmichael, với xác suất ít nhất $3/4$.
+\paragraph{Ý tưởng của Miller-Rabin.} Thuật toán xác suất Miller-Rabin \cite{rabin1980} khắc phục hạn chế trên bằng cách kiểm tra thêm các căn bậc hai của $1$ theo mô-đun $n$:
+\begin{itemize}
+    \item Trong $\mathbb{Z}_p$ với $p$ là số nguyên tố lẻ, phương trình $x^2 \equiv 1 \pmod p \iff (x - 1)(x + 1) \equiv 0 \pmod p$ chỉ có đúng hai nghiệm là $x \equiv 1$ và $x \equiv -1 \equiv p - 1 \pmod p$.
+    \item Nếu $n$ là hợp số lẻ có từ hai ước nguyên tố lẻ trở lên, theo định lý phần dư Trung Hoa, phương trình $x^2 \equiv 1 \pmod n$ có ít nhất bốn nghiệm.
+    \item Giá trị $x \in \mathbb{Z}_n$ thỏa $x^2 \equiv 1 \pmod n$ nhưng $x \not\equiv \pm 1 \pmod n$ được gọi là căn bậc hai không tầm thường của $1$ theo mô-đun $n$. Phát hiện được căn như vậy thì kết luận $n$ là hợp số.
+\end{itemize}
 
-Đối với một hợp số lẻ $n$, số cơ số khiến $n$ vượt qua một vòng kiểm tra không quá một phần tư các cơ số trong $[1, n - 1]$ \cite{rabin1980}. Khi thực hiện $k$ vòng kiểm tra độc lập với các cơ số được chọn ngẫu nhiên độc lập trong $[2, n - 2]$, xác suất một hợp số lẻ vượt qua cả $k$ vòng không vượt quá:
+\paragraph{Các bước của một vòng kiểm tra.} Phân tích $n - 1 = 2^r \cdot m$ với $m$ lẻ và $r \ge 1$. Với mỗi cơ số $b \in [2, n - 2]$:
+\begin{enumerate}
+    \item Tính $x = b^m \bmod n$.
+    \item Nếu $x = 1$ hoặc $x = n - 1$, $n$ vượt qua vòng kiểm tra với cơ số $b$.
+    \item Nếu không, bình phương liên tiếp $x \leftarrow x^2 \bmod n$ tối đa $r - 1$ lần. Nếu thu được $x = n - 1$ trước khi gặp $1$, $n$ vượt qua vòng kiểm tra.
+    \item Nếu sau $r - 1$ lần bình phương vẫn không gặp $n - 1$, thì $b$ là chứng nhân hợp số (witness) và $n$ chắc chắn là hợp số.
+\end{enumerate}
+Với mỗi cơ số chọn ngẫu nhiên, Miller-Rabin phát hiện hợp số lẻ, kể cả số Carmichael, với xác suất ít nhất $3/4$.
+
+\paragraph{Xác suất sai khi lặp nhiều vòng.} Với hợp số lẻ $n$, số cơ số khiến $n$ vượt qua một vòng kiểm tra không quá một phần tư các cơ số trong $[1, n - 1]$ \cite{rabin1980}. Khi thực hiện $k$ vòng độc lập với các cơ số chọn ngẫu nhiên độc lập trong $[2, n - 2]$, xác suất một hợp số lẻ vượt qua cả $k$ vòng không vượt quá:
 \begin{equation}
 \varepsilon \le \left(\frac{1}{4}\right)^k = 2^{-2k}
 \end{equation}
-Với $k = 20$ vòng kiểm tra, xác suất kết luận nhầm hợp số thành số nguyên tố không vượt quá $2^{-40} \approx 9{,}09 \times 10^{-13} < 10^{-12}$ \cite{menezes1996handbook}.
+Với $k = 20$ vòng, xác suất kết luận nhầm hợp số thành số nguyên tố không vượt quá $2^{-40} \approx 9{,}09 \times 10^{-13} < 10^{-12}$ \cite{menezes1996handbook}.
 
 \subsection{Chiến lược sàng số nguyên tố nhỏ \texttt{has\_small\_factor}}
 
-Phép kiểm tra Miller-Rabin trên số nguyên lớn 512 bit đòi hỏi các phép lũy thừa mô-đun với khối lượng tính toán lớn. Đa số các số lẻ ngẫu nhiên là hợp số có ước nguyên tố nhỏ (như $3, 5, 7, \dots$). Do đó, việc kiểm tra tính chia hết cho một danh sách số nguyên tố nhỏ trước khi thực hiện Miller-Rabin cho phép phát hiện sớm các hợp số tầm thường.
+Phép kiểm tra Miller-Rabin trên số nguyên 512 bit đòi hỏi các phép lũy thừa mô-đun với khối lượng tính toán lớn. Đa số số lẻ ngẫu nhiên là hợp số có ước nguyên tố nhỏ (như $3, 5, 7, \dots$). Vì vậy, kiểm tra tính chia hết cho một danh sách số nguyên tố nhỏ trước Miller-Rabin cho phép loại sớm các hợp số tầm thường.
 
-Chương trình sử dụng hàm \texttt{build\_small\_primes} cài đặt thuật toán sàng Eratosthenes để tạo danh sách toàn bộ các số nguyên tố nhỏ hơn ngưỡng $\texttt{SMALL\_PRIME\_LIMIT} = 20000$. Bảng này gồm đúng $2262$ số nguyên tố (bắt đầu từ số $2$ và kết thúc tại $19997$). Để bảng sàng chỉ sinh một lần duy nhất trong toàn bộ thời gian chạy chương trình, danh sách được lưu trữ trong một biến tĩnh (\texttt{static const std::vector<uint64\_t> primes}) bên trong hàm \texttt{small\_primes()}.
+\paragraph{Bảng số nguyên tố nhỏ.}
+\begin{itemize}
+  \item Hàm \texttt{build\_\allowbreak{}small\_\allowbreak{}primes} cài đặt sàng Eratosthenes, tạo mọi số nguyên tố nhỏ hơn ngưỡng \texttt{SMALL\_\allowbreak{}PRIME\_\allowbreak{}LIMIT} $= 20000$.
+  \item Bảng gồm đúng $2262$ số nguyên tố, từ $2$ đến $19997$.
+  \item Bảng được lưu trong biến tĩnh (\texttt{static const std::vector<uint64\_t> primes}) bên trong hàm \texttt{small\_primes()}, nên chỉ sinh một lần trong toàn bộ thời gian chạy.
+\end{itemize}
 
-Hàm \texttt{has\_small\_factor(const uint512\_t \&n)} duyệt qua từng số nguyên tố $s$ trong bảng $2262$ số nguyên tố nhỏ và tính số dư của $n$ khi chia cho $s$ thông qua phương thức \texttt{n.mod\_u64(s)}. Điều kiện xác định $n$ có ước nguyên tố nhỏ là:
+\paragraph{Hàm \texttt{has\_small\_factor}.}
+Hàm \texttt{has\_small\_factor(const uint512\_t \&n)} duyệt từng số nguyên tố $s$ trong bảng và tính số dư của $n$ khi chia cho $s$ bằng \texttt{n.mod\_u64(s)}. Hàm trả về \texttt{true} ngay khi điều kiện sau thỏa mãn:
 \begin{center}
 \texttt{n.mod\_u64(s) == 0 \&\& n != uint512\_t(s)}
 \end{center}
-Nếu cả hai vế của điều kiện trên đồng thời thỏa mãn, hàm lập tức trả về \texttt{true}.
 
-Điều kiện so sánh $\texttt{n != uint512\_t(s)}$ là bắt buộc nhằm tránh trường hợp số cần kiểm tra $n$ chính là một trong các số nguyên tố nhỏ nằm trong bảng ($n < 20000$, ví dụ $n = 2, 3, 5, \dots$). Khi đó, phép chia dư \texttt{n.mod\_u64(s)} với $s = n$ sẽ cho kết quả bằng $0$; nếu không có điều kiện so sánh khác $s$, hàm sẽ kết luận nhầm bản thân số nguyên tố nhỏ $n$ là hợp số. Ngoài ra, với trường hợp $n = 0$, ta có $0 \bmod 2 = 0$ và $0 \neq 2$, do đó hàm trả về \texttt{true} một cách chính xác.
+\paragraph{Vì sao cần vế $n \neq s$.}
+\begin{itemize}
+  \item Khi $n$ chính là một số nguyên tố nhỏ trong bảng ($n < 20000$, ví dụ $n = 2, 3, 5, \dots$), phép chia với $s = n$ cho số dư $0$. Thiếu vế so sánh, hàm sẽ kết luận nhầm $n$ là hợp số.
+  \item Với $n = 0$: $0 \bmod 2 = 0$ và $0 \neq 2$, nên hàm trả về \texttt{true} một cách chính xác.
+\end{itemize}
 
 \subsection{Thuật toán xác suất Miller-Rabin \texttt{is\_probable\_prime}}
 
@@ -261,7 +288,21 @@ Hình \ref{fig:flow-safe-prime} mô tả thứ tự các bước kiểm tra củ
 
 \subsection{Kết quả thực nghiệm và đo lường thời gian}
 
-Các phép đo lường thời gian thực thi của hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime} trên kích thước 512 bit được thực hiện trên cùng một máy tính và cùng một hệ điều hành. Mỗi lần đo sử dụng một tập gồm 20 số nguyên tố an toàn $p$ sinh từ cùng một giá trị seed ngẫu nhiên, đo lặp lại qua 3 lượt tuần tự (tổng cộng 60 lượt sinh, không phải 60 giá trị $p$ độc lập). 20 chuỗi giá trị $p$ sinh ra trùng khớp từng ký tự giữa các bản thực thi. Hai đợt đo được thực hiện ở hai phiên làm việc độc lập nên các tỉ số không nhân chéo với nhau. Ngoài ra, một lần đo độc lập khác của thành viên nhóm (5 lượt xen kẽ ở kích thước 512 bit) ghi nhận không thấy khác biệt rõ. Ở lượt 2 của phép đo bản Pocklington cũ có hai mẫu chênh rõ so với các lượt khác (p thứ 7: 57,9 ms so với khoảng 37 ms; p thứ 8: 302 ms so với khoảng 173 ms), nên các bảng chỉ dùng tỉ số tổng và trung vị.
+\paragraph{Cách đo.}
+\begin{itemize}
+  \item Đo thời gian hàm \texttt{generate\_\allowbreak{}safe\_\allowbreak{}prime} ở kích thước 512 bit, trên cùng một máy và cùng một hệ điều hành.
+  \item Mỗi lần đo dùng 20 số nguyên tố an toàn $p$ sinh từ cùng một seed, lặp 3 lượt tuần tự (tổng cộng 60 lượt sinh, không phải 60 giá trị $p$ độc lập).
+  \item 20 chuỗi giá trị $p$ trùng khớp từng ký tự giữa các bản thực thi.
+\end{itemize}
+
+\paragraph{Phạm vi kết luận.}
+\begin{itemize}
+  \item Hai đợt đo thuộc hai phiên làm việc độc lập nên các tỉ số không nhân chéo với nhau.
+  \item Một lần đo độc lập khác của thành viên nhóm (5 lượt xen kẽ, 512 bit) không thấy khác biệt rõ.
+\end{itemize}
+
+\paragraph{Mẫu chênh lệch.}
+Ở lượt 2 của phép đo bản Pocklington cũ có hai mẫu chênh rõ so với các lượt khác ($p$ thứ 7: 57,9 ms so với khoảng 37 ms; $p$ thứ 8: 302 ms so với khoảng 173 ms). Vì vậy các bảng chỉ dùng tỉ số tổng và trung vị.
 
 Hình \ref{fig:test-prime-128} là kết quả chạy chương trình kiểm thử \texttt{test\_prime} với số nguyên tố an toàn sinh ở kích thước 128 bit.
 
