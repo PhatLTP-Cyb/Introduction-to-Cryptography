@@ -1,7 +1,7 @@
 \section{Hệ thống xử lý số lớn}
 \label{sec:so-lon}
 
-\noindent\textbf{Người phụ trách viết:} Võ Văn Cường (\textit{Ghi chú: cần xác nhận lại phân công chi tiết}).
+\noindent\textbf{Người phụ trách viết:} Võ Văn Cường.
 
 \begin{table}[h!]
 \centering
@@ -13,50 +13,272 @@
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+% \noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
 % QUY TAC TRICH DAN (Nhi chot): moi cau lay tu nguon ngoai (RFC, bai bao, slide, sach) phai co \cite{khoa}, va khoa phai co trong references.bib. So do nhom tu chay thi khong can cite. Chua co khoa trong references.bib thi bao Nhi them, khong tu sua references.bib. Khong ghi so muc hay so trang cua nguon khi chua mo nguon de kiem.
+% Doi chieu voi src/u512.h, src/u512.cpp, src/modexp.cpp tren main aa1be15. So lieu kiem thu va thoi gian do ngay 12/11/2026 tren may Cuong.
 
-\subsection{Thiết kế cấu trúc dữ liệu số lớn \texttt{uint512\_t}}
-% TODO(Cường): Mô tả chi tiết kiểu uint512_t được tổ chức bằng mảng cố định uint64_t[8] (8 limbs).
-% Giải thích lý do chọn limb 64-bit: tận dụng kiến trúc 64-bit hiện đại và kiểu __uint128_t của GCC để tính toán phép nhân/cộng có nhớ hiệu quả \cite{knuth1997art}.
-% Trình bày thứ tự lưu trữ (Little-endian: limb[0] là limb trọng số thấp nhất).
+Nhóm tự cài kiểu số lớn, không dùng thư viện số lớn nào. Phần này gồm hai tệp. Tệp \texttt{src/u512.cpp} (NV1) cài kiểu \texttt{uint512\_t} cùng các phép đọc, ghi, cộng, trừ, dịch bit và so sánh. Tệp \texttt{src/modexp.cpp} (NV2) dựa trên kiểu đó để cài các phép toán theo mô-đun: rút gọn, cộng, nhân và lũy thừa. Các phần còn lại của chương trình (kiểm tra nguyên tố, sinh khóa, trao đổi khóa) chỉ làm việc với số lớn qua các hàm này.
+
+\subsection{Tổ chức kiểu \texttt{uint512\_t}}
+
+Một số \texttt{uint512\_t} là mảng cố định \texttt{uint64\_t digits[LIMBS]} với \texttt{LIMBS} $= 8$, nên có $8 \times 64 = 512$ bit. Mỗi phần tử của mảng gọi là một \emph{limb}, đóng vai trò một chữ số trong hệ cơ số $2^{64}$ \cite{knuth1997art}. Limb thấp nhất đứng đầu mảng:
+\begin{equation}
+x = \sum_{i=0}^{\texttt{LIMBS}-1} \texttt{digits}[i] \cdot 2^{64 i}, \qquad 0 \le x < 2^{512}.
+\end{equation}
 
 \begin{figure}[h!]
 \centering
-% \includegraphics[width=0.8\textwidth]{figures/u512_structure.png}
-\caption{Sơ đồ tổ chức các limb trong cấu trúc \texttt{uint512\_t}}
+\begin{tikzpicture}[
+    limb/.style={rectangle, draw=black, fill=blue!5, minimum width=1.6cm, minimum height=0.9cm, font=\footnotesize\ttfamily, inner sep=1pt}
+]
+\foreach \i in {0,...,7} {
+    \pgfmathtruncatemacro{\idx}{7-\i}
+    \pgfmathtruncatemacro{\hi}{64*(7-\i)+63}
+    \pgfmathtruncatemacro{\lo}{64*(7-\i)}
+    \node[limb] (L\idx) at (1.6*\i, 0) {digits[\idx]};
+    \node[font=\scriptsize, below=0.1cm of L\idx] {bit \hi--\lo};
+}
+\draw[-{Stealth}, thick] ($(L0.north east)+(0,0.35)$) -- node[above, font=\small] {trọng số tăng dần} ($(L7.north west)+(0,0.35)$);
+\end{tikzpicture}
+\caption{Tổ chức các limb trong \texttt{uint512\_t} khi \texttt{LIMBS} $= 8$: \texttt{digits[0]} chứa 64 bit thấp nhất.}
 \label{fig:u512-structure}
 \end{figure}
 
-\subsection{Các toán tử số học cơ bản}
-% TODO(Cường): Trình bày giải thuật và độ phức tạp cho:
-% 1. Phép cộng (+) và trừ (-): cách xử lý cờ nhớ (carry) và cờ mượn (borrow).
-% 2. Phép dịch bit (<<, >>): dịch nguyên limb và dịch bit lẻ trong limb.
-% 3. Phép so sánh (==, <): so sánh từ limb cao nhất về limb thấp nhất.
+Hai hàm tạo: \texttt{uint512\_t()} tạo số 0, \texttt{uint512\_t(uint64\_t v)} tạo số có limb thấp nhất bằng $v$, các limb khác bằng 0. Hàm tạo thứ hai khai báo \texttt{explicit} để trình dịch không tự đổi số 64 bit sang số lớn một cách ngầm định.
 
-\subsection{Phép nhân và chia dư mô-đun}
-% TODO(Cường): Mô tả giải thuật nhân Schoolbook (nhân hai số 512-bit ra số 1024-bit thông qua kiểu trung gian __uint128_t) \cite{menezes1996handbook}.
-% Trình bày cách thực hiện phép chia dư mod_u64 cho số nguyên 64-bit nhỏ.
-% Trình bày giải thuật chia dư đầy đủ mul_mod(a, b, m).
+Lý do chọn cách tổ chức này:
+\begin{itemize}
+    \item \textbf{Limb 64 bit.} Máy 64 bit cộng hoặc nhân hai số 64 bit trong một lệnh. Tổng hai limb cộng số nhớ cần 65 bit, tích hai limb cần 128 bit, và cả hai đều vừa trong kiểu \texttt{\_\_uint128\_t} của GCC (đặt lại tên là \texttt{uint128\_t} trong \texttt{u512.h}). Nhờ vậy số nhớ lấy ra bằng một phép dịch phải 64 bit, không cần tách số thành các nửa 32 bit. Kiểu này chỉ có trên trình dịch 64 bit, nên chương trình cần MinGW-w64 bản 64 bit (mục~\ref{sec:mo-ta-chuong-trinh}).
+    \item \textbf{Kích thước cố định.} Số lớn không cấp phát bộ nhớ động, được sao chép như một giá trị thường, và mọi vòng lặp chạy đúng \texttt{LIMBS} lần. Phép cộng, trừ và dịch bỏ phần tràn khỏi 512 bit, tức là tính theo mô-đun $2^{512}$, giống các kiểu số nguyên không dấu của C++.
+    \item \textbf{Đổi được kích thước.} Trong \texttt{u512.cpp} và \texttt{modexp.cpp}, mọi vòng lặp chạy theo \texttt{LIMBS} và \texttt{BIGINT\_BITS} $= 64 \cdot \texttt{LIMBS}$, không có số 512 viết cứng. Đổi \texttt{LIMBS} thành 16 hoặc 32 là có số 1024 hoặc 2048 bit, tên kiểu vẫn là \texttt{uint512\_t}. Các bước đổi cho cả chương trình nằm ở mục~\ref{sec:mo-ta-chuong-trinh}; kết quả kiểm thử ở các kích thước này nằm ở mục~\ref{subsec:kiem-thu-so-lon}.
+    \item \textbf{Không có phép nhân và phép chia tổng quát.} Chương trình chỉ cần tích và số dư theo một mô-đun $m$, nên \texttt{uint512\_t} không có toán tử \texttt{*} và \texttt{/}. Phép nhân được làm thẳng theo mô-đun trong \texttt{modexp.cpp} (mục~\ref{subsec:nhan-mod}). Giá trị trung gian không bao giờ dài quá $\texttt{LIMBS} + 2$ limb, nên không cần lưu tích đủ 1024 bit.
+\end{itemize}
 
-\subsection{Giải thuật lũy thừa mô-đun \texttt{modular\_exponentiation}}
-% TODO(Cường): Trình bày giải thuật lũy thừa nhị phân (Square-and-Multiply) duyệt bit từ trái sang phải.
-% Giải thích cách xử lý các trường hợp biên: exponent = 0, mod = 1, base >= mod.
-% TODO(Cường): hình - lưu đồ square-and-multiply (figures/modexp_flow.png hoặc TikZ), khớp với modexp.cpp hiện tại (nhân Montgomery cho mô-đun lẻ).
-% TODO(Cường): hình - ảnh chụp kết quả chạy test_u512 và test_modexp từ lần chạy thật (figures/test_u512_output.png, figures/test_modexp_output.png).
+\subsection{Đọc, ghi và truy cập bit}
+
+\begin{itemize}
+    \item \texttt{from\_hex(s)} bỏ các số 0 ở đầu chuỗi rồi đọc từ phải sang trái. Chữ số hex thứ $k$ (đếm từ 0, từ bên phải) mang 4 bit và được đặt vào limb $\lfloor k/16 \rfloor$, tại vị trí bit $4 (k \bmod 16)$ của limb đó. Hàm nhận cả chữ hoa lẫn chữ thường; ném \texttt{std::invalid\_argument} khi chuỗi rỗng hoặc có ký tự không phải hex, ném \texttt{std::out\_of\_range} khi số dài hơn \texttt{BIGINT\_BITS} bit.
+    \item \texttt{to\_hex()} in từ limb cao xuống, mỗi limb đúng 16 chữ số hex chữ thường, rồi bỏ các số 0 ở đầu; số 0 được in thành chuỗi \texttt{0}. Định dạng này trùng với cách Python in số ở hệ 16, nên bộ kiểm thử so sánh chuỗi trực tiếp với kết quả của Python.
+    \item \texttt{is\_zero()} kiểm tra mọi limb bằng 0. \texttt{is\_odd()} xem bit thấp nhất của \texttt{digits[0]}.
+    \item \texttt{bit(i)} và \texttt{set\_bit(i)}: bit $i$ nằm ở limb $\lfloor i/64 \rfloor$, vị trí $i \bmod 64$. Khi $i \ge \texttt{BIGINT\_BITS}$, \texttt{bit(i)} trả về 0 còn \texttt{set\_bit(i)} ném \texttt{std::out\_of\_range}.
+    \item \texttt{bit\_length()} tìm limb khác 0 cao nhất rồi đếm số bit có nghĩa trong limb đó; số 0 có độ dài 0. Phép rút gọn và phép lũy thừa theo mô-đun dùng hàm này để biết số vòng lặp.
+    \item \texttt{mod\_u64(m)} trả về số dư khi chia cho một số 64 bit $m \ne 0$, dùng để sàng các số nguyên tố nhỏ (mục~\ref{sec:kiem-tra-nguyen-to}). Hàm chia như chia tay trong hệ $2^{64}$, đi từ limb cao xuống:
+    \begin{equation}
+    r \leftarrow \left(r \cdot 2^{64} + \texttt{digits}[i]\right) \bmod m .
+    \end{equation}
+    Vì $r < m < 2^{64}$ nên số bị chia luôn vừa 128 bit, và phép \texttt{\%} trên \texttt{uint128\_t} cho số dư trong một bước.
+\end{itemize}
+
+\subsection{Cộng, trừ, dịch bit và so sánh}
+
+\paragraph{Cộng.} Hàm \texttt{add\_overflow(a, b, r)} cộng từ limb thấp lên như cộng tay \cite{knuth1997art}. Ở limb $i$, tổng $s = a_i + b_i + c$ (với $c \in \{0, 1\}$ là số nhớ từ limb trước) được tính trên \texttt{uint128\_t}. 64 bit thấp của $s$ là limb kết quả, phần còn lại là số nhớ mới:
+\begin{equation}
+r_i = s \bmod 2^{64}, \qquad c \leftarrow \lfloor s / 2^{64} \rfloor .
+\end{equation}
+Hàm trả về \texttt{true} khi vẫn còn số nhớ sau limb cao nhất, tức tổng thật vượt quá $2^{512}$. Toán tử \texttt{+} gọi hàm này và bỏ số nhớ cuối cùng. Cờ tràn cần cho các phép toán mô-đun: khi $m$ đủ 512 bit, tổng của hai số nhỏ hơn $m$ có thể vượt $2^{512}$ (mục~\ref{subsec:rut-gon-cong-mod}). Hàm đọc limb $i$ của hai số hạng trước khi ghi limb $i$ của kết quả, nên lời gọi \texttt{add\_overflow(x, y, x)} vẫn cho kết quả đúng.
+
+\paragraph{Trừ.} Toán tử \texttt{-} trừ từ limb thấp lên. Limb $i$ phải mượn khi $a_i < b_i + c$, với $c$ là số mượn từ limb trước. Biểu thức $b_i + c$ có thể tràn khi $b_i = 2^{64} - 1$, nên điều kiện được viết lại thành: $a_i < b_i$, hoặc $a_i = b_i$ và $c = 1$. Phép trừ số không dấu 64 bit tự quay vòng, nên khi $a < b$ kết quả là $a - b + 2^{512}$. Chương trình dùng tính chất này có chủ ý: $0 - m$ cho đúng $2^{512} - m$ (mục~\ref{subsec:nhan-mod}), và trừ $m$ sau một phép cộng đã tràn vẫn cho kết quả đúng.
+
+\paragraph{Dịch bit.} Dịch trái $n$ bit được tách thành dời $q = \lfloor n/64 \rfloor$ limb nguyên và dịch $s = n \bmod 64$ bit bên trong limb. Limb kết quả thứ $i$ ghép phần dịch trái của limb nguồn $i - q$ với các bit tràn ra từ limb nguồn $i - q - 1$:
+\begin{equation}
+r_i = \big(a_{i-q} \ll s\big) \;\big|\; \big(a_{i-q-1} \gg (64 - s)\big).
+\end{equation}
+Khi $s = 0$, vế thứ hai được bỏ qua, vì dịch một số 64 bit đi 64 bit là hành vi không xác định trong C++. Dịch phải làm theo chiều ngược lại. Dịch từ \texttt{BIGINT\_BITS} bit trở lên cho kết quả 0.
+
+\paragraph{So sánh.} Toán tử \texttt{==} so từng limb. Toán tử \texttt{<} so từ limb cao nhất xuống, limb đầu tiên khác nhau quyết định kết quả. Các toán tử \texttt{!=}, \texttt{>}, \texttt{<=} và \texttt{>=} được suy ra từ hai toán tử này.
+
+Bảng~\ref{tab:u512-ops} tóm tắt chi phí. Mọi phép đều tỉ lệ với số limb, nên ở 512 bit mỗi phép chỉ gồm vài chục lệnh máy.
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{ccccc}
+\small
+\begin{tabular}{lll}
 \toprule
-\textbf{Kích thước mô-đun} & \textbf{Số mẫu thử} & \textbf{Thời gian TB (ms)} & \textbf{Nhanh nhất (ms)} & \textbf{Chậm nhất (ms)} \\
+\textbf{Hàm hoặc toán tử} & \textbf{Cách làm} & \textbf{Số bước} \\
 \midrule
-% TODO(Cường): Điền số liệu đo đạc thực tế từ bench_modexp vào bảng dưới
-256 bit & -- & -- & -- & -- \\
-512 bit & -- & -- & -- & -- \\
-1024 bit & -- & -- & -- & -- \\
+\texttt{+}, \texttt{add\_overflow} & cộng từng limb, giữ số nhớ & \texttt{LIMBS} \\
+\texttt{-} & trừ từng limb, giữ số mượn & \texttt{LIMBS} \\
+\texttt{<{}<}, \texttt{>{}>} & dời limb rồi ghép bit & \texttt{LIMBS} \\
+\texttt{==}, \texttt{<} & so từ limb cao xuống & tối đa \texttt{LIMBS} \\
+\texttt{mod\_u64} & chia tay trong hệ $2^{64}$ & \texttt{LIMBS} phép chia 128 bit \\
+\texttt{bit\_length} & tìm limb khác 0 cao nhất & tối đa $\texttt{LIMBS} + 64$ \\
+\texttt{from\_hex}, \texttt{to\_hex} & 4 bit cho mỗi chữ số hex & $16 \cdot \texttt{LIMBS}$ \\
 \bottomrule
 \end{tabular}
-\caption{Kết quả đo thời gian thực thi của phép lũy thừa mô-đun (chạy thật)}
+\caption{Chi phí các phép cơ bản của \texttt{uint512\_t} (\texttt{LIMBS} $= 8$ ở 512 bit).}
+\label{tab:u512-ops}
+\end{table}
+
+\subsection{Các phép toán theo mô-đun}
+
+Tệp \texttt{modexp.cpp} có bốn hàm của NV2: \texttt{reduce\_mod}, \texttt{add\_mod}, \texttt{mul\_mod} và \texttt{modular\_exponentiation}. Hàm thứ năm, \texttt{modular\_\allowbreak{}exponentiation\_\allowbreak{}base\_\allowbreak{}two}, được NV3 thêm vào và trình bày ở mục~\ref{sec:kiem-tra-nguyen-to}. Mọi hàm ném \texttt{std::invalid\_argument} khi mô-đun bằng 0. Hàm \texttt{add\_mod} và \texttt{mul\_mod} tự rút gọn đầu vào lớn hơn mô-đun trước khi tính.
+
+\subsubsection{Rút gọn và cộng theo mô-đun}
+\label{subsec:rut-gon-cong-mod}
+
+\paragraph{Rút gọn.} Hàm \texttt{reduce\_mod(a, m)} tính $a \bmod m$ bằng phép chia ở hệ 2, chỉ dùng dịch bit, cộng, trừ và so sánh. Gọi $k$ là số bit của $m$. Số tạo bởi $k - 1$ bit cao nhất của $a$ chắc chắn nhỏ hơn $m$, nên hàm lấy luôn số đó làm số dư ban đầu $r$, rồi duyệt các bit còn lại $a_j$ của $a$ từ cao xuống:
+\begin{equation}
+r \leftarrow 2r + a_j, \qquad \text{nếu } r \ge m \text{ thì } r \leftarrow r - m .
+\end{equation}
+Trước mỗi bước $r < m$, nên $2r + a_j < 2m$ và chỉ cần trừ $m$ một lần. Khi $m$ đủ 512 bit, $2r$ có thể vượt $2^{512}$; hàm tính $2r$ bằng \texttt{add\_overflow} và trừ $m$ ngay khi có cờ tràn. Số vòng lặp là (số bit của $a$) $- k + 1$, mỗi vòng tốn $O(\texttt{LIMBS})$.
+
+\paragraph{Cộng.} Với $a, b < m$, tổng thật nhỏ hơn $2m$, nên \texttt{add\_mod} chỉ trừ $m$ một lần nếu \texttt{add\_overflow} báo tràn hoặc tổng lớn hơn hoặc bằng $m$. Khi đã tràn, giá trị lưu trong 512 bit bằng tổng thật trừ $2^{512}$; phép trừ quay vòng cộng lại $2^{512}$, nên kết quả vẫn đúng.
+
+\subsubsection{Nhân theo mô-đun}
+\label{subsec:nhan-mod}
+
+Hàm \texttt{mul\_mod(a, b, m)} chọn cách nhân theo tính chẵn lẻ của $m$. Trong chương trình, mô-đun của mọi phép nhân là $p$, $q$ hoặc ứng viên đang kiểm tra nguyên tố, đều là số lẻ, nên chương trình chính luôn đi theo nhánh Montgomery. Nhánh mô-đun chẵn được giữ để các hàm đúng với mọi mô-đun mà bộ kiểm thử đưa vào.
+
+\paragraph{Mô-đun chẵn: nhân bằng cộng và nhân đôi.} Hàm phân tích $y$ thành tổng các lũy thừa của 2 và duyệt bit của $y$ từ cao xuống: mỗi bit nhân đôi kết quả, gặp bit 1 thì cộng thêm $x$. Mọi phép cộng đều theo mô-đun, nên kết quả luôn nhỏ hơn $m$. Ví dụ, với $13 = 1101_2$ ta có $7 \cdot 13 = ((7 \cdot 2 + 7) \cdot 2 \cdot 2) + 7 = 91$. Hàm đổi chỗ hai thừa số để $y$ là số ngắn hơn, nên số vòng lặp bằng số bit của thừa số ngắn hơn; mỗi vòng gồm một hoặc hai phép cộng mô-đun $O(\texttt{LIMBS})$.
+
+\paragraph{Mô-đun lẻ: nhân Montgomery.} Phép nhân Montgomery thay phép chia cho $m$ bằng phép chia cho $R = 2^{512}$, mà phép chia này chỉ là bỏ các limb thấp \cite{menezes1996handbook}. Điều kiện là $\gcd(m, R) = 1$, tức $m$ lẻ. Dạng Montgomery của $x$ và phép nhân Montgomery được định nghĩa như sau:
+\begin{equation}
+\tilde{x} = xR \bmod m, \qquad \mathrm{Mont}(a, b) = a b R^{-1} \bmod m .
+\end{equation}
+Khi đó $\mathrm{Mont}(\tilde{a}, \tilde{b}) = aR \cdot bR \cdot R^{-1} \equiv abR = \widetilde{ab} \pmod m$, nghĩa là tích của hai số ở dạng Montgomery vẫn ở dạng Montgomery.
+
+Hàm \texttt{Montgomery::mul} tính $\mathrm{Mont}(a, b)$ bằng cách xen kẽ phép nhân và phép rút gọn theo từng limb $b_i$ của $b$. Mảng tạm $t$ có $\texttt{LIMBS} + 2$ limb, ban đầu bằng 0. Với $i = 0, 1, \dots, \texttt{LIMBS} - 1$:
+\begin{enumerate}
+    \item $t \leftarrow t + a \cdot b_i$, gồm \texttt{LIMBS} phép nhân 64 bit ra 128 bit.
+    \item $u \leftarrow t_0 \cdot m' \bmod 2^{64}$, với $m' = -m^{-1} \bmod 2^{64}$. Chọn $u$ như vậy thì limb thấp nhất của $t + u \cdot m$ bằng 0.
+    \item $t \leftarrow (t + u \cdot m) / 2^{64}$, thêm \texttt{LIMBS} phép nhân. Limb thấp nhất bằng 0 nên phép chia là chính xác và chỉ là dời mảng xuống một limb.
+\end{enumerate}
+Sau \texttt{LIMBS} vòng, $t$ đã được chia cho $2^{64 \cdot \texttt{LIMBS}} = R$ và $t < 2m$, nên chỉ cần trừ $m$ thêm một lần nếu $t \ge m$. Mỗi phép nhân Montgomery tốn $2 \cdot \texttt{LIMBS}^2 = 128$ phép nhân limb ở 512 bit và không có phép chia nào.
+
+Đối tượng \texttt{Montgomery} tính sẵn ba hằng số phụ thuộc vào $m$:
+\begin{itemize}
+    \item $m' = -m_0^{-1} \bmod 2^{64}$, với $m_0$ là limb thấp nhất của $m$. Nghịch đảo được tính bằng phép lặp Newton $x \leftarrow x (2 - m_0 x) \bmod 2^{64}$: nếu $x$ đúng ở $k$ bit thấp thì sau một vòng đúng ở $2k$ bit. Giá trị đầu $x = m_0$ đã đúng 3 bit vì $m_0^2 \equiv 1 \pmod 8$ với mọi $m_0$ lẻ, nên 5 vòng cho $3 \cdot 2^5 = 96 \ge 64$ bit.
+    \item $R \bmod m$, là số 1 ở dạng Montgomery. Phép trừ quay vòng $0 - m$ cho đúng $2^{512} - m \equiv R \pmod m$, sau đó \texttt{reduce\_mod} rút gọn tiếp.
+    \item $R^2 \bmod m$, dùng để đổi một số sang dạng Montgomery vì $\mathrm{Mont}(x, R^2) = xR \bmod m$. Số $2R \bmod m$ là số 2 ở dạng Montgomery; nâng nó lên lũy thừa 512 ngay trong dạng Montgomery được $2^{512}$ ở dạng Montgomery, tức $R \cdot R \bmod m$. Số mũ 512 chỉ có 10 bit nên bước này tốn 11 phép nhân Montgomery và không cần chia một số 1024 bit.
+\end{itemize}
+
+Với $m$ lẻ, \texttt{mul\_mod} trả về $\mathrm{Mont}(\mathrm{Mont}(x, y), R^2) = xyR^{-1} \cdot R^2 \cdot R^{-1} = xy \bmod m$. Mỗi lần gọi, hàm phải dựng lại ba hằng số trên, nên một lời gọi \texttt{mul\_mod} riêng lẻ chậm hơn nhiều so với một phép nhân bên trong \texttt{modular\_exponentiation} (số đo ở mục~\ref{subsec:thoi-gian-so-lon}).
+
+\subsubsection{Lũy thừa mô-đun}
+\label{subsec:luy-thua-mod}
+
+Hàm \texttt{modular\_exponentiation(base, exp, mod)} tính $\texttt{base}^{\texttt{exp}} \bmod \texttt{mod}$ bằng phương pháp bình phương và nhân, duyệt bit của số mũ từ trái sang phải \cite{menezes1996handbook}. Kết quả $r$ bắt đầu bằng 1. Tại mỗi bit $e_j$ của số mũ, đi từ bit cao nhất xuống, hàm gán $r \leftarrow r^2$, rồi nếu $e_j = 1$ thì gán tiếp $r \leftarrow r \cdot b$. Sau khi xử lý bit $j$, $r = b^{\lfloor e / 2^j \rfloor}$, nên sau bit 0 ta có $r = b^e$. Bảng~\ref{tab:vi-du-modexp} là ví dụ tính $3^{13} \bmod 23$; đây cũng là một ca trong \texttt{test\_modexp}.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Bit đang xét} & \textbf{Bình phương} & \textbf{Bit bằng 1 thì nhân 3} & \textbf{$r$ sau bước} \\
+\midrule
+(khởi tạo) & & & $1$ \\
+bit 3 $= 1$ & $1^2 = 1$ & $1 \cdot 3 = 3$ & $3$ \\
+bit 2 $= 1$ & $3^2 = 9$ & $9 \cdot 3 = 27 \equiv 4$ & $4$ \\
+bit 1 $= 0$ & $4^2 = 16$ & (bỏ qua) & $16$ \\
+bit 0 $= 1$ & $16^2 = 256 \equiv 3$ & $3 \cdot 3 = 9$ & $9$ \\
+\bottomrule
+\end{tabular}
+\caption{Các bước tính $3^{13} \bmod 23$ với $13 = 1101_2$; mọi phép tính lấy theo mô-đun 23.}
+\label{tab:vi-du-modexp}
+\end{table}
+
+Các trường hợp biên:
+\begin{itemize}
+    \item $\texttt{mod} = 0$: ném \texttt{std::invalid\_argument}.
+    \item $\texttt{mod} = 1$: trả về 0, kể cả khi $\texttt{exp} = 0$, vì mọi số theo mô-đun 1 đều bằng 0.
+    \item $\texttt{base} \ge \texttt{mod}$: rút gọn bằng \texttt{reduce\_mod} trước khi vào vòng lặp.
+    \item $\texttt{exp} = 0$: \texttt{bit\_length} bằng 0 nên vòng lặp không chạy và kết quả là 1.
+\end{itemize}
+
+Với mô-đun lẻ, cơ số được đổi sang dạng Montgomery một lần ($\tilde{b} = \mathrm{Mont}(b, R^2)$), $r$ bắt đầu bằng $\tilde{1} = R \bmod m$, cả vòng lặp chạy ở dạng Montgomery, và cuối cùng kết quả được đổi về bằng $\mathrm{Mont}(\tilde{r}, 1) = r$. Ba hằng số Montgomery chỉ được dựng một lần cho cả phép lũy thừa. Với mô-đun chẵn, vòng lặp giống hệt nhưng phép nhân dùng cách cộng và nhân đôi ở trên. Hình~\ref{fig:modexp-flow} tóm tắt luồng xử lý.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=0.45cm and 1.2cm,
+    box/.style={rectangle, draw=black, rounded corners=3pt, align=center, minimum width=6.4cm, minimum height=0.8cm, font=\small},
+    decision/.style={box, fill=blue!5},
+    side/.style={rectangle, draw=black, rounded corners=3pt, align=center, minimum width=3.8cm, minimum height=0.8cm, font=\small},
+    arrow/.style={-{Stealth}, thick}
+]
+\node[box] (start) {Vào: \texttt{base}, \texttt{exp}, \texttt{mod}};
+\node[box, below=of start] (chk) {$\texttt{mod} = 0$: ném \texttt{invalid\_argument}\\ $\texttt{mod} = 1$: trả về $0$\\ $b \leftarrow \texttt{base} \bmod \texttt{mod}$};
+\node[decision, below=of chk] (odd) {\texttt{mod} lẻ?};
+\node[side, right=of odd] (even) {$r \leftarrow 1$\\ phép nhân dùng\\ cộng và nhân đôi};
+\node[box, below=of odd] (mont) {Dựng $m'$, $R \bmod m$, $R^2 \bmod m$\\ $b \leftarrow \mathrm{Mont}(b, R^2)$, \ $r \leftarrow R \bmod m$};
+\node[box, below=of mont] (init) {$i \leftarrow \texttt{bit\_length(exp)} - 1$};
+\node[decision, below=of init] (cond) {$i \ge 0$?};
+\node[side, right=of cond] (done) {Nếu \texttt{mod} lẻ: $r \leftarrow \mathrm{Mont}(r, 1)$\\ Trả về $r$};
+\node[box, below=of cond] (sq) {$r \leftarrow r \cdot r \bmod m$};
+\node[decision, below=of sq] (bit) {Bit $i$ của \texttt{exp} bằng 1?};
+\node[box, below=of bit] (mul) {$r \leftarrow r \cdot b \bmod m$};
+\node[box, below=of mul] (dec) {$i \leftarrow i - 1$};
+
+\draw[arrow] (start) -- (chk);
+\draw[arrow] (chk) -- (odd);
+\draw[arrow] (odd) -- node[right, font=\small] {có} (mont);
+\draw[arrow] (odd) -- node[above, font=\small] {không} (even);
+\draw[arrow] (even) |- (init);
+\draw[arrow] (mont) -- (init);
+\draw[arrow] (init) -- (cond);
+\draw[arrow] (cond) -- node[right, font=\small] {có} (sq);
+\draw[arrow] (cond) -- node[above, font=\small] {không} (done);
+\draw[arrow] (sq) -- (bit);
+\draw[arrow] (bit) -- node[right, font=\small] {có} (mul);
+\draw[arrow] (bit.east) -- node[above, font=\small] {không} ++(1.0,0) |- (dec.east);
+\draw[arrow] (mul) -- (dec);
+\draw[arrow] (dec.west) -- ++(-0.8,0) |- (cond.west);
+\end{tikzpicture}
+\caption{Lưu đồ hàm \texttt{modular\_exponentiation} theo \texttt{src/modexp.cpp}. Với mô-đun lẻ, mọi phép nhân là \texttt{Montgomery::mul}; với mô-đun chẵn, mọi phép nhân dùng cách cộng và nhân đôi.}
+\label{fig:modexp-flow}
+\end{figure}
+
+Một số mũ có $k$ bit, trong đó $w$ bit bằng 1, cần $k$ phép bình phương và $w$ phép nhân. Ở 512 bit, số mũ ngẫu nhiên có trung bình một nửa số bit bằng 1, nên một phép lũy thừa tốn khoảng $512 + 256 = 768$ phép nhân Montgomery.
+
+\paragraph{Hạn chế.} Vòng lặp rẽ nhánh theo từng bit của số mũ, và phép so sánh dừng ở limb khác nhau đầu tiên, nên thời gian chạy phụ thuộc vào giá trị đầu vào, trong đó có khóa riêng khi tính $g^a \bmod p$. Bản cài đặt không nhắm tới việc chạy trong thời gian không đổi.
+
+\subsection{Kiểm thử}
+\label{subsec:kiem-thu-so-lon}
+
+Hai chương trình kiểm thử của phần này đọc dữ liệu do \texttt{tests/run\_tests.py} sinh bằng số nguyên lớn của Python (seed cố định 15), rồi so kết quả từng dòng:
+\begin{itemize}
+    \item \texttt{test\_u512}: 1000 bộ số ngẫu nhiên, mỗi bộ kiểm 7 phép (đọc và in hex, cộng, trừ, dịch trái, dịch phải, \texttt{mod\_u64}, so sánh), tổng cộng 7000 dòng đối chiếu với Python. Các số được chọn để dễ lộ lỗi số nhớ: số đủ 512 bit, số có độ dài ngẫu nhiên, số có dạng $2^k - 1$ (toàn bit 1), số có bit cao nhất bằng 1. Ngoài ra có 18 kiểm tra viết sẵn cho các trường hợp biên, như số 0, số nhớ và số mượn đi qua ranh giới hai limb ($(2^{64} - 1) + 1$), và phép cộng tràn khỏi 512 bit ($(2^{512} - 1) + 1$).
+    \item \texttt{test\_modexp}: 1000 mô-đun ngẫu nhiên (một nửa được ép thành số lẻ để đi qua nhánh Montgomery, nửa còn lại giữ nguyên nên có cả mô-đun chẵn), cùng 9 mô-đun biên, mỗi mô-đun biên lặp 25 lần: $2$, $3$, $2^{64} - 1$, $2^{64} + 1$, $2^{511}$, $2^{511} + 1$, $2^{512} - 3$, $2^{512} - 2$, $2^{512} - 1$. Mỗi mô-đun được kiểm với phép rút gọn, cộng, nhân và lũy thừa; mô-đun biên được kiểm thêm số mũ ngẫu nhiên (có thể lớn hơn mô-đun) và toán hạng lớn nhất $m - 1$. Tổng cộng 5575 dòng đối chiếu với Python. Ngoài ra có 829 kiểm tra viết sẵn: ví dụ $3^{13} \bmod 23 = 9$, các trường hợp biên ở mục~\ref{subsec:luy-thua-mod}, mô-đun 0 phải ném ngoại lệ, định lý Fermat nhỏ với hai số nguyên tố $2^{127} - 1$ và $2^{512} - 569$, và đối chiếu \texttt{modular\_\allowbreak{}exponentiation\_\allowbreak{}base\_\allowbreak{}two} với \texttt{modular\_exponentiation}.
+\end{itemize}
+
+Kết quả chạy \texttt{python tests/run\_tests.py 512} ngày 12/11/2026 trên mã nguồn ở nhánh \texttt{main} (Liệt kê~\ref{lst:test-so-lon}) cho thấy cả hai chương trình đều đạt, không có kiểm tra nào sai.
+
+\begin{lstlisting}[numbers=none, caption={Hai dòng của \texttt{test\_u512} và \texttt{test\_modexp} trong kết quả \texttt{python tests/run\_tests.py 512}, chạy ngày 12/11/2026}, label={lst:test-so-lon}]
+DAT       test_u512     test_u512: 7018 kiem tra, 0 sai
+DAT       test_modexp   test_modexp: 6404 kiem tra, 0 sai
+\end{lstlisting}
+
+Để kiểm tra việc đổi kích thước, nhóm chép mã nguồn ra một thư mục riêng, sửa \texttt{LIMBS} thành 16 và 32, dịch lại, rồi chạy hai chương trình trên với dữ liệu Python sinh theo đúng số bit mới. Ở cả 1024 bit và 2048 bit, \texttt{test\_u512} và \texttt{test\_modexp} đều báo \texttt{DAT} với 7018 và 6404 kiểm tra, không có kiểm tra nào sai. \texttt{test\_modexp} có viết sẵn số nguyên tố $2^{512} - 569$, nên chỉ chạy được khi $\texttt{LIMBS} \ge 8$; điều này khớp với yêu cầu tối thiểu 512 bit của đề.
+
+\subsection{Thời gian chạy}
+\label{subsec:thoi-gian-so-lon}
+
+Chương trình \texttt{tests/bench\_modexp.cpp} (lệnh \texttt{mingw32-make bench}) sinh mô-đun lẻ đủ \texttt{BIGINT\_BITS} bit giống $p$, cùng cơ số và số mũ ngẫu nhiên nhỏ hơn mô-đun. Số ngẫu nhiên lấy từ PRNG của \texttt{lib/fips202} với seed cố định, nên lần chạy nào cũng đo trên cùng một bộ số. Mỗi phép được đo lặp lại cho đến khi có ít nhất 10 mẫu và tổng thời gian đạt 1 giây, rồi chương trình in trung vị, lần nhanh nhất và trung bình. Một phép \texttt{mul\_mod} quá nhanh để đo riêng, nên chương trình đo 1000 phép liên tiếp rồi quy về thời gian của một phép.
+
+Môi trường đo: Intel Core i5-13420H, Windows 11, máy cắm sạc, chế độ nguồn Balanced, g++ 16.2.0 (MinGW-w64) với \texttt{-std=c++14 -O3}, đo ngày 12/11/2026. Mỗi kích thước được chạy 3 lượt, mỗi lượt chương trình được ghim vào một lõi CPU bằng lệnh \texttt{start /affinity 4}. Lý do: khi không ghim, cùng chương trình ở 512 bit cho trung vị phép lũy thừa là 0,293 ms trong khi lần nhanh nhất chỉ 0,132 ms, tức chênh nhau hơn hai lần ngay trong một lượt. Khi đã ghim, trung vị giữa ba lượt gần như không đổi. Bảng~\ref{tab:bench-modexp} ghi khoảng giá trị qua ba lượt.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Kích thước} & \textbf{Số mẫu lũy thừa} & \multicolumn{2}{c}{\textbf{Lũy thừa mô-đun}} & \textbf{\texttt{mul\_mod} riêng lẻ} \\
+\cmidrule(lr){3-4}
+\textbf{mô-đun} & \textbf{mỗi lượt} & \textbf{Trung vị} & \textbf{Nhanh nhất} & \textbf{Trung vị} \\
+\midrule
+512 bit  & 13544--14038 & 0,071 ms & 0,057 ms & 1,220--1,240 $\mu$s \\
+1024 bit & 1779--1808   & 0,548--0,549 ms & 0,452 ms & 5,200--5,349 $\mu$s \\
+2048 bit & 218--255     & 3,701--4,311 ms & 3,572 ms & 18,072--20,366 $\mu$s \\
+\bottomrule
+\end{tabular}
+\caption{Thời gian lũy thừa mô-đun (cơ số và số mũ ngẫu nhiên) và một lời gọi \texttt{mul\_mod}, đo bằng \texttt{bench\_modexp} qua 3 lượt chạy thật, mỗi lượt ghim một lõi CPU.}
 \label{tab:bench-modexp}
 \end{table}
+
+Nhận xét từ số đo:
+\begin{itemize}
+    \item Từ 512 lên 1024 bit, thời gian lũy thừa tăng $0{,}549 / 0{,}071 \approx 7{,}7$ lần. Con số này khớp với cách tính ở trên: số mũ dài gấp đôi nên số phép nhân Montgomery gấp đôi, và mỗi phép nhân có số limb gấp đôi nên tốn gấp bốn ($2 \cdot \texttt{LIMBS}^2$), tổng cộng khoảng 8 lần. Từ 1024 lên 2048 bit, thời gian tăng từ 6,8 đến 7,9 lần tùy lượt.
+    \item Ở 512 bit, một phép lũy thừa gồm khoảng 768 phép nhân Montgomery mất 0,071 ms, tức trung bình khoảng 0,09 $\mu$s cho mỗi phép nhân. Một lời gọi \texttt{mul\_mod} riêng lẻ mất khoảng 1,22 $\mu$s, gấp khoảng 13 lần, vì mỗi lời gọi phải dựng lại $m'$, $R \bmod m$ và $R^2 \bmod m$ (11 phép nhân Montgomery cho $R^2$, cộng 2 phép nhân của chính \texttt{mul\_mod}). Vì vậy \texttt{modular\_exponentiation} không gọi \texttt{mul\_mod} trong vòng lặp, mà dựng hằng số một lần rồi gọi thẳng \texttt{Montgomery::mul}.
+\end{itemize}
+
+Thời gian sinh safe prime và thời gian chạy cả chương trình Diffie-Hellman được trình bày ở mục~\ref{sec:kiem-tra-nguyen-to} và mục~\ref{sec:mo-ta-chuong-trinh}.
