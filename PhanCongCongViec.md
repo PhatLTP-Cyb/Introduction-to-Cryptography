@@ -218,15 +218,17 @@ Kênh liên lạc: Zalo
 
 ## 9. Theo dõi tiến độ
 
+Cập nhật ngày 12/11 theo `main` ở commit `aa1be15`. Kiểm thử chạy lại ngày 12/11: `mingw32-make test` và `python tests/run_tests.py 512` đều báo 6/6 `DAT`.
+
 | Mã | Trạng thái | Ngày xong | Ghi chú |
 |---|---|---|---|
-| NV1 | Chưa làm | | |
-| NV2 | Chưa làm | | |
-| NV3 | Chưa làm | | |
-| NV4 | Chưa làm | | |
-| NV5 | Chưa làm | | |
-| NV6 | Chưa làm | | |
-| NV7 | Chưa làm | | |
+| NV1 | Xong | 07/11 | PR #2, Phát kiểm tra chéo và nhập. `test_u512`: 7018 kiểm tra, 0 sai |
+| NV2 | Xong | 09/11 | PR #3, Nhi duyệt. Thêm nhân Montgomery cho mô-đun lẻ ở PR #33 (11/11). `test_modexp`: 6404 kiểm tra, 0 sai |
+| NV3 | Xong | 11/11 | PR #31 (10/11) và PR #36 (Pocklington, lũy thừa cơ số 2), Cường kiểm tra chéo. `test_prime` ở 512 bit: 28 kiểm tra, 0 sai |
+| NV4 | Xong | 09/11 | PR #4, Nghi duyệt. `test_random`: 23205 kiểm tra, 0 sai |
+| NV5 | Đang làm | | Code xong: `find_generator` ở PR #34 (11/11), Phát kiểm tra chéo; `test_dh` 604 kiểm tra, 0 sai. Còn ghi cách đổi `LIMBS`, `bit_size` và kết quả chạy mẫu vào báo cáo, đang ở PR #45 |
+| NV6 | Đang làm | | 6/6 `DAT`. Còn bỏ `-Wno-unused-parameter` khỏi Makefile (dịch thử không có cờ này: `src/` không còn cảnh báo), đóng gói zip, dịch thử trên máy Windows khác và trên Linux. Hạn 13/11 |
+| NV7 | Đang làm | | Mục 2 xong. Mục 4 ở PR #37, mục 5 ở PR #45 (đang xung đột với `main`). Mục 1, 3, 6 còn khung TODO. Chưa có PDF trong `project_01_report/`. Hạn 15/11 |
 
 ## 10. Rủi ro và phương án xử lý
 
