@@ -1,8 +1,7 @@
 # Windows: mingw32-make [run | test | bench | clean]
 # Linux:   make [run | test | bench | clean]
 CXX := g++
-# Bỏ -Wno-unused-parameter khi đã cài xong mọi hàm trong khung.
-CXXFLAGS := -std=c++14 -O3 -Wall -Wextra -Wpedantic -Wno-unused-parameter -I src -I lib/fips202
+CXXFLAGS := -std=c++14 -O3 -Wall -Wextra -Wpedantic -I src -I lib/fips202
 
 ifeq ($(OS),Windows_NT)
   EXE := .exe
