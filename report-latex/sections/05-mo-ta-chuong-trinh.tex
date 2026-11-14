@@ -156,8 +156,7 @@ dòng lệnh.
 Bảng~\ref{tab:kiemthu} cho số lượng kiểm tra của từng chương trình kiểm thử. Cả hai
 lệnh \texttt{mingw32-make test} (safe prime 128 bit) và
 \texttt{python tests/run\_tests.py 512} (safe prime 512 bit, Python xác nhận $p$ là
-số nguyên tố an toàn dài đúng 512 bit) đều báo 6/6 mục đạt. Chạy lại toàn bộ bộ
-kiểm thử 512 bit mất khoảng 4{,}4 giây.
+số nguyên tố an toàn dài đúng 512 bit) đều báo 6/6 mục đạt.
 
 \begin{table}[h]
 \centering
@@ -212,28 +211,7 @@ Chúng tôi đã thử cấu hình này trên một bản sao của mã nguồn:
 seed cố định \texttt{demo}. Chúng tôi chỉ chạy chương trình chính ở 1024 bit, chưa chạy
 \texttt{python tests/run\_tests.py 1024}.
 
-Bảng~\ref{tab:thoigian} cho thời gian chạy toàn bộ \texttt{dh.exe} (sinh số nguyên
-tố an toàn, sinh phần tử sinh và khóa, rồi tính bí mật chung) với seed lấy từ hệ
-điều hành, đo 5 lần mỗi cấu hình bằng \texttt{Measure-Command} của PowerShell.
-Thời gian sinh số nguyên tố an toàn phụ thuộc vào may rủi (số lần thử cho đến khi
-gặp một số đạt), nên giữa các lần chạy dao động lớn. Ngoài ra, một lần chạy 1024
-bit với seed cố định \texttt{demo} mất 1{,}67 giây.
-% KIEM CHUNG: ghi cau hinh may (CPU, RAM, ban Windows) neu de bai/Phat yeu cau. So lieu do
-% ngay 11/11/2026 tren main; neu main doi code tinh toan thi do lai 5 lan moi cau hinh.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Kích thước $p$ & Nhanh nhất (giây) & Chậm nhất (giây) & Trung bình (giây) \\
-\midrule
-512 bit & 0{,}021 & 1{,}157 & 0{,}408 \\
-1024 bit & 0{,}201 & 1{,}745 & 0{,}978 \\
-\bottomrule
-\end{tabular}
-\caption{Thời gian chạy \texttt{dh.exe}, 5 lần đo mỗi cấu hình (Windows, seed từ hệ điều hành).}
-\label{tab:thoigian}
-\end{table}
+Thời gian chạy toàn bộ \texttt{dh.exe} (sinh số nguyên tố an toàn, sinh phần tử sinh và khóa, rồi tính bí mật chung) với seed lấy từ hệ điều hành dao động lớn giữa các lần chạy, vì thời gian sinh số nguyên tố an toàn phụ thuộc vào may rủi (số lần thử cho đến khi gặp một số đạt).
 
 \subsection{Cài đặt của các bước chính}
 
