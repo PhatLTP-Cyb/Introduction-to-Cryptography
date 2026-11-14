@@ -31,7 +31,7 @@ Trên Linux, dùng `make` thay cho `mingw32-make`.
 Không dùng Makefile:
 
 ```powershell
-g++ -std=c++14 -O3 -I src -I lib/fips202 src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp src/prime.cpp src/dh.cpp lib/fips202/prng.cpp lib/fips202/fips202.c -o dh.exe -lbcrypt
+g++ -std=c++14 -O3 -I src -I lib/fips202 src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp src/prime.cpp src/dh.cpp lib/fips202/prng.cpp lib/fips202/fips202.c -o dh.exe -static -lbcrypt
 ```
 
 ## Kiểm thử
