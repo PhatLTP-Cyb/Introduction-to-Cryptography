@@ -218,7 +218,7 @@ Kênh liên lạc: Zalo
 
 ## 9. Theo dõi tiến độ
 
-Cập nhật ngày 12/11 theo `main` ở commit `aa1be15`. Kiểm thử chạy lại ngày 12/11: `mingw32-make test` và `python tests/run_tests.py 512` đều báo 6/6 `DAT`.
+Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy lại ngày 14/11 trên `ebc861a`: `mingw32-make test` báo 6/6 `DAT` (Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0).
 
 | Mã | Trạng thái | Ngày xong | Ghi chú |
 |---|---|---|---|
@@ -226,9 +226,11 @@ Cập nhật ngày 12/11 theo `main` ở commit `aa1be15`. Kiểm thử chạy l
 | NV2 | Xong | 09/11 | PR #3, Nhi duyệt. Thêm nhân Montgomery cho mô-đun lẻ ở PR #33 (11/11). `test_modexp`: 6404 kiểm tra, 0 sai |
 | NV3 | Xong | 11/11 | PR #31 (10/11) và PR #36 (Pocklington, lũy thừa cơ số 2), Cường kiểm tra chéo. `test_prime` ở 512 bit: 28 kiểm tra, 0 sai |
 | NV4 | Xong | 09/11 | PR #4, Nghi duyệt. `test_random`: 23205 kiểm tra, 0 sai |
-| NV5 | Đang làm | | Code xong: `find_generator` ở PR #34 (11/11), Phát kiểm tra chéo; `test_dh` 604 kiểm tra, 0 sai. Còn ghi cách đổi `LIMBS`, `bit_size` và kết quả chạy mẫu vào báo cáo, đang ở PR #45 |
-| NV6 | Đang làm | | 6/6 `DAT`. Còn bỏ `-Wno-unused-parameter` khỏi Makefile (dịch thử không có cờ này: `src/` không còn cảnh báo), đóng gói zip, dịch thử trên máy Windows khác và trên Linux. Hạn 13/11 |
-| NV7 | Đang làm | | Mục 2 xong. Mục 4 ở PR #37, mục 5 ở PR #45 (đang xung đột với `main`). Mục 1, 3, 6 còn khung TODO. Chưa có PDF trong `project_01_report/`. Hạn 15/11 |
+| NV5 | Xong | 14/11 | Code: `find_generator` ở PR #34 (11/11), Phát kiểm tra chéo; `test_dh` 604 kiểm tra, 0 sai. Cách đổi `LIMBS`, `bit_size` và kết quả chạy mẫu đã vào báo cáo mục 5 (PR #45, 14/11) |
+| NV6 | Đang làm | | 6/6 `DAT`. PR #50 (bỏ `-Wno-unused-parameter`) và PR #53 (thêm `-static` cho Windows) đã nhập ngày 14/11. Còn đóng gói zip, dịch thử trên máy Windows khác; chưa dịch thử trên Linux (báo cáo mục 6 ghi là hạn chế). Trễ so với hạn 13/11 |
+| NV7 | Đang làm | | Đã nhập vào `main`: mục 1 (PR #48, #49), mục 2, mục 4 và bìa (PR #37), mục 5 (PR #45), cỡ chữ 12pt (PR #54), sửa tràn lề mục 2 (PR #55). Mục 3, 6 đã viết và sửa theo review của Nhi ở #28, nằm ở nhánh `Phat` (commit `f4b0b61`), chờ mở PR và Nhi duyệt; bản build Overleaf: 0 lỗi. Chưa có PDF trong `project_01_report/`. Hạn 15/11 |
+
+**Việc cần làm tiếp:** mở PR mục 3, 6 từ nhánh `Phat` và Nhi duyệt; trả lời Nhi ở #28; xuất PDF hoàn chỉnh vào `project_01_report/` và cả nhóm đọc chéo; xác nhận bảng đóng góp ở bìa; NV6 đóng gói zip và dịch thử trên máy Windows khác.
 
 ## 10. Rủi ro và phương án xử lý
 
