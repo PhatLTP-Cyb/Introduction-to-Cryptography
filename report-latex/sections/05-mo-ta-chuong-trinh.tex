@@ -1,62 +1,255 @@
+% ============================================================
+% Báo cáo mục 5: Mô tả chương trình đã cài đặt
+% Người viết: Tô Tuệ Nghi. Đây là ĐOẠN NỘI DUNG, không có preamble.
+% Cần gói: booktabs, seqsplit, amsmath. Không có \cite (mục này không dẫn nguồn ngoài).
+% Dòng "% KIEM CHUNG" là chỗ phải đối chiếu lại trước khi nộp.
+% Preamble của repo cần có \usepackage{seqsplit} (đã có booktabs, listings).
+% Số liệu đo ngày 11/11/2026 trên main đã có NV3 Pocklington (cb2962a).
+% ============================================================
+
 \section{Mô tả chương trình đã cài đặt và hướng dẫn sử dụng}
 \label{sec:mo-ta-chuong-trinh}
-
-\noindent\textbf{Người phụ trách viết:} Tô Tuệ Nghi.
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{|p{14.5cm}|}
-\hline
-\textbf{Đề bài yêu cầu gì (Trích mục 2.5, Lab01.pdf):} \\
-\textit{``5. Mô tả chương trình đã cài đặt: Viết chi tiết cách chạy chương trình đã cài đặt, cách thay đổi các tham số để điều chỉnh độ lớn của số nguyên tố hoặc các thành phần khác trong chương trình của sinh viên.''} \\
-\hline
-\end{tabular}
-\end{table}
-
-\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+\label{sec:chuong-trinh}
 % QUY TAC TRICH DAN (Nhi chot): moi cau lay tu nguon ngoai (RFC, bai bao, slide, sach) phai co \cite{khoa}, va khoa phai co trong references.bib. So do nhom tu chay thi khong can cite. Chua co khoa trong references.bib thi bao Nhi them, khong tu sua references.bib. Khong ghi so muc hay so trang cua nguon khi chua mo nguon de kiem.
 
-\subsection{Cấu trúc thư mục mã nguồn và tổ chức dự án}
-% TODO(Nghi): Giới thiệu cấu trúc phân tầng của mã nguồn:
-% - src/u512.h, src/u512.cpp: Thư viện số lớn uint512_t (NV1).
-% - src/modexp.cpp: Các phép toán chia dư và lũy thừa mô-đun (NV2).
-% - src/prime.cpp: Kiểm tra số nguyên tố và sinh safe prime (NV3).
-% - src/random.cpp: Bộ sinh số ngẫu nhiên CSPRNG (NV4).
-% - src/dh.cpp, src/main.cpp: Triển khai giao thức Diffie-Hellman và chương trình mô phỏng (NV5).
-% - lib/fips202/: Mã nguồn chuẩn mở rộng Keccak SHAKE128.
-% - tests/: Bộ kịch bản kiểm thử đơn vị và kiểm thử tích hợp tự động.
+\subsection{Tổng quan và cấu trúc mã nguồn}
 
-\subsection{Hướng dẫn cài đặt môi trường và biên dịch}
-% TODO(Nghi): Hướng dẫn chi tiết từng bước biên dịch:
-% 1. Trên Windows: Sử dụng MinGW-w64 (g++ 64-bit), lệnh:
-%    mingw32-make run
-%    hoặc lệnh g++ trực tiếp có cờ -O3 và liên kết -lbcrypt:
-%    g++ -std=c++14 -O3 -I src -I lib/fips202 src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp src/prime.cpp src/dh.cpp lib/fips202/prng.cpp lib/fips202/fips202.c -o dh.exe -lbcrypt
-% 2. Trên Linux: Sử dụng make run với trình biên dịch g++.
-% TODO(Nghi): hình - ảnh chụp bước biên dịch thành công trên Windows (figures/build_windows.png).
+Chương trình được viết bằng C++ chuẩn C++14, tự cài đặt số lớn và sinh số nguyên
+tố, không dùng thư viện hỗ trợ như NTL hay GMP. Chương trình thực hiện đủ năm
+bước của giao thức Diffie-Hellman: sinh số nguyên tố an toàn $p$ và phần tử sinh
+$g$, sinh khóa riêng của Alice và Bob, tính giá trị công khai, tính bí mật chung,
+rồi so sánh hai bí mật chung. Bảng~\ref{tab:cautruc} liệt kê các tệp trong thư mục
+\texttt{project\_01\_source}.
 
-\subsection{Kết quả thực thi chương trình mẫu}
-% TODO(Nghi): Chèn kết quả chạy thực tế của chương trình dh.exe trên môi trường Windows.
-% Minh họa các giá trị in ra: p (512-bit hex), g (hex), private key a, b, public key A, B, và shared secret K_A, K_B trùng khớp.
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{4.2cm}p{9.3cm}@{}}
+\toprule
+Tệp & Nội dung \\
+\midrule
+\texttt{src/u512.h}, \texttt{src/u512.cpp} &
+Kiểu số lớn \texttt{uint512\_t}: mảng \texttt{LIMBS} phần tử 64 bit, các phép
+cộng, trừ, dịch bit, so sánh, đọc và in hệ 16. \\
+\texttt{src/modexp.cpp} &
+\texttt{reduce\_mod}, \texttt{add\_mod}, \texttt{mul\_mod},
+\texttt{modular\_exponentiation} (bình phương và nhân, duyệt bit từ trái sang
+phải), \texttt{modular\_exponentiation\_base\_two}; mô-đun lẻ (như $p$ và $q$)
+dùng nhân Montgomery, mô-đun chẵn dùng nhân cộng-dịch. \\
+\texttt{src/random.cpp} &
+Seed từ hệ điều hành, \texttt{random\_bits}, \texttt{random\_range},
+\texttt{generate\_private\_key}. \\
+\texttt{src/prime.cpp} &
+Sàng số nguyên tố nhỏ (\texttt{has\_small\_factor\_for\_safe\_prime}),
+\texttt{is\_probable\_prime} (Miller-Rabin), chứng nhận Pocklington,
+\texttt{generate\_safe\_prime}. \\
+\texttt{src/dh.cpp} & \texttt{find\_generator}. \\
+\texttt{src/main.cpp} & Chương trình chính, gồm năm bước nêu trên. \\
+\texttt{lib/fips202/} &
+Bộ sinh số giả ngẫu nhiên lấy từ mã mẫu của đề, bổ sung nhánh
+\texttt{BCryptGenRandom} cho Windows và giữ nhánh \texttt{getrandom} cho Linux. \\
+\texttt{tests/} &
+Các chương trình kiểm thử và \texttt{run\_tests.py} đối chiếu kết quả với Python. \\
+\texttt{Makefile} & Dịch, chạy chương trình, chạy kiểm thử, dọn tệp. \\
+\bottomrule
+\end{tabular}
+\caption{Cấu trúc mã nguồn.}
+\label{tab:cautruc}
+\end{table}
+% Da doi chieu voi modexp.cpp ngay 11/11/2026: struct Montgomery chi dung khi mo-dun le,
+% mo-dun chan dung nhan cong-dich; modular_exponentiation_base_two nam trong modexp.cpp.
 
-\begin{figure}[h!]
+Mục này mô tả cách cài đặt chương trình và cách chạy nó; phần giải thích cách
+cài đặt số lớn, kiểm tra nguyên tố và sinh số ngẫu nhiên nằm ở các mục 1, 2 và 3.
 
-% TODO(Nghi): dán nguyên văn log chạy thật của dh.exe
-\begin{lstlisting}
-\end{lstlisting}
-\caption{Đầu ra thực tế khi chạy mô phỏng Diffie-Hellman}
-\label{lst:dh-output}
-\end{figure}
+\subsection{Môi trường, cách cài công cụ và chạy trên Windows}
 
-\subsection{Hướng dẫn điều chỉnh tham số độ dài số nguyên tố}
-% TODO(Nghi): Hướng dẫn chi tiết cách thay đổi:
-% 1. Thay đổi kích thước bit sinh số nguyên tố (bit_size): trong file main.cpp hoặc hàm generate_safe_prime(ctx, bitsize).
-% 2. Thay đổi kích thước số lớn tối đa: thay đổi hằng số LIMBS trong src/u512.h (mặc định LIMBS = 8 tương ứng 512 bit, có thể tăng lên LIMBS = 16 tương ứng 1024 bit).
-% Ghi rõ các lưu ý khi thay đổi kích thước và cách biên dịch lại chương trình.
+Chương trình được dịch và chạy trên Windows bằng trình biên dịch g++ 64 bit của
+MinGW-w64. Cần g++ 64 bit vì kiểu \texttt{\_\_uint128\_t} mà chương trình sử dụng không
+có trên g++ 32 bit và MSVC. Cần bốn công cụ sau:
+\begin{itemize}
+  \item g++ MinGW-w64 bản 64 bit, kiểm tra bằng lệnh \texttt{g++ -dumpmachine},
+        kết quả phải là \texttt{x86\_64-w64-mingw32};
+  \item \texttt{mingw32-make}, đi kèm MinGW-w64;
+  \item Python 3 (không cần thư viện thêm), dùng để sinh dữ liệu và đối chiếu kết
+        quả kiểm thử;
+  \item Git, dùng để quản lý mã nguồn (không bắt buộc để dịch và chạy).
+\end{itemize}
 
-\subsection{Hướng dẫn chạy bộ kiểm thử tự động}
-% TODO(Nghi): Hướng dẫn chạy kiểm thử tự động toàn diện:
-% - Lệnh: mingw32-make test
-% - Hoặc: python tests/run_tests.py
-% TODO(Nghi): ghi kết quả test thật sau khi NV5 hoàn thành.
-% TODO(Nghi): hình - ảnh chụp kết quả chạy tests/run_tests.py 512, cần thấy đủ 6 dòng DAT (figures/run_tests_output.png), chụp sau khi NV5 và NV6 xong.
+Cách cài đã dùng trên máy của nhóm: cài MSYS2, mở cửa sổ \emph{MSYS2 UCRT64} và
+chạy
+\begin{verbatim}
+pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make \
+          mingw-w64-ucrt-x86_64-python
+\end{verbatim}
+rồi thêm thư mục \texttt{C:\textbackslash msys64\textbackslash ucrt64\textbackslash bin}
+vào biến môi trường \texttt{PATH} để dùng \texttt{g++}, \texttt{mingw32-make} và
+\texttt{python} từ PowerShell.
+% KIEM CHUNG: day la cach cai suy ra tu duong dan python.exe tren may Nghi
+% (C:\msys64\ucrt64\bin\python.exe). Nghi xac nhan lai ten goi pacman va chay
+% g++ -dumpmachine truoc khi nop.
+
+Các lệnh chạy, thực hiện trong thư mục \texttt{project\_01\_source}:
+\begin{verbatim}
+mingw32-make                      # dịch ra dh.exe
+mingw32-make run                  # dịch và chạy chương trình
+mingw32-make test                 # chạy toàn bộ kiểm thử (safe prime 128 bit)
+python tests/run_tests.py 512     # kiểm thử với safe prime 512 bit
+mingw32-make clean                # xóa các tệp .exe
+\end{verbatim}
+Chương trình nhận hai cách chạy: \texttt{dh.exe} lấy seed 32 byte từ hệ điều hành
+(chế độ mặc định), và \texttt{dh.exe --seed abc} dùng seed cố định chỉ để kiểm
+thử và lặp lại kết quả. Có thể dịch không cần Makefile; \texttt{-lbcrypt} phải đặt sau các tệp nguồn, còn \texttt{-static} liên kết tĩnh thư viện chuẩn của MinGW để \texttt{dh.exe} không nạp nhầm \texttt{libstdc++-6.dll} hay \texttt{libgcc\_s\_seh-1.dll} khác nằm trước trong biến môi trường \texttt{PATH}:
+\begin{verbatim}
+g++ -std=c++14 -O3 -I src -I lib/fips202
+    src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp
+    src/prime.cpp src/dh.cpp lib/fips202/prng.cpp
+    lib/fips202/fips202.c -o dh.exe -static -lbcrypt
+\end{verbatim}
+(lệnh trên viết trên một dòng khi gõ). Trên Linux dùng \texttt{make} thay cho
+\texttt{mingw32-make} và không cần \texttt{-lbcrypt} lẫn \texttt{-static}; chương trình đọc seed từ
+\texttt{getrandom}.
+
+\subsection{Kết quả chạy mẫu}
+
+Bảng~\ref{tab:chay-mau} là một lần chạy với seed cố định \texttt{demo} ở kích thước
+512 bit (\texttt{dh.exe --seed demo}); các số viết ở hệ 16. Hai bí mật chung do
+Alice và Bob tính độc lập trùng nhau, và dòng cuối của chương trình in \texttt{1}
+(hai giá trị bằng nhau). Kiểm tra bằng Python cho thấy $p$ dài đúng
+512 bit, $p$ và $(p-1)/2$ đều nguyên tố, $2 \le g \le p-2$ và
+$g^2 \not\equiv 1$, $g^{(p-1)/2} \not\equiv 1 \pmod p$.
+% KIEM CHUNG: da chay lai "dh.exe --seed demo" ngay 11/11/2026 tren main (co NV3 Pocklington),
+% cac so khop tung ky tu; neu code tinh toan doi thi chay lai va thay cac so.
+
+\providecommand{\hexval}[1]{\texttt{\small\seqsplit{#1}}}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lp{11.3cm}@{}}
+\toprule
+Đại lượng & Giá trị (hệ 16) \\
+\midrule
+$p$ &
+\hexval{b246987daf20bdfe77b3c20eb4ba7ae9f7998f908d401adcd679ede418f95f3838e039c6b8e5ced59e944b5ce305f38cde626f5b88d0c21cbf210f55e030feeb} \\
+$g$ &
+\hexval{3b8cf1edd8b9da9b051fb5848592c15d85a0483350afcb7696cc15e543cff7bfe750cde44fc400d57f32c025e03d410eb087b749264795d98eff2a0c62f91feb} \\
+$A = g^a \bmod p$ &
+\hexval{5529f10c0b250dc678eb5740b74f5497e98c3a06e23fb0c1c327fe17648bf327b0afedd69fd66cecd4c0879b14c415966d428fefc635b782865847c324d58bca} \\
+$B = g^b \bmod p$ &
+\hexval{7de99e10c456fd509fbd5aef73c0a54d14c39462093ef3ca2e091d398c5feef5f1ffd71bb4f4a328af7eada97c9830cad12c24cad92c44ff96aa4046c75da358} \\
+Bí mật chung (Alice) $B^a \bmod p$ &
+\hexval{4c53adc103629355503e26c713ef74bb875fba20cf2c66f92bda24d36c42abfa3c22fa877157ee54fa6d60cc635c0d418893a5fcde0a5f11b642fe27bf5f4881} \\
+Bí mật chung (Bob) $A^b \bmod p$ &
+\hexval{4c53adc103629355503e26c713ef74bb875fba20cf2c66f92bda24d36c42abfa3c22fa877157ee54fa6d60cc635c0d418893a5fcde0a5f11b642fe27bf5f4881} \\
+\bottomrule
+\end{tabular}
+\caption{Một lần chạy mẫu với $p$ dài 512 bit (\texttt{dh.exe --seed demo}).}
+\label{tab:chay-mau}
+\end{table}
+
+Khi chuyển đầu ra của chương trình qua đường ống của PowerShell, chữ tiếng Việt
+có thể hiển thị sai. Đó là lỗi hiển thị của PowerShell, không ảnh hưởng đến kết
+quả tính toán; khi chạy trực tiếp, chương trình tự đặt bảng mã UTF-8 cho cửa sổ
+dòng lệnh.
+
+\subsection{Kết quả kiểm thử}
+
+Bảng~\ref{tab:kiemthu} cho số lượng kiểm tra của từng chương trình kiểm thử. Cả hai
+lệnh \texttt{mingw32-make test} (safe prime 128 bit) và
+\texttt{python tests/run\_tests.py 512} (safe prime 512 bit, Python xác nhận $p$ là
+số nguyên tố an toàn dài đúng 512 bit) đều báo 6/6 mục đạt.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}llr@{}}
+\toprule
+Chương trình & Kiểm tra & Số kiểm tra, số sai \\
+\midrule
+\texttt{test\_u512} & số lớn, đối chiếu Python & 7018, 0 \\
+\texttt{test\_modexp} & lũy thừa mô-đun, các trường hợp biên & 6404, 0 \\
+\texttt{test\_random} & sinh số ngẫu nhiên và khóa riêng & 23205, 0 \\
+\texttt{test\_prime} & kiểm tra nguyên tố, sinh safe prime & 28, 0 \\
+\texttt{test\_dh} & phần tử sinh (\texttt{find\_generator}) & 604, 0 \\
+\texttt{dh} & chạy chương trình chính, hai bí mật trùng nhau & đạt \\
+\bottomrule
+\end{tabular}
+\caption{Kết quả \texttt{python tests/run\_tests.py 512}.}
+\label{tab:kiemthu}
+\end{table}
+
+% Ảnh chụp kết quả: lưu ảnh chụp lệnh python tests/run_tests.py 512 (thấy đủ 6 dòng DAT)
+% vào report-latex/figures/run_tests_output.png; chưa có ảnh thì mục này tự bỏ qua.
+\IfFileExists{figures/run_tests_output.png}{%
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/run_tests_output.png}
+\caption{Kết quả chạy bộ kiểm thử: 6/6 mục đạt.}
+\label{fig:run-tests}
+\end{figure}}{}
+
+Chúng tôi chạy \texttt{dh.exe} 20 lần ở 512 bit với seed lấy từ hệ điều hành. Cả 20
+lần, dòng kết quả cuối cùng của chương trình đều là \texttt{1}, nghĩa là bí mật
+chung của Alice và Bob trùng nhau.
+
+\subsection{Đổi kích thước số lớn và thời gian chạy}
+
+Kích thước tối đa của số lớn đặt bởi hằng số \texttt{LIMBS} trong \texttt{src/u512.h}
+(mặc định 8, mỗi phần tử 64 bit, nên \texttt{BIGINT\_BITS} bằng $8 \times 64 = 512$),
+còn kích thước của $p$ đặt bởi biến \texttt{bit\_size} trong \texttt{src/main.cpp}
+(mặc định 512). Để chạy với số nguyên tố 1024 bit, làm bốn bước:
+\begin{enumerate}
+  \item trong \texttt{src/u512.h}, sửa \texttt{constexpr size\_t LIMBS = 8;} thành
+        \texttt{constexpr size\_t LIMBS = 16;};
+  \item trong \texttt{src/main.cpp}, sửa \texttt{size\_t bit\_size = 512;} thành
+        \texttt{size\_t bit\_size = 1024;} (điều kiện theo ghi chú trong \texttt{main.cpp}: \texttt{bit\_size} từ 512 đến
+        \texttt{BIGINT\_BITS});
+  \item chạy \texttt{mingw32-make clean} rồi \texttt{mingw32-make} để dịch lại
+        toàn bộ;
+  \item chạy \texttt{dh.exe}.
+\end{enumerate}
+Chúng tôi đã thử cấu hình này trên một bản sao của mã nguồn: $p$ dài đúng 1024 bit
+(256 chữ số hệ 16) và hai bí mật chung trùng nhau, cả với seed hệ điều hành lẫn
+seed cố định \texttt{demo}. Chúng tôi chỉ chạy chương trình chính ở 1024 bit, chưa chạy
+\texttt{python tests/run\_tests.py 1024}.
+
+Thời gian chạy toàn bộ \texttt{dh.exe} (sinh số nguyên tố an toàn, sinh phần tử sinh và khóa, rồi tính bí mật chung) với seed lấy từ hệ điều hành dao động lớn giữa các lần chạy, vì thời gian sinh số nguyên tố an toàn phụ thuộc vào may rủi (số lần thử cho đến khi gặp một số đạt).
+
+\subsection{Cài đặt của các bước chính}
+
+\paragraph{Sinh số nguyên tố an toàn.}
+Hàm \texttt{generate\_safe\_prime} chọn $q$ ngẫu nhiên dài $\text{bitsize}-1$ bit,
+đặt $p = 2q+1$ rồi lọc qua ba lớp; ứng viên rớt ở lớp nào thì bị bỏ và hàm chọn
+$q$ mới. Lớp thứ nhất là sàng: loại $q$ hoặc $p$ nếu chia hết cho một số nguyên tố
+nhỏ dưới 20000 (\texttt{has\_small\_factor\_for\_safe\_prime}, không loại nhầm khi
+$q$ hoặc $p$ chính là số nguyên tố trong bảng). Lớp thứ hai là vòng Miller-Rabin cơ
+số 2 cho $q$ và cho $p$; ở $p$, vòng này đồng thời xác nhận điều kiện của định lý
+Pocklington, dùng chung giá trị $2^q \bmod p$ và tính bằng hàm
+\texttt{modular\_exponentiation\_base\_two} (nhân đôi bằng phép cộng, ở dạng
+Montgomery). Lớp thứ ba là 20 vòng Miller-Rabin (hằng \texttt{SAFE\_PRIME\_ROUNDS})
+cho cả $q$ và $p$. Qua đủ ba lớp thì hàm trả về $p$. Chứng nhận Pocklington ở đây
+có điều kiện: nó dựa trên giả định $q$ là số nguyên tố, mà $q$ chỉ được Miller-Rabin
+xác nhận theo xác suất, nên kết luận $p$ nguyên tố cũng là theo xác suất, không phải
+chứng minh tuyệt đối. Hàm từ chối \texttt{bitsize} nhỏ hơn 16 hoặc lớn hơn
+\texttt{BIGINT\_BITS}.
+% KIEM CHUNG: doan nay viet theo generate_safe_prime trong prime.cpp tren main
+% (cb2962a); neu NV3 sua thu tu cac lop loc thi viet lai.
+
+\paragraph{Chọn phần tử sinh.}
+Hàm \texttt{find\_generator} đặt $q = (p-1)/2$, chọn $g$ ngẫu nhiên trong
+$[2,\,p-2]$ và nhận $g$ khi $g^2 \not\equiv 1$ và $g^q \not\equiv 1 \pmod p$. Vì
+$p-1 = 2q$ với $q$ nguyên tố nên bậc của $g$ chỉ có thể là $1$, $2$, $q$ hoặc $2q$;
+hai điều kiện trên loại ba bậc đầu, chỉ còn bậc $2q = p-1$, tức $g$ sinh cả nhóm
+$\mathbb{Z}_p^*$ (xem mục~\ref{sec:dh-ungdung}). Mỗi lần thử thành công với xác suất
+xấp xỉ $1/2$.
+
+\paragraph{Khóa riêng và giá trị công khai.}
+Khóa riêng $a$, $b$ được sinh bằng \texttt{generate\_private\_key}, luôn nằm trong
+$[2,\,p-2]$, bằng cách sinh số ngẫu nhiên rồi sinh lại nếu nằm ngoài khoảng (không
+dùng phép lấy dư nên không lệch phân bố). Giá trị công khai $A = g^a \bmod p$ và
+$B = g^b \bmod p$, bí mật chung $B^a \bmod p$ và $A^b \bmod p$ đều tính bằng
+\texttt{modular\_exponentiation}.
+
+\paragraph{Nguồn ngẫu nhiên.}
+Ở chế độ mặc định, chương trình lấy seed 32 byte từ hệ điều hành
+(\texttt{BCryptGenRandom} trên Windows, \texttt{getrandom} trên Linux). Chương trình
+không dùng \texttt{rand()}, \texttt{mt19937} hay seed theo thời gian. Seed cố định
+chỉ có khi chạy với tham số \texttt{--seed} và chương trình in rõ chế độ seed đang
+dùng ở dòng đầu.
