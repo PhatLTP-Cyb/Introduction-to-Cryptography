@@ -331,7 +331,12 @@ Bộ đầy đủ: `python tests\run_tests.py 512` cho `Tong: 6/6 dat` (u512 701
 
 <details><summary>Gợi ý đáp án</summary>
 
-Hàm giả định p-1 = 2·q với q lẻ (dòng 151) và coi như q nguyên tố. Nếu p-1 chia hết cho 4 thì r lớn hơn 1, và phép kiểm x ∈ {1, p-1} không còn là vòng Miller-Rabin đầy đủ. Hãy tự chọn một p cụ thể (ví dụ p-1 chia hết cho 4) rồi tính tay để kiểm.
+Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và coi như q nguyên tố. Nó tính x = 2^((p-1)/2) mod p (dòng 160) rồi kiểm x ∈ {1, p-1} (dòng 161).
+
+- **p = 13** (p ≡ 1 mod 4, p-1 = 12 = 2²·3, r = 2, q = 6 chẵn): 2^6 = 64 ≡ 12 = p-1 và 12² = 144 ≡ 1 (mod 13), nên hàm trả true. Nhưng (13-1)/2 = 6 không nguyên tố, nên 13 không phải safe prime; kết quả true ở đây không có ý nghĩa.
+- **p = 341 = 11·31** (hợp số, 341 mod 3 = 2): 2^10 ≡ 1 (mod 341) nên 2^170 = (2^10)^17 ≡ 1, và 1² = 1. Hàm trả true cho một hợp số. Lý do: phép kiểm này chỉ khớp một vòng Miller-Rabin khi r = 1; với p ≡ 1 (mod 4) thì r ≥ 2 (341 - 1 = 340 = 2²·85).
+- **Ràng buộc khi gọi:** p = 2q+1 với q lẻ và q đã qua kiểm tra nguyên tố. Trong `generate_safe_prime` điều này thỏa vì `generate_candidate_q` đặt bit thấp nhất bằng 1 (dòng 110) và q qua `passes_base_two_round` trước khi gọi hàm cho p (dòng 251).
+- **Đối chiếu:** `python -c "print(pow(2,6,13), pow(12,2,13), pow(2,170,341), 341%3)"` phải ra `12 1 1 2`.
 </details>
 
 ---
