@@ -13,51 +13,124 @@
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+% \noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
 % QUY TAC TRICH DAN (Nhi chot): moi cau lay tu nguon ngoai (RFC, bai bao, slide, sach) phai co \cite{khoa}, va khoa phai co trong references.bib. So do nhom tu chay thi khong can cite. Chua co khoa trong references.bib thi bao Nhi them, khong tu sua references.bib. Khong ghi so muc hay so trang cua nguon khi chua mo nguon de kiem.
 
 \subsection{Tầm quan trọng của tính ngẫu nhiên trong an toàn mật mã}
-% TODO(Phát): Trình bày khái niệm entropy và sự khác biệt căn bản giữa:
-% 1. PRNG giả ngẫu nhiên thống kê (như rand(), mt19937): chu kỳ dài nhưng dễ bị đoán biết trạng thái nội bộ.
-% 2. CSPRNG (Cryptographically Secure PRNG): thỏa mãn tính chất bất khả đoán (Next-bit Unpredictability) ngay cả khi kẻ tấn công biết một phần ngõ ra trước đó.
-% Dẫn chứng các cuộc tấn công kinh điển khi PRNG bị lỗi hoặc seed từ thời gian (timestamp attack) \cite{menezes1996handbook}.
+
+Trong giao thức Diffie-Hellman của đồ án, mọi bí mật đều bắt nguồn từ số ngẫu nhiên: khóa riêng $x$ của mỗi bên, và cả các ứng viên $q$ khi sinh số nguyên tố an toàn $p$. Tham số $p$, $g$ và giá trị $g^x \bmod p$ đều công khai, nên độ an toàn của khóa chung dựa hoàn toàn vào việc kẻ tấn công không đoán được $x$. Nếu $x$ chỉ có thể nhận ít giá trị, kẻ tấn công thử lần lượt từng giá trị mà không cần giải bài toán logarit rời rạc. Vì vậy, chất lượng của bộ sinh số ngẫu nhiên quyết định độ an toàn thực tế của cả hệ thống, dù $p$ dài bao nhiêu bit.
+
+Bộ sinh số giả ngẫu nhiên (PRNG) là một hàm tất định: từ một giá trị khởi đầu gọi là \emph{seed}, nó sinh ra dãy số trông có vẻ ngẫu nhiên. Có hai yêu cầu khác nhau đối với dãy số này \cite{menezes1996handbook}:
+\begin{itemize}
+  \item \textbf{Ngẫu nhiên về mặt thống kê.} Dãy số vượt qua các kiểm định thống kê, chẳng hạn tần suất các giá trị đều nhau. Các bộ sinh thông dụng như \texttt{rand()} hay \texttt{std::mt19937} chỉ nhắm tới yêu cầu này: thuật toán của chúng công khai và không được thiết kế để chống việc suy ra trạng thái bên trong từ các giá trị đã sinh, nên không dùng được để sinh khóa.
+  \item \textbf{Không đoán được (an toàn mật mã).} Biết các bit đã sinh ra trước đó, kẻ tấn công vẫn không đoán được bit tiếp theo với xác suất tốt hơn $1/2$ một lượng đáng kể, nếu chỉ có tài nguyên tính toán giới hạn. Bộ sinh thỏa mãn yêu cầu này gọi là CSPRNG (\emph{cryptographically secure PRNG}).
+\end{itemize}
+
+Ngay cả một CSPRNG cũng chỉ an toàn khi seed không đoán được. Dãy đầu ra là hàm tất định của seed, nên số khả năng của dãy không vượt quá số khả năng của seed. Một lỗi điển hình là lấy seed từ thời gian hệ thống: kẻ tấn công biết gần đúng thời điểm chạy chương trình thì chỉ cần thử các seed trong khoảng thời gian đó. Lượng bất định thực sự của seed được gọi là \emph{entropy}. Một bộ sinh số ngẫu nhiên an toàn trên máy tính vì vậy có hai phần: lấy seed có entropy đủ lớn từ một nguồn không đoán được, và mở rộng seed đó thành dãy dài bằng một thuật toán an toàn mật mã. Hai tiểu mục tiếp theo trình bày cách chương trình làm từng phần.
 
 \subsection{Thu thập entropy từ hệ điều hành}
-% TODO(Phát): Mô tả cơ chế lấy 32-byte seed an toàn từ hệ điều hành:
-% - Trên Windows: Sử dụng Windows Cryptography API: Next Generation (CNG) qua hàm BCryptGenRandom với cờ BCRYPT_USE_SYSTEM_PREFERRED_RNG, liên kết thư viện -lbcrypt.
-% - Trên Linux: Đọc từ luồng entropy kernel qua thiết bị /dev/urandom hoặc hàm getrandom().
-% - Chế độ seed cố định phục vụ kiểm thử (Reproducible testing) qua seed_from_text.
 
-\subsection{Thuật toán mở rộng luồng giả ngẫu nhiên SHAKE128}
-% TODO(Phát): Giới thiệu chuẩn Keccak / FIPS 202 (hàm mở rộng ngõ ra XOF: SHAKE128) \cite{fips202}.
-% Trình bày cách khởi tạo trạng thái Keccak từ 32-byte seed và hàm prng_random_bits để rút bit ngẫu nhiên liên tục.
+Chương trình không tự thu thập entropy mà lấy seed từ bộ sinh số ngẫu nhiên của hệ điều hành. Hàm \texttt{seed\_from\_os} trong \texttt{src/random.cpp} gọi \texttt{randombytes} (tệp \texttt{lib/fips202/prng.cpp}) để lấy 32 byte, tức 256 bit:
+\begin{itemize}
+  \item Trên Windows, \texttt{randombytes} gọi \texttt{BCryptGenRandom} của Windows CNG với cờ \texttt{BCRYPT\_USE\_SYSTEM\_PREFERRED\_RNG}, tức dùng bộ sinh mặc định của hệ thống. Vì vậy chương trình cần liên kết thư viện \texttt{bcrypt} (cờ \texttt{-lbcrypt}).
+  \item Trên Linux, \texttt{randombytes} gọi \texttt{getrandom}, lặp lại khi lời gọi bị ngắt (\texttt{EINTR}) cho đến khi đủ số byte.
+\end{itemize}
+Nếu hệ điều hành báo lỗi, \texttt{randombytes} gọi \texttt{abort()} để dừng chương trình, thay vì tiếp tục chạy với một seed thiếu entropy. Sau khi nạp seed vào bộ sinh, \texttt{seed\_from\_os} ghi đè 32 byte seed bằng 0 qua một con trỏ \texttt{volatile}, để trình biên dịch không lược bỏ vòng lặp xóa này và seed không còn nằm lại trong bộ nhớ.
+
+Hàm thứ hai, \texttt{seed\_from\_text}, nạp trực tiếp một chuỗi ký tự làm seed. Cùng một chuỗi luôn cho cùng một dãy số, nên chế độ này chỉ dùng để kiểm thử và tái lập kết quả (tham số \texttt{--seed} của chương trình chính). Chế độ mặc định của chương trình là \texttt{seed\_from\_os}.
+
+\subsection{Mở rộng seed bằng SHAKE128}
+
+Seed 256 bit được mở rộng thành dãy bit dài tùy ý bằng SHAKE128, một hàm có đầu ra độ dài thay đổi (XOF) trong chuẩn SHA-3 FIPS 202 \cite{fips202}. SHAKE128 dựa trên cấu trúc bọt biển (\emph{sponge}) với hoán vị Keccak-$f[1600]$: trạng thái 1600 bit chia thành phần \emph{rate} 1344 bit (168 byte) và phần \emph{capacity} 256 bit. Ở pha hấp thụ (\emph{absorb}), dữ liệu vào được XOR vào phần rate rồi hoán vị toàn bộ trạng thái. Ở pha vắt (\emph{squeeze}), mỗi lần đọc hết phần rate thì hoán vị lại để có thêm đầu ra. Phần capacity không bao giờ được đọc ra trực tiếp, và chuẩn cho SHAKE128 mức an toàn 128 bit \cite{fips202}.
+
+Mã SHAKE128 và PRNG trong \texttt{lib/fips202} là mã mẫu của đề; nhóm chỉ thêm nhánh Windows dùng \texttt{BCryptGenRandom}. Bộ sinh dùng SHAKE128 như sau:
+\begin{itemize}
+  \item \texttt{prng\_seed} gọi lần lượt \texttt{shake128\_init}, \texttt{shake128\_absorb} với seed và \texttt{shake128\_finalize} để đóng pha hấp thụ.
+  \item \texttt{prng\_next\_u64} gọi \texttt{shake128\_squeeze} lấy 8 byte tiếp theo và ghép thành một số 64 bit, byte đầu là byte thấp nhất.
+  \item \texttt{random\_bits(ctx, bits)} trong \texttt{src/random.cpp} lấp đầy các limb 64 bit của một số \texttt{uint512\_t} bằng \texttt{prng\_next\_u64}, rồi xóa các bit thừa ở limb cao nhất. Kết quả là một số trong $[0, 2^{\texttt{bits}})$.
+\end{itemize}
+Hình~\ref{fig:csprng-flow} tóm tắt đường đi từ seed đến khóa riêng.
 
 \begin{figure}[h!]
 \centering
-% \includegraphics[width=0.8\textwidth]{figures/shake128_sponge.png}
-\caption{Mô hình Sponge Construction của SHAKE128 trong sinh số ngẫu nhiên}
-\label{fig:shake128-sponge}
+\begin{tikzpicture}[
+  node distance=5mm,
+  box/.style={draw, rounded corners, align=center, font=\small, minimum width=5.2cm, inner sep=4pt},
+  arr/.style={-{Stealth}, thick}]
+\node[box] (os) {Hệ điều hành\\\texttt{BCryptGenRandom} / \texttt{getrandom}};
+\node[box, below=of os] (seed) {\texttt{seed\_from\_os}: seed 32 byte};
+\node[box, below=of seed] (abs) {\texttt{prng\_seed}: SHAKE128 hấp thụ seed};
+\node[box, below=of abs] (sq) {\texttt{prng\_next\_u64}: vắt 8 byte};
+\node[box, below=of sq] (bits) {\texttt{random\_bits}: số trong $[0, 2^{k})$};
+\node[box, below=of bits] (range) {\texttt{random\_range}: lấy mẫu loại bỏ};
+\node[box, below=of range] (key) {\texttt{generate\_private\_key}: $x \in [2, p-2]$};
+\draw[arr] (os) -- (seed);
+\draw[arr] (seed) -- (abs);
+\draw[arr] (abs) -- (sq);
+\draw[arr] (sq) -- (bits);
+\draw[arr] (bits) -- (range);
+\draw[arr] (range) -- (key);
+\end{tikzpicture}
+\caption{Đường đi của số ngẫu nhiên từ hệ điều hành đến khóa riêng}
+\label{fig:csprng-flow}
 \end{figure}
 
 \subsection{Sinh số ngẫu nhiên trong khoảng đóng không lệch phân bố}
-% TODO(Phát): Trình bày giải thuật random_range(low, high) trong khoảng đóng [low, high]:
-% - Giải thích vì sao việc dùng phép chia dư (modulus %): x = rand() % (high - low + 1) gây ra sai lệch phân bố (Modulo Bias).
-% - Cài đặt kỹ thuật Rejection Sampling: tính số bit cần thiết b = bit_length(span), sinh ngẫu nhiên b bit, nếu x <= span thì nhận, ngược lại loại bỏ và thử lại.
-% - Đảm bảo khóa riêng private key nằm chặt chẽ trong [2, p - 2].
-% TODO(Phát): hình - sơ đồ luồng seed từ OS -> SHAKE128 -> prng_random_bits -> random_range -> khóa riêng (figures/csprng_flow.png hoặc TikZ).
-% TODO(Phát): hình - ảnh chụp kết quả chạy test_random từ lần chạy thật (figures/test_random_output.png); điền bảng csprng-eval chỉ bằng kết quả đó.
+
+Khóa riêng phải là số ngẫu nhiên phân bố đều trong một khoảng $[\mathit{low}, \mathit{high}]$ không phải lũy thừa của 2. Cách thường gặp là lấy một số ngẫu nhiên $r$ rồi tính $\mathit{low} + (r \bmod n)$ với $n = \mathit{high} - \mathit{low} + 1$. Cách này lệch phân bố (\emph{modulo bias}) khi $n$ không chia hết số giá trị của $r$. Ví dụ, $r$ phân bố đều trên 8 giá trị $0, 1, \dots, 7$ và $n = 3$: các số dư 0 và 1 mỗi số xuất hiện 3 lần (từ $\{0, 3, 6\}$ và $\{1, 4, 7\}$), còn số dư 2 chỉ xuất hiện 2 lần (từ $\{2, 5\}$). Xác suất là $3/8$, $3/8$ và $2/8$ thay vì cùng bằng $1/3$.
+
+Hàm \texttt{random\_range(ctx, low, high)} tránh lỗi này bằng phương pháp lấy mẫu loại bỏ (\emph{rejection sampling}) và không dùng phép chia dư:
+\begin{enumerate}
+  \item Tính $\mathit{span} = \mathit{high} - \mathit{low}$ và $k$ là số bit của $\mathit{span}$. Nếu $\mathit{span} = 0$ thì trả về $\mathit{low}$.
+  \item Sinh $x$ = \texttt{random\_bits(ctx, k)}, phân bố đều trên $[0, 2^k)$.
+  \item Nếu $x \le \mathit{span}$ thì trả về $\mathit{low} + x$; ngược lại bỏ $x$ và quay lại bước 2.
+\end{enumerate}
+Mỗi giá trị trong $[0, \mathit{span}]$ có cùng xác suất được sinh ra ở bước 2, và việc chỉ giữ lại các giá trị này không làm thay đổi tỉ lệ giữa chúng, nên kết quả phân bố đều trên $[\mathit{low}, \mathit{high}]$. Vì $k$ là số bit của $\mathit{span}$ nên $2^{k-1} \le \mathit{span}$, do đó xác suất nhận ở mỗi lần thử là $(\mathit{span} + 1)/2^k > 1/2$, và số lần sinh trung bình nhỏ hơn 2.
+
+\begin{lstlisting}[language=C++, caption={Hàm \texttt{random\_range} trong \texttt{src/random.cpp} (bỏ chú thích)}, label={lst:random-range}]
+uint512_t random_range(prng_ctx *ctx, const uint512_t &low, const uint512_t &high)
+{
+    if (high < low)
+        invalid_argument("random_range: low > high");
+
+    uint512_t span = high - low;
+    if (span.is_zero())
+        return low;
+
+    size_t k = span.bit_length();
+    uint512_t x;
+    do
+    {
+        x = random_bits(ctx, k);
+    } while (x > span);
+    return low + x;
+}
+\end{lstlisting}
+
+Hàm \texttt{generate\_private\_key(ctx, p)} gọi \texttt{random\_range(ctx, 2, p - 2)}. Khóa riêng loại trừ ba giá trị $0$, $1$ và $p - 1$: với $x = 0$ hoặc $x = p - 1$ thì $g^x \equiv 1 \pmod p$, còn với $x = 1$ thì $g^x = g$, nên giá trị công khai làm lộ ngay khóa riêng. Hàm từ chối $p < 5$ vì khi đó khoảng $[2, p - 2]$ rỗng.
+
+\subsection{Kết quả kiểm thử}
+
+Chương trình \texttt{tests/test\_random.cpp} kiểm các hàm của phần này. Bảng~\ref{tab:csprng-eval} ghi kết quả của một lần chạy thật bằng lệnh \texttt{mingw32-make test\_random.exe} rồi chạy \texttt{test\_random.exe}, trên máy Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0 (MinGW-W64), ngày 14/11/2026. Chương trình in \texttt{test\_random: 23205 kiem tra, 0 sai}. Khi chạy cả bộ kiểm thử bằng \texttt{mingw32-make test}, \texttt{test\_random} cũng báo \texttt{DAT}.
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{cccc}
+\small
+\begin{tabular}{p{3.6cm}p{7.6cm}p{2cm}}
 \toprule
-\textbf{Kiểm định} & \textbf{Quy cách thử nghiệm} & \textbf{Kết quả thực tế} & \textbf{Đánh giá} \\
+\textbf{Hàm được kiểm} & \textbf{Cách kiểm} & \textbf{Kết quả} \\
 \midrule
-% TODO(Phát): Điền kết quả kiểm định tính ngẫu nhiên và phân bố từ test_random
-Phân bố trong khoảng & 100.000 mẫu ngẫu nhiên $[2, p-2]$ & Đạt chuẩn phân bố đều & Không có Modulo Bias \\
-Tính bất khả đoán & Seed lấy từ OS BCryptGenRandom & Không lặp lại chu kỳ & An toàn mật mã \\
+\texttt{seed\_from\_text} & Cùng seed ``nhom15'' cho cùng số 256 bit; seed ``nhom15b'' cho số khác & Đạt \\
+\texttt{seed\_from\_os} & Hai lần lấy seed từ hệ điều hành cho hai số 256 bit khác nhau & Đạt \\
+\texttt{random\_bits} & 6 độ dài (1, 63, 64, 65, 128, 300 bit), mỗi độ dài 200 mẫu: không mẫu nào dài quá số bit yêu cầu & Đạt \\
+\texttt{random\_range} & 10.000 mẫu trong $[2, 21]$: mọi mẫu nằm trong khoảng, xuất hiện đủ 20 giá trị & Đạt \\
+\texttt{generate\_private\_key} & $p = 23$: 10.000 mẫu nằm trong $[2, 21]$, đủ 20 giá trị; $p = 2^{127} - 1$: 2.000 mẫu nằm trong $[2, p - 2]$ & Đạt \\
+\midrule
+\multicolumn{2}{l}{Tổng số kiểm tra} & 23.205, 0 sai \\
 \bottomrule
 \end{tabular}
-\caption{Kiểm định thực nghiệm tính đúng đắn của bộ sinh ngẫu nhiên CSPRNG (chạy thật)}
+\caption{Kết quả chạy \texttt{tests/test\_random.cpp}}
 \label{tab:csprng-eval}
 \end{table}
+
+Bộ kiểm thử chỉ kiểm biên của kết quả, độ phủ giá trị trong khoảng nhỏ và tính tái lập theo seed. Nó không làm kiểm định thống kê về phân bố (chẳng hạn kiểm định khi bình phương), nên không đo trực tiếp độ lệch phân bố. Việc \texttt{random\_range} không lệch phân bố dựa trên lập luận của phương pháp lấy mẫu loại bỏ ở trên, còn tính không đoán được dựa trên seed từ hệ điều hành và SHAKE128 theo chuẩn FIPS 202.

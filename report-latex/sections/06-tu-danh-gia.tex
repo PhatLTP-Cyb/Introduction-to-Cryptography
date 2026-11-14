@@ -13,36 +13,63 @@
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
+% \noindent\textbf{Lưu ý bắt buộc:} \textit{Chỉ ghi các số liệu đo đạc, độ trễ thực thi và kết quả kiểm thử từ lần chạy thực nghiệm thật trên máy tính, tuyệt đối không suy đoán hoặc lấy số liệu lý thuyết.}
 % QUY TAC TRICH DAN (Nhi chot): moi cau lay tu nguon ngoai (RFC, bai bao, slide, sach) phai co \cite{khoa}, va khoa phai co trong references.bib. So do nhom tu chay thi khong can cite. Chua co khoa trong references.bib thi bao Nhi them, khong tu sua references.bib. Khong ghi so muc hay so trang cua nguon khi chua mo nguon de kiem.
 
-\subsection{Đánh giá mức độ hoàn thành so với yêu cầu đề bài}
-% TODO(Phát): Tổng kết các hạng mục công việc đã hoàn thành:
-% - [x] Tự cài đặt hoàn toàn kiểu số lớn uint512_t không phụ thuộc thư viện ngoài (GMP, OpenSSL, ...).
-% - [x] Phép lũy thừa mô-đun modular_exponentiation hoạt động chính xác trên số 512-bit và 1024-bit.
-% - [x] Kiểm tra tính nguyên tố bằng thuật toán xác suất Miller-Rabin chuẩn xác suất, kết hợp sàng số nguyên tố nhỏ.
-% - [x] Thuật toán sinh số nguyên tố an toàn p = 2q + 1 hoạt động ổn định và có hiệu năng thực thi cao.
-% - [x] Tích hợp bộ sinh số ngẫu nhiên an toàn mật mã CSPRNG dựa trên chuẩn Keccak SHAKE128 (FIPS 202) lấy seed từ HĐH.
-% - [x] Mô phỏng thành công giao thức trao đổi khóa Diffie-Hellman với bí mật chung trùng khớp 100%.
+\subsection{Mức độ hoàn thành so với yêu cầu đề bài}
 
-\subsection{Phân tích các ưu điểm nổi bật của chương trình}
-% TODO(Phát): Nêu rõ các thế mạnh về thiết kế và kiến trúc:
-% 1. Thiết kế Clean Code, phân tách module rõ ràng, tuân thủ nguyên tắc Single Responsibility.
-% 2. Tối ưu hóa thuật toán vượt trội: Kỹ thuật sàng kết hợp q và 2q+1 cùng bước lọc sơ bộ Miller-Rabin cơ số 2 giúp giảm thời gian sinh safe prime 512-bit xuống trung bình chỉ còn ~5 giây.
-% 3. Bộ kiểm thử tự động phong phú, đối chiếu độc lập với ngôn ngữ Python chuẩn.
-% 4. Khả năng tương thích chéo nền tảng (chạy tốt trên cả Windows và Linux).
+Chương trình cài đủ các phần đề yêu cầu. Bảng~\ref{tab:hoan-thanh} đối chiếu từng phần với chương trình kiểm thử tương ứng. Số kiểm tra lấy từ một lần chạy \texttt{mingw32-make test} trên mã nguồn ở nhánh \texttt{main} (commit \texttt{ebc861a}), máy Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0 (MinGW-W64), ngày 14/11/2026. Lần chạy này báo \texttt{Tong: 6/6 dat}.
 
-\subsection{Phân tích các hạn chế và nhược điểm hiện tại}
-% TODO(Phát): Thẳng thắn nhìn nhận các điểm hạn chế:
-% 1. Thuật toán nhân số lớn vẫn sử dụng giải thuật Schoolbook O(n^2), chưa triển khai giải thuật Karatsuba hay FFT đối với các kích thước số lớn hơn.
-% 2. Phép lũy thừa mô-đun chưa áp dụng thuật toán nhân Montgomery (Montgomery Multiplication), dẫn tới việc phải liên tục thực hiện phép chia dư nặng nề.
-% 3. Quá trình tìm kiếm số nguyên tố an toàn hiện chạy đơn luồng (Single-thread), chưa tận dụng được sức mạnh tính toán song song đa lõi của CPU.
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{p{5.4cm}p{4.2cm}p{3.6cm}}
+\toprule
+\textbf{Phần việc} & \textbf{Kiểm thử} & \textbf{Kết quả} \\
+\midrule
+Kiểu số lớn \texttt{uint512\_t} (mục~\ref{sec:so-lon}) & \texttt{test\_u512} & 7.018 kiểm tra, 0 sai \\
+Phép toán và lũy thừa mô-đun (mục~\ref{sec:so-lon}) & \texttt{test\_modexp} & 6.404 kiểm tra, 0 sai \\
+Số ngẫu nhiên và khóa riêng (mục~\ref{sec:so-ngau-nhien}) & \texttt{test\_random} & 23.205 kiểm tra, 0 sai \\
+Kiểm tra nguyên tố, sinh safe prime (mục~\ref{sec:kiem-tra-nguyen-to}) & \texttt{test\_prime} & 28 kiểm tra, 0 sai \\
+Tìm phần tử sinh, trao đổi khóa & \texttt{test\_dh} & 604 kiểm tra, 0 sai \\
+Chương trình chính \texttt{dh} & \texttt{tests/run\_tests.py} & Hai khóa chung trùng nhau \\
+\bottomrule
+\end{tabular}
+\caption{Đối chiếu các phần việc với kết quả kiểm thử}
+\label{tab:hoan-thanh}
+\end{table}
 
-\subsection{Đề xuất phương án cải tiến và phát triển}
-% TODO(Phát): Đề xuất các giải pháp nâng cấp cụ thể:
-% - Triển khai phép nhân Montgomery để tăng tốc độ lũy thừa mô-đun lên 2 đến 3 lần.
-% - Áp dụng OpenMP hoặc std::thread để phân tán tìm kiếm ứng viên safe prime trên nhiều luồng song song.
-% - Mở rộng kiểu số lớn dạng template tổng quát hóa uint<N> để hỗ trợ các độ dài bit tùy ý (1024, 2048, 4096 bit).
+Kích thước mặc định của số lớn là 512 bit. Chương trình chính đã được chạy thử với số nguyên tố 1024 bit sau khi đổi \texttt{LIMBS} (mục~\ref{sec:mo-ta-chuong-trinh}), nhưng bộ kiểm thử mới chạy ở cấu hình mặc định.
+
+\subsection{Ưu điểm của chương trình}
+
+\begin{itemize}
+  \item \textbf{Tự cài số lớn, không dùng thư viện số lớn bên ngoài.} Kiểu \texttt{uint512\_t} và các phép toán mô-đun đều do nhóm viết. Mọi vòng lặp chạy theo hằng \texttt{LIMBS}, nên đổi kích thước số chỉ cần sửa một hằng số rồi biên dịch lại.
+  \item \textbf{Nhân Montgomery cho mô-đun lẻ.} Mọi mô-đun mà chương trình chính dùng ($p$, $q$ và các ứng viên nguyên tố) đều lẻ, nên phép nhân mô-đun luôn đi theo nhánh Montgomery và không cần phép chia số lớn (mục~\ref{sec:so-lon}).
+  \item \textbf{Sinh safe prime có tối ưu và có đo lường.} Hàm sinh $p = 2q + 1$ sàng chung cho cả $q$ và $p$, chạy trước một vòng Miller-Rabin cơ số 2 để loại nhanh ứng viên hợp số, và dùng hàm lũy thừa riêng cho cơ số 2. Theo Bảng~\ref{tab:base2-bench}, lũy thừa cơ số 2 cho tỉ số tổng thời gian $0{,}9241$ so với bản trước đó.
+  \item \textbf{Số ngẫu nhiên an toàn.} Seed lấy từ hệ điều hành, mở rộng bằng SHAKE128, và khóa riêng được sinh bằng lấy mẫu loại bỏ nên không lệch phân bố (mục~\ref{sec:so-ngau-nhien}).
+  \item \textbf{Kiểm thử đối chiếu độc lập.} \texttt{tests/run\_tests.py} sinh dữ liệu bằng số nguyên lớn có sẵn của Python và so với kết quả của chương trình C++, đồng thời kiểm lại $p$ và $(p-1)/2$ có nguyên tố không bằng một cài đặt độc lập. Seed cố định cho phép chạy lại đúng một lần thử khi cần tìm lỗi.
+\end{itemize}
+
+\subsection{Hạn chế hiện tại}
+
+\begin{itemize}
+  \item \textbf{Phép nhân có độ phức tạp bậc hai.} Mỗi phép nhân Montgomery tốn $2 \cdot \texttt{LIMBS}^2$ phép nhân limb (mục~\ref{sec:so-lon}). Ở 512 bit điều này chấp nhận được, nhưng thời gian tăng theo bình phương khi tăng \texttt{LIMBS}.
+  \item \textbf{Nhánh mô-đun chẵn chậm.} Với mô-đun chẵn, \texttt{mul\_mod} nhân bằng cộng và nhân đôi theo từng bit của thừa số. Chương trình chính không dùng nhánh này, nhưng nếu dùng lại hàm cho mô-đun chẵn thì sẽ chậm hơn nhiều.
+  \item \textbf{Sinh safe prime chạy đơn luồng.} Các ứng viên được thử lần lượt trên một luồng, chưa tận dụng các lõi khác của CPU. Thời gian sinh $p$ còn phụ thuộc may rủi vì số ứng viên phải thử thay đổi giữa các lần chạy.
+  \item \textbf{Kích thước số cố định khi biên dịch.} Muốn dùng số 1024 bit phải sửa \texttt{LIMBS} và \texttt{bit\_size} rồi biên dịch lại; một bản chương trình không xử lý được nhiều kích thước cùng lúc.
+  \item \textbf{Kiểm thử số ngẫu nhiên chưa có kiểm định thống kê.} \texttt{test\_random} chỉ kiểm biên và độ phủ giá trị, chưa đo độ lệch phân bố (mục~\ref{sec:so-ngau-nhien}).
+  \item \textbf{Mới chạy thử trên Windows.} Nhóm dịch và chạy chương trình trên Windows bằng MinGW-w64. Mã nguồn có nhánh \texttt{getrandom} và Makefile có lệnh \texttt{make} cho Linux, nhưng nhóm chưa dịch thử trên Linux.
+\end{itemize}
+
+\subsection{Hướng cải thiện}
+
+\begin{itemize}
+  \item Thử thuật toán nhân Karatsuba cho các kích thước lớn hơn 512 bit. Cần đo trước khi chọn, vì ở số ít limb chi phí phụ của Karatsuba có thể lớn hơn phần tiết kiệm được.
+  \item Chia việc thử ứng viên safe prime cho nhiều luồng (\texttt{std::thread}), mỗi luồng có bộ sinh số ngẫu nhiên riêng, dừng khi một luồng tìm được $p$.
+  \item Viết kiểu số lớn dạng template theo số limb để một chương trình dùng được nhiều kích thước (512, 1024, 2048 bit).
+  \item Thêm kiểm định khi bình phương cho \texttt{random\_range} trên một khoảng nhỏ với số mẫu lớn, để có số đo về độ đều của phân bố.
+\end{itemize}
 
 \begin{table}[h!]
 \centering
@@ -50,10 +77,11 @@
 \toprule
 \textbf{Ưu điểm đã đạt được} & \textbf{Hạn chế cần cải thiện} \\
 \midrule
-$\bullet$ Tự chủ mã nguồn, không dùng thư viện ngoài & $\bullet$ Nhân số lớn cơ bản $O(n^2)$, chưa có Karatsuba \\
-$\bullet$ Sinh số ngẫu nhiên CSPRNG chuẩn FIPS 202 & $\bullet$ Chưa tích hợp nhân Montgomery \\
-$\bullet$ Tối ưu sàng kép giúp sinh safe prime 512-bit nhanh & $\bullet$ Quá trình sinh số nguyên tố còn chạy đơn luồng \\
-$\bullet$ 100\% kiểm thử tự động khớp với Python chuẩn & $\bullet$ Kích thước số lớn cố định ở thời điểm biên dịch \\
+$\bullet$ Tự cài số lớn, không dùng thư viện số lớn ngoài & $\bullet$ Phép nhân $O(\texttt{LIMBS}^2)$, chưa có Karatsuba \\
+$\bullet$ Nhân Montgomery cho mọi mô-đun lẻ & $\bullet$ Nhánh mô-đun chẵn nhân bằng cộng, chậm \\
+$\bullet$ Sinh số ngẫu nhiên bằng seed từ HĐH và SHAKE128 & $\bullet$ Sinh safe prime còn chạy đơn luồng \\
+$\bullet$ Sàng chung $q$, $p$ và lũy thừa cơ số 2 có đo lường & $\bullet$ Kích thước số cố định khi biên dịch \\
+$\bullet$ 6/6 mục kiểm thử đạt, có đối chiếu với Python & $\bullet$ Chưa có kiểm định thống kê cho số ngẫu nhiên \\
 \bottomrule
 \end{tabular}
 \caption{Bảng tổng kết ưu điểm và hạn chế của đồ án}
