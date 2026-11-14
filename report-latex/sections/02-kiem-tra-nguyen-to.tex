@@ -78,7 +78,11 @@ Hàm \texttt{has\_small\_factor(const uint512\_t \&n)} duyệt từng số nguy�
 
 \subsection{Thuật toán xác suất Miller-Rabin \texttt{is\_probable\_prime}}
 
-Hàm \texttt{is\_probable\_prime(prng\_ctx *ctx, const uint512\_t \&n, int rounds)} trong \texttt{project\_01\_source/src/prime.cpp} cài đặt thuật toán kiểm tra tính nguyên tố Miller-Rabin với các bước xử lý như sau:
+Hàm \texttt{is\_probable\_prime} trong \texttt{project\_01\_source/\allowbreak src/prime.cpp} có chữ ký:
+\begin{center}
+\texttt{is\_probable\_prime(prng\_ctx *ctx, const uint512\_t \&n, int rounds)}
+\end{center}
+\noindent và cài đặt thuật toán kiểm tra tính nguyên tố Miller-Rabin với các bước xử lý như sau:
 \begin{enumerate}
     \item \textbf{Kiểm tra tham số:} Nếu $\texttt{rounds} < 1$, hàm ném ngoại lệ \texttt{std::invalid\_argument} (yêu cầu số vòng kiểm tra phải $\ge 1$).
     \item \textbf{Xử lý giá trị nhỏ và tính chẵn lẻ:}
