@@ -362,7 +362,7 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 | 4 | M3 | Vì sao b nằm trong [2, n-2]? | b = 1 và n-1 cho kết quả tầm thường |
 | 5 | M3 | Sau k vòng độc lập, xác suất sai tối đa? | 4^(-k) |
 | 6 | M4 | Nếu p = 2q+1 chia hết cho 7 thì q mod 7 bằng mấy? | 3, vì (7-1)/2 = 3 |
-| 7 | M6 | Bỏ điều kiện gcd(3, p) = 1 ở `passes_base_two_and_certifies` thì sao? | Mất một điều kiện của chứng nhận; hãy giải thích bằng giả thiết của Pocklington |
+| 7 | M6 | Bỏ điều kiện gcd(3, p) = 1 ở `passes_base_two_and_certifies` thì sao? | Đây là điều kiện gcd(2^((p-1)/q) - 1, p) = gcd(3, p) = 1 của định lý Pocklington (a = 2, (p-1)/q = 2). Đã chạy p ≡ 3 mod 4, p < 2·10^6 khi bỏ điều kiện: 17 hợp số qua phép kiểm x ∈ {1, p-1} (nhỏ nhất 2047 = 23·89), nhưng q của cả 17 số đều là hợp số và không số nào chia hết cho 3, nên chưa có phản ví dụ. Khi q thật sự nguyên tố, phép kiểm này đã kéo theo p nguyên tố (bậc của 2 mod p bằng p-1), nên điều kiện thừa về toán và được giữ để khớp giả thiết của định lý |
 | 8 | M8 | Vẽ lại sơ đồ mục 0.2 từ trí nhớ | Đối chiếu với `generate_safe_prime` |
 
 ### 12.3. Hiểu lầm thường gặp
