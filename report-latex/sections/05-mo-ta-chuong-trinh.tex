@@ -98,16 +98,15 @@ mingw32-make clean                # xóa các tệp .exe
 \end{verbatim}
 Chương trình nhận hai cách chạy: \texttt{dh.exe} lấy seed 32 byte từ hệ điều hành
 (chế độ mặc định), và \texttt{dh.exe --seed abc} dùng seed cố định chỉ để kiểm
-thử và lặp lại kết quả. Có thể dịch không cần Makefile; \texttt{-lbcrypt} phải đặt
-sau các tệp nguồn:
+thử và lặp lại kết quả. Có thể dịch không cần Makefile; \texttt{-lbcrypt} phải đặt sau các tệp nguồn, còn \texttt{-static} liên kết tĩnh thư viện chuẩn của MinGW để \texttt{dh.exe} không nạp nhầm \texttt{libstdc++-6.dll} hay \texttt{libgcc\_s\_seh-1.dll} khác nằm trước trong biến môi trường \texttt{PATH}:
 \begin{verbatim}
 g++ -std=c++14 -O3 -I src -I lib/fips202
     src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp
     src/prime.cpp src/dh.cpp lib/fips202/prng.cpp
-    lib/fips202/fips202.c -o dh.exe -lbcrypt
+    lib/fips202/fips202.c -o dh.exe -static -lbcrypt
 \end{verbatim}
 (lệnh trên viết trên một dòng khi gõ). Trên Linux dùng \texttt{make} thay cho
-\texttt{mingw32-make} và không cần \texttt{-lbcrypt}; chương trình đọc seed từ
+\texttt{mingw32-make} và không cần \texttt{-lbcrypt} lẫn \texttt{-static}; chương trình đọc seed từ
 \texttt{getrandom}.
 
 \subsection{Kết quả chạy mẫu}
