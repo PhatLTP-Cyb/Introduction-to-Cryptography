@@ -5,7 +5,7 @@ CXXFLAGS := -std=c++14 -O3 -Wall -Wextra -Wpedantic -I src -I lib/fips202
 
 ifeq ($(OS),Windows_NT)
   EXE := .exe
-  LDLIBS := -lbcrypt
+  LDLIBS := -static -lbcrypt
   PYTHON := python
   CLEAN := powershell -NoProfile -Command "Remove-Item -Force -ErrorAction SilentlyContinue *.exe"
 else
