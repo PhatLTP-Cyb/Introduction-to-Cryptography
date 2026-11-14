@@ -228,9 +228,9 @@ Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy l
 | NV4 | Xong | 09/11 | PR #4, Nghi duyệt. `test_random`: 23205 kiểm tra, 0 sai |
 | NV5 | Xong | 14/11 | Code: `find_generator` ở PR #34 (11/11), Phát kiểm tra chéo; `test_dh` 604 kiểm tra, 0 sai. Cách đổi `LIMBS`, `bit_size` và kết quả chạy mẫu đã vào báo cáo mục 5 (PR #45, 14/11) |
 | NV6 | Đang làm | | 6/6 `DAT`. PR #50 (bỏ `-Wno-unused-parameter`) và PR #53 (thêm `-static` cho Windows) đã nhập ngày 14/11. Còn đóng gói zip, dịch thử trên máy Windows khác; chưa dịch thử trên Linux (báo cáo mục 6 ghi là hạn chế). Trễ so với hạn 13/11 |
-| NV7 | Đang làm | | Đã nhập vào `main`: mục 1 (PR #48, #49), mục 2, mục 4 và bìa (PR #37), mục 5 (PR #45), cỡ chữ 12pt (PR #54), sửa tràn lề mục 2 (PR #55). Mục 3, 6 đã viết và sửa theo review của Nhi ở #28, nằm ở nhánh `Phat` (commit `f4b0b61`), chờ mở PR và Nhi duyệt; bản build Overleaf: 0 lỗi. Chưa có PDF trong `project_01_report/`. Hạn 15/11 |
+| NV7 | Đang làm | | Đã nhập vào `main`: mục 1 (PR #48, #49), mục 2, mục 4 và bìa (PR #37), mục 5 (PR #45), cỡ chữ 12pt (PR #54), sửa tràn lề mục 2 (PR #55). Mục 3, 6 đã viết và sửa theo review của Nhi ở #28, ở PR #56 (nhánh `Phat`, commit `f4b0b61`), chờ Nhi duyệt; bản build Overleaf: 0 lỗi. Chưa có PDF trong `project_01_report/`. Hạn 15/11 |
 
-**Việc cần làm tiếp:** mở PR mục 3, 6 từ nhánh `Phat` và Nhi duyệt; trả lời Nhi ở #28; xuất PDF hoàn chỉnh vào `project_01_report/` và cả nhóm đọc chéo; xác nhận bảng đóng góp ở bìa; NV6 đóng gói zip và dịch thử trên máy Windows khác.
+**Việc cần làm tiếp:** Nhi duyệt PR #56 (mục 3, 6); trả lời Nhi ở #28; xuất PDF hoàn chỉnh vào `project_01_report/` và cả nhóm đọc chéo; xác nhận bảng đóng góp ở bìa; NV6 đóng gói zip và dịch thử trên máy Windows khác.
 
 ## 10. Rủi ro và phương án xử lý
 
