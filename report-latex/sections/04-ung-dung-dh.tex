@@ -82,7 +82,7 @@ k \equiv k_B^{\,x} \equiv (g^y)^x \equiv g^{xy} \equiv (g^x)^y \equiv k_A^{\,y} 
 \]
 Kẻ nghe lén biết $p$, $g$, $k_A$, $k_B$ nhưng muốn tính $g^{xy}$ thì phải giải
 bài toán logarit rời rạc; theo tài liệu môn học, phương pháp
-index-calculus được xem là mạnh nhất hiện biết cho bài toán này \cite{slide-bai2}.
+index-calculus có thể được xem là mạnh nhất cho bài toán này \cite{slide-bai2}.
 
 Chương trình của nhóm cài đúng các bước trên: sinh số nguyên tố an toàn $p$
 (\texttt{generate\_\allowbreak safe\_\allowbreak prime}), chọn phần tử sinh $g$
@@ -103,15 +103,12 @@ kết hợp cả hai. Trao đổi khóa bất đối xứng gồm Diffie-Hellman
 hoặc trên đường cong elliptic \cite{rfc9846}. Chương trình của nhóm tương ứng với
 trường hợp trên trường hữu hạn $\mathbb{Z}_p^*$.
 
-Cách hoạt động khi dùng trao đổi khóa bất đối xứng \cite{rfc9846}: trong thông
+{\emergencystretch=3em Cách hoạt động khi dùng trao đổi khóa bất đối xứng \cite{rfc9846}: trong thông
 điệp \texttt{ClientHello}, máy khách gửi phần chia sẻ khóa
 (\texttt{key\_\allowbreak share}) của mình; máy chủ trả lời trong \texttt{ServerHello} bằng
 phần chia sẻ \emph{tạm thời} của máy chủ, cùng nhóm với một phần chia sẻ của máy
 khách. Từ hai phần chia sẻ này, hai bên cùng tính được bí mật chung, rồi dùng nó
-để dẫn xuất khóa bảo vệ dữ liệu. Với nhóm hữu hạn, giá trị công khai có dạng
-$g^{x} \bmod p$ (RFC~9846 viết là $Y = g^X \bmod p$, với $X$ là khóa riêng), và mỗi bên \emph{phải} kiểm tra giá trị công khai nhận được
-thỏa $1 < h < p-1$ (với $h$ là giá trị công khai của đối phương) để đối phương không ép hệ thống vào một nhóm con nhỏ
-\cite{rfc9846}.
+để dẫn xuất khóa bảo vệ dữ liệu. Với nhóm hữu hạn, mỗi bên gửi giá trị công khai $g^{x} \bmod p$, trong đó $x$ là khóa riêng của bên đó (RFC~9846 ký hiệu giá trị này là $Y = g^X \bmod p$). Mỗi bên \emph{phải} kiểm tra giá trị công khai $h$ nhận được từ đối phương thỏa $1 < h < p-1$, để đối phương không ép hệ thống vào một nhóm con nhỏ \cite{rfc9846}.\par}
 
 \paragraph{Khóa tạm thời và bảo mật về sau (forward secrecy).}
 TLS 1.3 đã loại bỏ các bộ mã dùng RSA tĩnh và Diffie-Hellman tĩnh; mọi cơ chế
@@ -159,8 +156,8 @@ nhóm dựa trên mô tả giao thức, không phải kết luận trích từ m
 TLS chặn tấn công này bằng cách kết hợp trao đổi khóa với xác thực. Máy chủ gửi
 chứng chỉ, một chữ ký trên toàn bộ quá trình bắt tay (\texttt{CertificateVerify})
 và một mã xác thực (\texttt{Finished}), nhờ đó định danh của máy chủ được gắn với
-khóa vừa thỏa thuận \cite{rfc9846}. Cơ chế chữ ký số này chính là nội dung của
-bài \emph{Chữ ký số} trong tài liệu môn học \cite{slide-bai4}: người gửi ký bằng
+khóa vừa thỏa thuận \cite{rfc9846}. Nguyên lý của cơ chế chữ ký số này được trình bày
+trong bài \emph{Chữ ký số} của tài liệu môn học \cite{slide-bai4}: người gửi ký bằng
 khóa cá nhân, người nhận xác minh bằng khóa công khai.
 
 \subsection{Vì sao cần số nguyên tố an toàn}
@@ -183,7 +180,7 @@ công với xác suất xấp xỉ $1/2$.
 
 \paragraph{Kiểm tra giá trị công khai đơn giản.}
 Khi biết nhóm dùng số nguyên tố an toàn, nhóm có kích thước $p-1$ hoặc $(p-1)/2$,
-và chỉ cần kiểm tra $1 < Y < p-1$ để biết đối phương không ép hệ thống vào nhóm
+và chỉ cần kiểm tra giá trị công khai nhận được $h$ thỏa $1 < h < p-1$ để biết đối phương không ép hệ thống vào nhóm
 con hai phần tử \cite{rfc9846,rfc7919}. Ngược lại, với nhóm tùy chọn do máy chủ gửi, máy
 khách không biết cấu trúc của nhóm, và nếu thấy nhóm không đủ mạnh ($p$ quá nhỏ,
 $p$ không nguyên tố, hoặc có nhóm con nhỏ khó tránh) thì chỉ còn cách từ chối kết
@@ -197,8 +194,7 @@ nhóm 512 bit cố định, có thể tính logarit rời rạc bất kỳ trong
 một phút; 82\% máy chủ dễ tổn thương dùng cùng một nhóm 512 bit, và các trình
 duyệt lớn đã đổi sang từ chối nhóm ngắn \cite{logjam-cacm}. Nguyên nhân sâu xa là
 kẻ tấn công chỉ cần tính trước một lần cho một số nguyên tố $p$ rồi dùng lại cho
-mọi mục tiêu dùng chung $p$ đó \cite{logjam-cacm}. RFC~7919 yêu cầu máy khách phải
-từ chối nhóm tùy chọn có $|p| < 768$ bit và nên từ chối nhóm dưới 1024 bit; với
+mọi mục tiêu dùng chung $p$ đó \cite{logjam-cacm}. RFC~7919 yêu cầu máy khách tương thích với RFC này, khi nhận nhóm tùy chọn từ một máy chủ không tương thích, phải từ chối nhóm có $|p| < 768$ bit và nên từ chối nhóm dưới 1024 bit; với
 hệ thống tương lai, theo RFC~7919, ENISA khuyến nghị nhóm từ 3072 bit trở lên \cite{rfc7919}.
 % DA KIEM CHUNG 11/11/2026: nguong 768/1024 bit o RFC 7919 muc 3.1; khuyen nghi ENISA 3072 bit o muc 8.2.
 
@@ -209,7 +205,7 @@ Diffie-Hellman còn là cơ chế trao đổi khóa trong hai giao thức quen t
 phương thức \texttt{diffie-hellman-\allowbreak group1-\allowbreak sha1} và
 \texttt{diffie-hellman-\allowbreak group14-\allowbreak sha1} \cite{rfc4253}; RFC~8268 bổ sung các phương
 thức từ \texttt{diffie-hellman-\allowbreak group14-\allowbreak sha256} đến
-\texttt{diffie-hellman-\allowbreak group18-\allowbreak sha512} với nhóm lớn hơn và hàm băm SHA-2
+\texttt{diffie-hellman-\allowbreak group18-\allowbreak sha512}; \texttt{group14-\allowbreak sha256} giữ nhóm 2048 bit của \texttt{group14-\allowbreak sha1} và chỉ đổi sang SHA-256, còn từ \texttt{group15} đến \texttt{group18} dùng nhóm lớn hơn (3072, 4096, 6144 và 8192 bit) với SHA-512
 \cite{rfc8268}. \emph{IPsec}: trong giao thức IKEv2, lần trao đổi đầu tiên
 (\texttt{IKE\_\allowbreak SA\_\allowbreak INIT}) thương lượng tham số bảo mật, gửi số dùng một lần và gửi
 các giá trị Diffie-Hellman \cite{rfc7296}; IKEv2 dùng DH hoặc ECDH để thiết lập

@@ -23,7 +23,7 @@ rồi so sánh hai bí mật chung. Bảng~\ref{tab:cautruc} liệt kê các t�
 
 \begin{table}[h]
 \centering
-\begin{tabular}{@{}p{4.2cm}p{9.3cm}@{}}
+\begin{tabular}{@{}p{0.31\linewidth}p{0.65\linewidth}@{}}
 \toprule
 Tệp & Nội dung \\
 \midrule
@@ -78,7 +78,8 @@ có trên g++ 32 bit và MSVC. Cần bốn công cụ sau:
 Cách cài đã dùng trên máy của nhóm: cài MSYS2, mở cửa sổ \emph{MSYS2 UCRT64} và
 chạy
 \begin{verbatim}
-pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make \
+pacman -S mingw-w64-ucrt-x86_64-gcc \
+          mingw-w64-ucrt-x86_64-make \
           mingw-w64-ucrt-x86_64-python
 \end{verbatim}
 rồi thêm thư mục \texttt{C:\textbackslash msys64\textbackslash ucrt64\textbackslash bin}
@@ -90,15 +91,15 @@ vào biến môi trường \texttt{PATH} để dùng \texttt{g++}, \texttt{mingw
 
 Các lệnh chạy, thực hiện trong thư mục \texttt{project\_01\_source}:
 \begin{verbatim}
-mingw32-make                      # dịch ra dh.exe
-mingw32-make run                  # dịch và chạy chương trình
-mingw32-make test                 # chạy toàn bộ kiểm thử (safe prime 128 bit)
-python tests/run_tests.py 512     # kiểm thử với safe prime 512 bit
-mingw32-make clean                # xóa các tệp .exe
+mingw32-make                    # dịch ra dh.exe
+mingw32-make run                # dịch và chạy
+mingw32-make test               # kiểm thử (safe prime 128 bit)
+python tests/run_tests.py 512   # kiểm thử, safe prime 512 bit
+mingw32-make clean              # xóa các tệp .exe
 \end{verbatim}
-Chương trình nhận hai cách chạy: \texttt{dh.exe} lấy seed 32 byte từ hệ điều hành
+{\emergencystretch=3em Chương trình nhận hai cách chạy: \texttt{dh.exe} lấy seed 32 byte từ hệ điều hành
 (chế độ mặc định), và \texttt{dh.exe --seed abc} dùng seed cố định chỉ để kiểm
-thử và lặp lại kết quả. Có thể dịch không cần Makefile; \texttt{-lbcrypt} phải đặt sau các tệp nguồn, còn \texttt{-static} liên kết tĩnh thư viện chuẩn của MinGW để \texttt{dh.exe} không nạp nhầm \texttt{libstdc++-6.dll} hay \texttt{libgcc\_s\_seh-1.dll} khác nằm trước trong biến môi trường \texttt{PATH}:
+thử và lặp lại kết quả. Có thể dịch không cần Makefile; \texttt{-lbcrypt} phải đặt sau các tệp nguồn, còn \texttt{-static} liên kết tĩnh thư viện chuẩn của MinGW để \texttt{dh.exe} tránh nạp nhầm \texttt{libstdc++\allowbreak -6.dll} hay \texttt{libgcc\_\allowbreak s\_\allowbreak seh-1.dll} khác nằm trước trong biến môi trường \texttt{PATH}:\par}
 \begin{verbatim}
 g++ -std=c++14 -O3 -I src -I lib/fips202
     src/main.cpp src/u512.cpp src/modexp.cpp src/random.cpp
@@ -123,7 +124,7 @@ $g^2 \not\equiv 1$, $g^{(p-1)/2} \not\equiv 1 \pmod p$.
 \providecommand{\hexval}[1]{\texttt{\small\seqsplit{#1}}}
 \begin{table}[h]
 \centering
-\begin{tabular}{@{}lp{11.3cm}@{}}
+\begin{tabular}{@{}p{0.27\linewidth}p{0.69\linewidth}@{}}
 \toprule
 Đại lượng & Giá trị (hệ 16) \\
 \midrule
@@ -156,6 +157,15 @@ Bảng~\ref{tab:kiemthu} cho số lượng kiểm tra của từng chương trì
 lệnh \texttt{mingw32-make test} (safe prime 128 bit) và
 \texttt{python tests/run\_tests.py 512} (safe prime 512 bit, Python xác nhận $p$ là
 số nguyên tố an toàn dài đúng 512 bit) đều báo 6/6 mục đạt.
+
+Lần chạy \texttt{mingw32-make test} ngày 15/11/2026 cho kết quả \texttt{Tong: 6/6 dat}.
+Độ dài của $p$ ở lần chạy này được kiểm bằng lệnh PowerShell sau, chạy trong
+\texttt{project\_01\_source} sau khi chạy \texttt{mingw32-make test} (trừ 2 ký tự \texttt{p=}):
+\begin{verbatim}
+(.\test_prime.exe | Select-String "^p=").Line.Length - 2
+\end{verbatim}
+Lệnh in ra \texttt{32}, tức $p$ có 32 chữ số hệ 16; chữ số đầu là \texttt{c}
+(bit cao nhất bằng 1) nên $p$ dài đúng 128 bit.
 
 \begin{table}[h]
 \centering
@@ -207,8 +217,7 @@ còn kích thước của $p$ đặt bởi biến \texttt{bit\_size} trong \text
 \end{enumerate}
 Chúng tôi đã thử cấu hình này trên một bản sao của mã nguồn: $p$ dài đúng 1024 bit
 (256 chữ số hệ 16) và hai bí mật chung trùng nhau, cả với seed hệ điều hành lẫn
-seed cố định \texttt{demo}. Chúng tôi chỉ chạy chương trình chính ở 1024 bit, chưa chạy
-\texttt{python tests/run\_tests.py 1024}.
+seed cố định \texttt{demo}. Kết quả của \texttt{python tests/run\_tests.py 1024} ở cấu hình này được trình bày ở mục~\ref{sec:tu-danh-gia}: 6/6 đạt.
 
 Thời gian chạy toàn bộ \texttt{dh.exe} (sinh số nguyên tố an toàn, sinh phần tử sinh và khóa, rồi tính bí mật chung) với seed lấy từ hệ điều hành dao động lớn giữa các lần chạy, vì thời gian sinh số nguyên tố an toàn phụ thuộc vào may rủi (số lần thử cho đến khi gặp một số đạt).
 
