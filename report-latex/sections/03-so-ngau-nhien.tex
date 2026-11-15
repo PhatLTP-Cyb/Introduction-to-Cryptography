@@ -32,7 +32,7 @@ Ngay cả một CSPRNG cũng chỉ an toàn khi seed không đoán được. Dã
 
 Chương trình không tự thu thập entropy mà lấy seed từ bộ sinh số ngẫu nhiên của hệ điều hành. Hàm \texttt{seed\_from\_os} trong \texttt{src/random.cpp} gọi \texttt{randombytes} (tệp \texttt{lib/fips202/prng.cpp}) để lấy 32 byte, tức 256 bit:
 \begin{itemize}
-  \item Trên Windows, \texttt{randombytes} gọi \texttt{BCryptGenRandom} của Windows CNG với cờ \texttt{BCRYPT\_USE\_SYSTEM\_PREFERRED\_RNG}, tức dùng bộ sinh mặc định của hệ thống. Vì vậy chương trình cần liên kết thư viện \texttt{bcrypt} (cờ \texttt{-lbcrypt}).
+  \item Trên Windows, \texttt{randombytes} gọi \texttt{BCryptGenRandom} của Windows CNG với cờ \texttt{BCRYPT\_\allowbreak{}USE\_\allowbreak{}SYSTEM\_\allowbreak{}PREFERRED\_\allowbreak{}RNG}, tức dùng bộ sinh mặc định của hệ thống. Vì vậy chương trình cần liên kết thư viện \texttt{bcrypt} (cờ \texttt{-lbcrypt}).
   \item Trên Linux, \texttt{randombytes} gọi \texttt{getrandom}, lặp lại khi lời gọi bị ngắt (\texttt{EINTR}) cho đến khi đủ số byte.
 \end{itemize}
 Nếu hệ điều hành báo lỗi, \texttt{randombytes} gọi \texttt{abort()} để dừng chương trình, thay vì tiếp tục chạy với một seed thiếu entropy. Sau khi nạp seed vào bộ sinh, \texttt{seed\_from\_os} ghi đè 32 byte seed bằng 0 qua một con trỏ \texttt{volatile}, để trình biên dịch không lược bỏ vòng lặp xóa này và seed không còn nằm lại trong bộ nhớ.
@@ -41,7 +41,7 @@ Hàm thứ hai, \texttt{seed\_from\_text}, nạp trực tiếp một chuỗi ký
 
 \subsection{Mở rộng seed bằng SHAKE128}
 
-Seed 256 bit được mở rộng thành dãy bit dài tùy ý bằng SHAKE128, một hàm có đầu ra độ dài thay đổi (XOF) trong chuẩn SHA-3 FIPS 202 \cite{fips202}. SHAKE128 dựa trên cấu trúc bọt biển (\emph{sponge}) với hoán vị Keccak-$f[1600]$: trạng thái 1600 bit chia thành phần \emph{rate} 1344 bit (168 byte) và phần \emph{capacity} 256 bit. Ở pha hấp thụ (\emph{absorb}), dữ liệu vào được XOR vào phần rate rồi hoán vị toàn bộ trạng thái. Ở pha vắt (\emph{squeeze}), mỗi lần đọc hết phần rate thì hoán vị lại để có thêm đầu ra. Phần capacity không bao giờ được đọc ra trực tiếp, và chuẩn cho SHAKE128 mức an toàn 128 bit \cite{fips202}.
+Seed 256 bit được mở rộng thành dãy bit dài tùy ý bằng SHAKE128, một hàm có đầu ra độ dài thay đổi (XOF) trong chuẩn SHA-3 FIPS 202 \cite{fips202}. SHAKE128 dựa trên cấu trúc bọt biển (\emph{sponge}) với hoán vị Keccak-$f[1600]$: trạng thái 1600 bit chia thành phần \emph{rate} 1344 bit (168 byte) và phần \emph{capacity} 256 bit. Ở pha hấp thụ (\emph{absorb}), dữ liệu vào được XOR vào phần rate rồi hoán vị toàn bộ trạng thái. Ở pha vắt (\emph{squeeze}), mỗi lần đọc hết phần rate thì hoán vị lại để có thêm đầu ra. Phần capacity không bao giờ được đọc ra trực tiếp. Với đầu ra dài $d$ bit, chuẩn cho SHAKE128 mức an toàn $\min(d/2, 128)$ bit trước tấn công va chạm và $\min(d, 128)$ bit trước tấn công tìm tiền ảnh \cite{fips202}; như vậy mức an toàn tối đa là 128 bit, bằng một nửa capacity.
 
 Mã SHAKE128 và PRNG trong \texttt{lib/fips202} là mã mẫu của đề; nhóm chỉ thêm nhánh Windows dùng \texttt{BCryptGenRandom}. Bộ sinh dùng SHAKE128 như sau:
 \begin{itemize}
@@ -107,7 +107,7 @@ uint512_t random_range(prng_ctx *ctx, const uint512_t &low, const uint512_t &hig
 }
 \end{lstlisting}
 
-Hàm \texttt{generate\_private\_key(ctx, p)} gọi \texttt{random\_range(ctx, 2, p - 2)}. Khóa riêng loại trừ ba giá trị $0$, $1$ và $p - 1$: với $x = 0$ hoặc $x = p - 1$ thì $g^x \equiv 1 \pmod p$, còn với $x = 1$ thì $g^x = g$, nên giá trị công khai làm lộ ngay khóa riêng. Hàm từ chối $p < 5$ vì khi đó khoảng $[2, p - 2]$ rỗng.
+Hàm \texttt{generate\_\allowbreak{}private\_\allowbreak{}key(ctx, p)} gọi \texttt{random\_\allowbreak{}range(ctx, 2, p - 2)}. Khóa riêng loại trừ ba giá trị $0$, $1$ và $p - 1$: với $x = 0$ hoặc $x = p - 1$ thì $g^x \equiv 1 \pmod p$, còn với $x = 1$ thì $g^x = g$, nên giá trị công khai làm lộ ngay khóa riêng. Hàm từ chối $p < 5$ vì khi đó khoảng $[2, p - 2]$ rỗng.
 
 \subsection{Kết quả kiểm thử}
 
@@ -116,7 +116,7 @@ Chương trình \texttt{tests/test\_random.cpp} kiểm các hàm của phần n�
 \begin{table}[h!]
 \centering
 \small
-\begin{tabular}{p{3.6cm}p{7.6cm}p{2cm}}
+\begin{tabular}{p{4.2cm}p{7.0cm}p{2cm}}
 \toprule
 \textbf{Hàm được kiểm} & \textbf{Cách kiểm} & \textbf{Kết quả} \\
 \midrule
@@ -133,4 +133,4 @@ Chương trình \texttt{tests/test\_random.cpp} kiểm các hàm của phần n�
 \label{tab:csprng-eval}
 \end{table}
 
-Bộ kiểm thử chỉ kiểm biên của kết quả, độ phủ giá trị trong khoảng nhỏ và tính tái lập theo seed. Nó không làm kiểm định thống kê về phân bố (chẳng hạn kiểm định khi bình phương), nên không đo trực tiếp độ lệch phân bố. Việc \texttt{random\_range} không lệch phân bố dựa trên lập luận của phương pháp lấy mẫu loại bỏ ở trên, còn tính không đoán được dựa trên seed từ hệ điều hành và SHAKE128 theo chuẩn FIPS 202.
+Bộ kiểm thử chỉ kiểm biên của kết quả, độ phủ giá trị trong khoảng nhỏ và tính tái lập theo seed. Nó không làm kiểm định thống kê về phân bố (chẳng hạn kiểm định chi bình phương), nên không đo trực tiếp độ lệch phân bố. Việc \texttt{random\_range} không lệch phân bố dựa trên lập luận của phương pháp lấy mẫu loại bỏ ở trên, còn tính không đoán được dựa trên seed từ hệ điều hành và SHAKE128 theo chuẩn FIPS 202.

@@ -39,7 +39,11 @@ Chương trình chính \texttt{dh} & \texttt{tests/run\_tests.py} & Hai khóa ch
 \label{tab:hoan-thanh}
 \end{table}
 
-Kích thước mặc định của số lớn là 512 bit. Chương trình chính đã được chạy thử với số nguyên tố 1024 bit sau khi đổi \texttt{LIMBS} (mục~\ref{sec:mo-ta-chuong-trinh}), nhưng bộ kiểm thử mới chạy ở cấu hình mặc định.
+Kích thước mặc định của số lớn là 512 bit. Nhóm đã chạy thử ở 1024 bit trên một bản sao của mã nguồn (commit \texttt{f4b0b61}), theo bốn bước ở mục~\ref{sec:mo-ta-chuong-trinh}: sửa \texttt{LIMBS = 16} trong \texttt{src/u512.h} và \texttt{bit\_size = 1024} trong \texttt{src/main.cpp}, chạy \texttt{mingw32-make clean} rồi \texttt{mingw32-make}. Máy chạy là Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0 (MinGW-W64), ngày 15/11/2026.
+\begin{itemize}
+  \item \texttt{dh.exe} chạy 3 lần với seed từ hệ điều hành (mất 0,87 giây, 4,72 giây và 1,36 giây) và 1 lần với \texttt{--seed demo}. Cả 4 lần, $p$ dài đúng 1024 bit, hai bí mật chung trùng nhau và dòng kết quả cuối cùng là \texttt{1}. Nhóm kiểm lại bằng Python: $p$ và $(p-1)/2$ đều qua 40 vòng Miller-Rabin, $1 < g < p - 1$.
+  \item \texttt{python tests/run\_tests.py 1024} báo \texttt{Tong: 6/6 dat}: \texttt{test\_u512} 7018 kiểm tra, \texttt{test\_modexp} 6404, \texttt{test\_random} 23205, \texttt{test\_prime} 28, \texttt{test\_dh} 604, đều 0 sai, và \texttt{dh} in \texttt{1}.
+\end{itemize}
 
 \subsection{Ưu điểm của chương trình}
 
@@ -68,7 +72,7 @@ Kích thước mặc định của số lớn là 512 bit. Chương trình chín
   \item Thử thuật toán nhân Karatsuba cho các kích thước lớn hơn 512 bit. Cần đo trước khi chọn, vì ở số ít limb chi phí phụ của Karatsuba có thể lớn hơn phần tiết kiệm được.
   \item Chia việc thử ứng viên safe prime cho nhiều luồng (\texttt{std::thread}), mỗi luồng có bộ sinh số ngẫu nhiên riêng, dừng khi một luồng tìm được $p$.
   \item Viết kiểu số lớn dạng template theo số limb để một chương trình dùng được nhiều kích thước (512, 1024, 2048 bit).
-  \item Thêm kiểm định khi bình phương cho \texttt{random\_range} trên một khoảng nhỏ với số mẫu lớn, để có số đo về độ đều của phân bố.
+  \item Thêm kiểm định chi bình phương cho \texttt{random\_range} trên một khoảng nhỏ với số mẫu lớn, để có số đo về độ đều của phân bố.
 \end{itemize}
 
 \begin{table}[h!]
