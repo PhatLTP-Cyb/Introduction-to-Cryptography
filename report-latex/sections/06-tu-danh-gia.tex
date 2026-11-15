@@ -41,7 +41,7 @@ Chương trình chính \texttt{dh} & \texttt{tests/run\_tests.py} & Hai khóa ch
 
 Kích thước mặc định của số lớn là 512 bit. Nhóm đã chạy thử ở 1024 bit trên một bản sao của mã nguồn (commit \texttt{f4b0b61}), theo bốn bước ở mục~\ref{sec:mo-ta-chuong-trinh}: sửa \texttt{LIMBS = 16} trong \texttt{src/u512.h} và \texttt{bit\_size = 1024} trong \texttt{src/main.cpp}, chạy \texttt{mingw32-make clean} rồi \texttt{mingw32-make}. Máy chạy là Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0 (MinGW-W64), ngày 15/11/2026.
 \begin{itemize}
-  \item \texttt{dh.exe} chạy 3 lần với seed từ hệ điều hành (mất 0,87 giây, 4,72 giây và 1,36 giây) và 1 lần với \texttt{--seed demo}. Cả 4 lần, $p$ dài đúng 1024 bit, hai bí mật chung trùng nhau và dòng kết quả cuối cùng là \texttt{1}. Nhóm kiểm lại bằng Python: $p$ và $(p-1)/2$ đều qua 40 vòng Miller-Rabin, $1 < g < p - 1$.
+  \item \texttt{dh.exe} chạy 3 lần với seed từ hệ điều hành và 1 lần với \texttt{--seed demo}. Ba lần chạy với seed hệ điều hành mất 0,87 giây, 4,72 giây và 1,36 giây; đây chỉ là số đo ví dụ của một đợt chạy, không phải kết quả cố định. Vì $p$ được sinh ngẫu nhiên, số ứng viên phải thử trước khi gặp một safe prime thay đổi theo từng lần, nên thời gian chạy dao động lớn. Cả 4 lần, $p$ dài đúng 1024 bit, hai bí mật chung trùng nhau và dòng kết quả cuối cùng là \texttt{1}. Nhóm kiểm lại bằng Python: $p$ và $(p-1)/2$ đều qua 40 vòng Miller-Rabin, $1 < g < p - 1$.
   \item \texttt{python tests/run\_tests.py 1024} báo \texttt{Tong: 6/6 dat}: \texttt{test\_u512} 7018 kiểm tra, \texttt{test\_modexp} 6404, \texttt{test\_random} 23205, \texttt{test\_prime} 28, \texttt{test\_dh} 604, đều 0 sai, và \texttt{dh} in \texttt{1}.
 \end{itemize}
 
