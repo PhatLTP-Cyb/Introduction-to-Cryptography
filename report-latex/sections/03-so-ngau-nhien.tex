@@ -45,9 +45,9 @@ Seed 256 bit được mở rộng thành dãy bit dài tùy ý bằng SHAKE128, 
 
 Mã SHAKE128 và PRNG trong \texttt{lib/fips202} là mã mẫu của đề; nhóm chỉ thêm nhánh Windows dùng \texttt{BCryptGenRandom}. Bộ sinh dùng SHAKE128 như sau:
 \begin{itemize}
-  \item \texttt{prng\_seed} gọi lần lượt \texttt{shake128\_init}, \texttt{shake128\_absorb} với seed và \texttt{shake128\_finalize} để đóng pha hấp thụ.
-  \item \texttt{prng\_next\_u64} gọi \texttt{shake128\_squeeze} lấy 8 byte tiếp theo và ghép thành một số 64 bit, byte đầu là byte thấp nhất.
-  \item \texttt{random\_bits(ctx, bits)} trong \texttt{src/random.cpp} lấp đầy các limb 64 bit của một số \texttt{uint512\_t} bằng \texttt{prng\_next\_u64}, rồi xóa các bit thừa ở limb cao nhất. Kết quả là một số trong $[0, 2^{\texttt{bits}})$.
+  \item \texttt{prng\_\allowbreak{}seed} gọi lần lượt \texttt{shake128\_\allowbreak{}init}, \texttt{shake128\_\allowbreak{}absorb} với seed và \texttt{shake128\_\allowbreak{}finalize} để đóng pha hấp thụ.
+  \item \texttt{prng\_\allowbreak{}next\_\allowbreak{}u64} gọi \texttt{shake128\_\allowbreak{}squeeze} lấy 8 byte tiếp theo và ghép thành một số 64 bit, byte đầu là byte thấp nhất.
+  \item \texttt{random\_\allowbreak{}bits(ctx, bits)} trong \texttt{src/random.cpp} lấp đầy các limb 64 bit của một số \texttt{uint512\_\allowbreak{}t} bằng \texttt{prng\_\allowbreak{}next\_\allowbreak{}u64}, rồi xóa các bit thừa ở limb cao nhất. Kết quả là một số trong $[0, 2^{\texttt{bits}})$.
 \end{itemize}
 Hình~\ref{fig:csprng-flow} tóm tắt đường đi từ seed đến khóa riêng.
 
@@ -111,7 +111,7 @@ Hàm \texttt{generate\_\allowbreak{}private\_\allowbreak{}key(ctx, p)} gọi \te
 
 \subsection{Kết quả kiểm thử}
 
-Chương trình \texttt{tests/test\_random.cpp} kiểm các hàm của phần này. Bảng~\ref{tab:csprng-eval} ghi kết quả của một lần chạy thật bằng lệnh \texttt{mingw32-make test\_random.exe} rồi chạy \texttt{test\_random.exe}, trên máy Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0 (MinGW-W64), ngày 14/11/2026. Chương trình in \texttt{test\_random: 23205 kiem tra, 0 sai}. Khi chạy cả bộ kiểm thử bằng \texttt{mingw32-make test}, \texttt{test\_random} cũng báo \texttt{DAT}.
+Chương trình \texttt{tests/\allowbreak{}test\_\allowbreak{}random.cpp} kiểm các hàm của phần này. Bảng~\ref{tab:csprng-eval} ghi kết quả của một lần chạy thật bằng lệnh \texttt{mingw32-make test\_\allowbreak{}random.exe} rồi chạy \texttt{test\_\allowbreak{}random.exe}, trên máy Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0 (MinGW-W64), ngày 14/11/2026. Chương trình in \texttt{test\_\allowbreak{}random: 23205 kiem tra, 0 sai}. Khi chạy cả bộ kiểm thử bằng \texttt{mingw32-make test}, \texttt{test\_\allowbreak{}random} cũng báo \texttt{DAT}.
 
 \begin{table}[h!]
 \centering
