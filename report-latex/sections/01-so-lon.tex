@@ -29,14 +29,14 @@ x = \sum_{i=0}^{\texttt{LIMBS}-1} \texttt{digits}[i] \cdot 2^{64 i}, \qquad 0 \l
 \begin{figure}[h!]
 \centering
 \begin{tikzpicture}[
-    limb/.style={rectangle, draw=black, fill=blue!5, minimum width=1.6cm, minimum height=0.9cm, font=\footnotesize\ttfamily, inner sep=1pt}
+    limb/.style={rectangle, draw=black, fill=blue!5, minimum width=1.7cm, minimum height=0.9cm, font=\footnotesize\ttfamily, inner sep=1pt}
 ]
 \foreach \i in {0,...,7} {
     \pgfmathtruncatemacro{\idx}{7-\i}
     \pgfmathtruncatemacro{\hi}{64*(7-\i)+63}
     \pgfmathtruncatemacro{\lo}{64*(7-\i)}
-    \node[limb] (L\idx) at (1.6*\i, 0) {digits[\idx]};
-    \node[font=\scriptsize, below=0.1cm of L\idx] {bit \hi--\lo};
+    \node[limb] (L\idx) at (1.85*\i, 0) {digits[\idx]};
+    \node[font=\scriptsize, align=center, below=0.1cm of L\idx] {bit \hi\\--\lo};
 }
 \draw[-{Stealth}, thick] ($(L0.north east)+(0,0.35)$) -- node[above, font=\small] {trọng số tăng dần} ($(L7.north west)+(0,0.35)$);
 \end{tikzpicture}
