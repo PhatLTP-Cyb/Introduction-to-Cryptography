@@ -39,7 +39,7 @@ Thắc mắc về đồ án gửi cả hai địa chỉ theo đề: nvqhuy@fit.h
 | NV3 | Kiểm tra nguyên tố và sinh safe prime | Trần Hoàng Nhi | Võ Văn Cường | NV1, NV2, NV4 | 11/11 | `src/prime.cpp`<br>Số đo thời gian sinh safe prime | - Cài đủ 3 hàm ở mục 4.3<br>- Miller-Rabin chuẩn, cơ số ngẫu nhiên, đổi được số vòng; không dùng `primeTest` trên slide<br>- Có sàng số nguyên tố nhỏ trước Miller-Rabin<br>- Vòng Miller-Rabin cơ số 2 làm bộ lọc trong generate_safe_prime, sau đó 20 vòng Miller-Rabin cho cả q và p<br>- Chứng nhận p bằng định lý Pocklington (có điều kiện: q là số nguyên tố xác suất), bước thêm sau 20 vòng Miller-Rabin<br>- Không dùng thư viện hỗ trợ<br>- `python tests/run_tests.py 512` báo `test_prime` là `DAT`, Python xác nhận p là safe prime |
 | NV4 | Ngẫu nhiên và khóa riêng | Lê Tấn Phát | Tô Tuệ Nghi | NV1 | 07/11 | `src/random.cpp` | - Cài đủ 5 hàm ở mục 4.4<br>- Chế độ mặc định lấy seed 32 byte từ hệ điều hành<br>- Sinh số không lệch phân bố, không dùng phép mod<br>- Khóa riêng luôn nằm trong [2, p − 2]<br>- Không dùng `rand()`, `mt19937`, seed theo thời gian<br>- `test_random` báo `DAT` |
 | NV5 | Trao đổi khóa Diffie-Hellman | Tô Tuệ Nghi | Lê Tấn Phát | NV2, NV3, NV4 | 11/11 | `src/dh.cpp`, `src/main.cpp`<br>Kết quả chạy mẫu cho báo cáo | - Cài `find_generator` ở mục 4.5<br>- `main` in p, g, A, B và hai bí mật chung<br>- Đổi được `LIMBS` và `bit_size`, tối thiểu 512 bit; ghi cách đổi vào báo cáo<br>- Bí mật chung trùng khớp qua ít nhất 10 lần chạy với seed khác nhau<br>- `test_dh` và `dh` báo `DAT` |
-| NV6 | Tích hợp, kiểm thử, đóng gói | Tô Tuệ Nghi | Võ Văn Cường | NV1–NV5 | 13/11 | `Makefile`, `tests/`<br>`24120029-24120100-24120113-24120115.zip` | - `mingw32-make test` báo 6/6 `DAT`<br>- Bỏ `-Wno-unused-parameter`, dịch không còn cảnh báo<br>- Dịch được từ tệp zip trên máy Windows khác; dịch thử thêm trên Linux<br>- Tên và cấu trúc zip đúng đề, không kèm `.exe` |
+| NV6 | Tích hợp, kiểm thử, đóng gói | Tô Tuệ Nghi | Võ Văn Cường | NV1–NV5 | 13/11 | `Makefile`, `tests/`<br>`24120029-24120100-24120113-24120115.zip` | - `mingw32-make test` báo 6/6 `DAT`<br>- Bỏ `-Wno-unused-parameter`, dịch không còn cảnh báo<br>- Dịch được từ tệp zip trên máy Windows khác (nhóm chỉ kiểm tra trên Windows, xem mục 9)<br>- Tên và cấu trúc zip đúng đề, không kèm `.exe` |
 | NV7 | Báo cáo PDF | Lê Tấn Phát | Trần Hoàng Nhi; mỗi người đọc thêm mục mình viết | NV1–NV6 | 15/11 | Tệp PDF trong `project_01_report/` | - Đủ 6 mục của đề 2.5, gồm cả mục số ngẫu nhiên để lấy điểm cộng<br>- Mục mô tả chương trình ghi rõ cách cài công cụ và chạy trên Windows<br>- Có thông tin nhóm và bảng mức độ đóng góp<br>- Mọi kết quả và số đo lấy từ lần chạy thật<br>- Có nguồn tham khảo |
 
 ### Phân công theo người
@@ -159,7 +159,7 @@ Nhóm làm việc trên Windows.
 | `mingw32-make` | Cài cùng MinGW-w64 | Chạy Makefile |
 | Python 3 | Không cần thư viện thêm | Sinh dữ liệu và đối chiếu kiểm thử |
 | Git | Kho riêng tư | Quản lý mã nguồn |
-| WSL Ubuntu | Không bắt buộc, chỉ cần một người có | Dịch thử trên Linux trước khi nộp |
+| WSL Ubuntu | Không dùng nữa: từ 15/11 nhóm chỉ kiểm tra trên Windows | (Trước đây: dịch thử trên Linux trước khi nộp) |
 
 Trình soạn thảo và công cụ viết báo cáo do mỗi người tự chọn, miễn báo cáo xuất ra PDF.
 
@@ -218,7 +218,9 @@ Kênh liên lạc: Zalo
 
 ## 9. Theo dõi tiến độ
 
-Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy lại ngày 14/11 trên `ebc861a`: `mingw32-make test` báo 6/6 `DAT` (Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0).
+Cập nhật ngày 15/11 theo `main` ở commit `da6d1cc`. Kiểm thử chạy lại ngày 14/11 trên `ebc861a`: `mingw32-make test` báo 6/6 `DAT` (Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0). Ngày 15/11, chạy thử ở 1024 bit trên bản sao của `f4b0b61`: `python tests/run_tests.py 1024` báo 6/6 `DAT`.
+
+**Quyết định 15/11 (nhóm trưởng):** nhóm đã hỏi thầy về hệ điều hành dùng để chấm nhưng chưa có trả lời. Để kịp hạn, nhóm chỉ chạy và kiểm tra trên Windows, không dịch thử trên Linux. Mã nguồn vẫn giữ nhánh Linux (`getrandom`). Nếu thầy trả lời khác thì xem lại quyết định này.
 
 | Mã | Trạng thái | Ngày xong | Ghi chú |
 |---|---|---|---|
@@ -227,10 +229,10 @@ Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy l
 | NV3 | Xong | 11/11 | PR #31 (10/11) và PR #36 (Pocklington, lũy thừa cơ số 2), Cường kiểm tra chéo. `test_prime` ở 512 bit: 28 kiểm tra, 0 sai |
 | NV4 | Xong | 09/11 | PR #4, Nghi duyệt. `test_random`: 23205 kiểm tra, 0 sai |
 | NV5 | Xong | 14/11 | Code: `find_generator` ở PR #34 (11/11), Phát kiểm tra chéo; `test_dh` 604 kiểm tra, 0 sai. Cách đổi `LIMBS`, `bit_size` và kết quả chạy mẫu đã vào báo cáo mục 5 (PR #45, 14/11) |
-| NV6 | Đang làm | | 6/6 `DAT`. PR #50 (bỏ `-Wno-unused-parameter`) và PR #53 (thêm `-static` cho Windows) đã nhập ngày 14/11. Còn đóng gói zip, dịch thử trên máy Windows khác; chưa dịch thử trên Linux (báo cáo mục 6 ghi là hạn chế). Trễ so với hạn 13/11 |
-| NV7 | Đang làm | | Đã nhập vào `main`: mục 1 (PR #48, #49), mục 2, mục 4 và bìa (PR #37), mục 5 (PR #45), cỡ chữ 12pt (PR #54), sửa tràn lề mục 2 (PR #55). Mục 3, 6 đã viết và sửa theo review của Nhi ở #28, ở PR #56 (nhánh `Phat`, commit `f4b0b61`), chờ Nhi duyệt; bản build Overleaf: 0 lỗi. Chưa có PDF trong `project_01_report/`. Hạn 15/11 |
+| NV6 | Đang làm | | 6/6 `DAT`. PR #50 (bỏ `-Wno-unused-parameter`) và PR #53 (thêm `-static` cho Windows) đã nhập ngày 14/11. Còn đóng gói zip, dịch thử trên máy Windows khác. Không dịch thử trên Linux theo quyết định 15/11 (báo cáo mục 6 ghi là hạn chế). Trễ so với hạn 13/11 |
+| NV7 | Đang làm | | Đã nhập vào `main`: mục 1 (PR #48, #49, #57), mục 2, mục 4 và bìa (PR #37), mục 5 (PR #45), cỡ chữ 12pt (PR #54), sửa tràn lề mục 2 (PR #55), mục 3 và 6 (PR #56, 15/11; có số liệu chạy 1024 bit). Đang mở chờ duyệt: #58 (Overfull mục 3, ghi rõ thời gian 1024 bit là ví dụ), #59 (mục 2), #60 (mục 4, 5), #61 (bảng đóng góp 25% mỗi người). Chưa có PDF trong `project_01_report/`. Trễ so với hạn 15/11 |
 
-**Việc cần làm tiếp:** Nhi duyệt PR #56 (mục 3, 6); trả lời Nhi ở #28; xuất PDF hoàn chỉnh vào `project_01_report/` và cả nhóm đọc chéo; xác nhận bảng đóng góp ở bìa; NV6 đóng gói zip và dịch thử trên máy Windows khác.
+**Việc cần làm tiếp:** duyệt và nhập #58, #59, #60, #61; Nghi sửa câu "chưa chạy `run_tests.py 1024`" ở mục 5 cho khớp mục 6; tải PDF từ Overleaf vào `project_01_report/` và cả nhóm đọc chéo; NV6 đóng gói zip và dịch thử trên máy Windows khác; ngày 16/11 rà mục 11 rồi nộp.
 
 ## 10. Rủi ro và phương án xử lý
 
@@ -238,7 +240,7 @@ Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy l
 |---|---|---|
 | NV1 trễ làm kẹt NV2, NV3, NV4 | Ưu tiên các hàm lõi trước; đưa thêm người hỗ trợ NV1 | |
 | Sinh safe prime quá chậm | Đo sớm, tăng phạm vi sàng, chuyển sang Montgomery | |
-| Bài chạy được trên máy nhóm nhưng lỗi trên máy chấm | Dịch lại từ zip trên Windows và Linux, xác nhận môi trường chấm | |
+| Bài chạy được trên máy nhóm nhưng lỗi trên máy chấm | Dịch lại từ zip trên một máy Windows khác; đã hỏi thầy về môi trường chấm, chưa có trả lời (15/11) | Lê Tấn Phát |
 | Báo cáo làm dồn vào cuối | Viết song song với code, nháp mục của mình trước 13/11 | |
 
 ## 11. Danh sách kiểm tra trước khi nộp
@@ -247,7 +249,6 @@ Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy l
 - [ ] Có `project_01_source` và `project_01_report`
 - [ ] Đã chạy `mingw32-make clean`, không kèm tệp `.exe`, `.o` hay thư mục Git
 - [ ] Giải nén và dịch thử từ tệp zip thành công với `-std=c++14` trên Windows
-- [ ] Dịch thử từ tệp zip trên Linux
 - [ ] `mingw32-make test` báo 6/6 `DAT`, và `python tests/run_tests.py 512` đạt
 - [ ] Chương trình dùng seed từ hệ điều hành ở chế độ mặc định
 - [ ] Báo cáo là PDF, đủ 6 mục, có bảng đóng góp
@@ -259,7 +260,7 @@ Cập nhật ngày 14/11 theo `main` ở commit `ebc861a`. Kiểm thử chạy l
 
 | MSSV | Họ và tên | Công việc đã làm | Mức đóng góp |
 |---|---|---|---|
-| 24120029 | Võ Văn Cường | | |
-| 24120100 | Tô Tuệ Nghi | | |
-| 24120113 | Trần Hoàng Nhi | | |
-| 24120115 | Lê Tấn Phát | | |
+| 24120029 | Võ Văn Cường | NV1, NV2 (cả nhân Montgomery); viết mục 1 | 25% |
+| 24120100 | Tô Tuệ Nghi | NV5, NV6; viết mục 4, 5 | 25% |
+| 24120113 | Trần Hoàng Nhi | NV3 (cả Pocklington); viết mục 2; đọc chéo báo cáo | 25% |
+| 24120115 | Lê Tấn Phát | NV4, NV7 (điều phối, biên tập); viết mục 3, 6 | 25% |
