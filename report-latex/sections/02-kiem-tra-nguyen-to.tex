@@ -164,6 +164,8 @@ Số nguyên tố an toàn (safe prime) $p$ là số nguyên tố có dạng $p 
 
 \subsubsection{Chứng nhận Pocklington}
 
+Đây là dạng đặc biệt của định lý Pocklington \cite{menezes1996handbook}: với $p = 2q + 1$ và $q$ là số nguyên tố lẻ, nếu $a^{p-1} \equiv 1 \pmod p$ và $\gcd(a^2 - 1, p) = 1$ thì $p$ nguyên tố. Với $a = 2$, điều kiện thứ hai là $\gcd(3, p) = 1$.
+
 Hàm \texttt{passes\_\allowbreak{}base\_\allowbreak{}two\_\allowbreak{}and\_\allowbreak{}certifies(p)} tích hợp bước chứng nhận Pocklington có điều kiện dựa trên $q$:
 \begin{itemize}
     \item Với $p = 2q + 1$ và $q$ lẻ, phân tích $p - 1 = 2^1 \cdot q$ có số mũ của 2 là $r = 1$. Vòng Miller-Rabin cơ số 2 tính $x = 2^q \bmod p$. Điều kiện vượt qua vòng cơ số 2 là $x \in \{1, p - 1\}$. Khi đó, điều kiện Fermat $2^{p-1} \equiv 1 \pmod p$ được suy ra trực tiếp từ $x^2 \equiv 1 \pmod p$ mà không cần thực hiện thêm phép lũy thừa riêng.
