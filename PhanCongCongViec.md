@@ -218,7 +218,7 @@ Kênh liên lạc: Zalo
 
 ## 9. Theo dõi tiến độ
 
-Cập nhật ngày 15/11 theo `main` ở commit `da6d1cc`. Kiểm thử chạy lại ngày 14/11 trên `ebc861a`: `mingw32-make test` báo 6/6 `DAT` (Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0). Ngày 15/11, chạy thử ở 1024 bit trên bản sao của `f4b0b61`: `python tests/run_tests.py 1024` báo 6/6 `DAT`.
+Cập nhật ngày 16/11 theo `main` ở commit `94e2022`. Kiểm thử chạy lại ngày 16/11 trên `94e2022` (máy Cường, Windows 11, g++ 16.2.0): `mingw32-make test` và `python tests/run_tests.py 512` đều báo 6/6 `DAT`, dịch không có cảnh báo; `dh.exe --seed demo` in ra đúng p, g, A, B và bí mật chung đang ghi ở báo cáo mục 5. Các lần chạy trước: ngày 14/11 trên `ebc861a`, `mingw32-make test` báo 6/6 `DAT` (Intel Core Ultra 7 155H, Windows 11, g++ 13.2.0); ngày 15/11, chạy thử ở 1024 bit trên bản sao của `f4b0b61`, `python tests/run_tests.py 1024` báo 6/6 `DAT`.
 
 **Quyết định 15/11 (nhóm trưởng):** nhóm đã hỏi thầy về hệ điều hành dùng để chấm nhưng chưa có trả lời. Để kịp hạn, nhóm chỉ chạy và kiểm tra trên Windows, không dịch thử trên Linux. Mã nguồn vẫn giữ nhánh Linux (`getrandom`). Nếu thầy trả lời khác thì xem lại quyết định này.
 
@@ -229,10 +229,12 @@ Cập nhật ngày 15/11 theo `main` ở commit `da6d1cc`. Kiểm thử chạy l
 | NV3 | Xong | 11/11 | PR #31 (10/11) và PR #36 (Pocklington, lũy thừa cơ số 2), Cường kiểm tra chéo. `test_prime` ở 512 bit: 28 kiểm tra, 0 sai |
 | NV4 | Xong | 09/11 | PR #4, Nghi duyệt. `test_random`: 23205 kiểm tra, 0 sai |
 | NV5 | Xong | 14/11 | Code: `find_generator` ở PR #34 (11/11), Phát kiểm tra chéo; `test_dh` 604 kiểm tra, 0 sai. Cách đổi `LIMBS`, `bit_size` và kết quả chạy mẫu đã vào báo cáo mục 5 (PR #45, 14/11) |
-| NV6 | Đang làm | | 6/6 `DAT`. PR #50 (bỏ `-Wno-unused-parameter`) và PR #53 (thêm `-static` cho Windows) đã nhập ngày 14/11. Còn đóng gói zip, dịch thử trên máy Windows khác. Không dịch thử trên Linux theo quyết định 15/11 (báo cáo mục 6 ghi là hạn chế). Trễ so với hạn 13/11 |
-| NV7 | Đang làm | | Đã nhập vào `main`: mục 1 (PR #48, #49, #57), mục 2, mục 4 và bìa (PR #37), mục 5 (PR #45), cỡ chữ 12pt (PR #54), sửa tràn lề mục 2 (PR #55), mục 3 và 6 (PR #56, 15/11; có số liệu chạy 1024 bit). Đang mở chờ duyệt: #58 (Overfull mục 3, ghi rõ thời gian 1024 bit là ví dụ), #59 (mục 2), #60 (mục 4, 5), #61 (bảng đóng góp 25% mỗi người). Chưa có PDF trong `project_01_report/`. Trễ so với hạn 15/11 |
+| NV6 | Đang làm | | 6/6 `DAT` trên `94e2022` (16/11). PR #50 (bỏ `-Wno-unused-parameter`) và PR #53 (thêm `-static` cho Windows) đã nhập ngày 14/11. Zip đã đóng gói ngày 15/11, mã nguồn trong zip trùng `main` ở `94e2022`. Ngày 16/11 Cường giải nén và dịch thử trên máy mình: `mingw32-make test` và `python tests/run_tests.py 512` đều 6/6 `DAT`, không cảnh báo; lệnh dịch tay ở báo cáo mục 5 dịch được; `dh.exe` chạy 10 lần với seed hệ điều hành, lần nào hai bí mật chung cũng trùng. Zip còn thiếu PDF: `project_01_report/` mới có `README.txt`; nên bỏ `project_01_source/.gitignore` khi đóng gói lại. Không dịch thử trên Linux theo quyết định 15/11 (báo cáo mục 6 ghi là hạn chế). Trễ so với hạn 13/11 |
+| NV7 | Đang làm | | Đủ 6 mục trên `main`: mục 1 (PR #49; Hình 1 sửa ở #57), mục 2 (PR #38, #39, #42, #47, #55, #59), mục 3 và 6 (PR #56, #58), mục 4 và bìa (PR #37, #60), mục 5 (PR #45, #60), cỡ chữ 12pt (PR #54). Bản dựng ngày 16/11 từ `94e2022`: 43 trang, 0 lỗi, không thiếu trích dẫn hay tham chiếu; còn 14 cảnh báo Overfull (mục 1: 4, mục 2: 4, mục 5: 5, trang thông tin nhóm: 1; lớn nhất 71pt ở mục 1). Còn mở: #61 (bảng đóng góp 25% mỗi người, bìa trên `main` vẫn ghi 100%). Bìa chưa điền lớp (dòng TODO). Mục 5 còn ghi chú `% KIEM CHUNG` về cách cài MSYS2 và `g++ -dumpmachine` chờ Nghi xác nhận; hai ghi chú còn lại đã đúng (số chạy mẫu khớp, `prime.cpp` không đổi kể từ `cb2962a`). Chưa có PDF trong `project_01_report/`. Trễ so với hạn 15/11 |
 
-**Việc cần làm tiếp:** duyệt và nhập #58, #59, #60, #61; Nghi sửa câu "chưa chạy `run_tests.py 1024`" ở mục 5 cho khớp mục 6; tải PDF từ Overleaf vào `project_01_report/` và cả nhóm đọc chéo; NV6 đóng gói zip và dịch thử trên máy Windows khác; ngày 16/11 rà mục 11 rồi nộp.
+PR #52 (hướng dẫn NV3 của Nhi) còn mở nhưng không thuộc bài nộp. Issue #14, #24–#30 chưa đóng.
+
+**Việc cần làm tiếp (16/11, hạn chót 17/11):** duyệt và nhập #61, #62; điền lớp ở bìa hoặc bỏ dòng TODO; Nghi xác nhận ghi chú `% KIEM CHUNG` về MSYS2 ở mục 5; người viết mỗi mục xem lại Overfull của mục mình (mục 1 dòng 114, mục 5 dòng 253–258, bảng phân công ở trang thông tin nhóm); xuất PDF vào `project_01_report/` và cả nhóm đọc lại bản cuối; NV6 đóng gói lại zip khi có PDF, rà mục 11 rồi nộp.
 
 ## 10. Rủi ro và phương án xử lý
 
