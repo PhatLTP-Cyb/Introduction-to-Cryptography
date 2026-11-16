@@ -85,9 +85,7 @@ pacman -S mingw-w64-ucrt-x86_64-gcc \
 rồi thêm thư mục \texttt{C:\textbackslash msys64\textbackslash ucrt64\textbackslash bin}
 vào biến môi trường \texttt{PATH} để dùng \texttt{g++}, \texttt{mingw32-make} và
 \texttt{python} từ PowerShell.
-% KIEM CHUNG: day la cach cai suy ra tu duong dan python.exe tren may Nghi
-% (C:\msys64\ucrt64\bin\python.exe). Nghi xac nhan lai ten goi pacman va chay
-% g++ -dumpmachine truoc khi nop.
+% DA KIEM CHUNG 16/11/2026: g++ -dumpmachine ra x86_64-w64-mingw32; g++, mingw32-make, python deu nam trong C:\msys64\ucrt64\bin; pacman -Q co du 3 goi.
 
 Các lệnh chạy, thực hiện trong thư mục \texttt{project\_01\_source}:
 \begin{verbatim}
@@ -158,7 +156,7 @@ lệnh \texttt{mingw32-make test} (safe prime 128 bit) và
 \texttt{python tests/run\_tests.py 512} (safe prime 512 bit, Python xác nhận $p$ là
 số nguyên tố an toàn dài đúng 512 bit) đều báo 6/6 mục đạt.
 
-Lần chạy \texttt{mingw32-make test} ngày 15/11/2026 cho kết quả \texttt{Tong: 6/6 dat}.
+Lần chạy \texttt{mingw32-make test} ngày 16/11/2026 cho kết quả \texttt{Tong: 6/6 dat}.
 Độ dài của $p$ ở lần chạy này được kiểm bằng lệnh PowerShell sau, chạy trong
 \texttt{project\_01\_source} sau khi chạy \texttt{mingw32-make test} (trừ 2 ký tự \texttt{p=}):
 \begin{verbatim}
