@@ -1,5 +1,41 @@
 # GUIDE NV3: MILLER-RABIN VÀ SINH SỐ NGUYÊN TỐ AN TOÀN (SAFE PRIME)
 
+<a id="muc-luc"></a>
+## MỤC LỤC (bấm để tới)
+
+- [0. TỔNG QUAN](#s0)
+- [1. KIẾN THỨC NỀN, TỰ KIỂM TRA TRƯỚC KHI ĐỌC CODE](#s1)
+- [2. BẢN ĐỒ ĐỌC CODE](#s2)
+- [3. BƯỚC 1: SÀNG SỐ NGUYÊN TỐ NHỎ](#s3)
+- [4. BƯỚC 2: TÁCH n-1 VÀ MỘT VÒNG MILLER-RABIN](#s4)
+- [5. BƯỚC 3: `is_probable_prime`](#s5)
+- [6. BƯỚC 4: SÀNG KẾT HỢP CHO q VÀ p = 2q+1](#s6)
+- [7. BƯỚC 5: CƠ SỐ 2 VÀ CHỨNG NHẬN POCKLINGTON CÓ ĐIỀU KIỆN](#s7)
+- [8. BƯỚC 6: `generate_safe_prime`](#s8)
+- [9. LỖI THƯỜNG GẶP VÀ CÁCH DEBUG](#s9)
+- [10. CHẠY THỬ (Windows PowerShell 5.1, trong `project_01_source`)](#s10)
+- [11. BÀI TẬP VẬN DỤNG](#s11)
+- [12. TÓM TẮT, TỰ KIỂM TRA CUỐI BÀI](#s12)
+- [13. ĐÃ ĐỌC CHÉO](#s13)
+- [PHỤ LỤC: LƯU Ý VỀ ĐỘ CHÍNH XÁC](#phu-luc)
+
+## TRA NHANH: CÂU HỎI -> MỤC CẦN MỞ
+
+| Câu hỏi hoặc từ khóa | Mở mục |
+|---|---|
+| Định lý nhỏ Fermat, căn bậc hai của 1 | [Mục 1](#s1) |
+| Bản đồ hàm và số dòng trong prime.cpp | [Mục 2](#s2) |
+| Sàng số nguyên tố nhỏ, has_small_factor, vì sao n khác s | [Mục 3](#s3) |
+| Tách n-1 = 2^r * m, một vòng Miller-Rabin, căn bậc hai không tầm thường, Carmichael | [Mục 4](#s4) |
+| is_probable_prime, xác suất sai 4^-k | [Mục 5](#s5) |
+| Sàng kết hợp q và p = 2q+1 | [Mục 6](#s6) |
+| Cơ số 2, chứng nhận Pocklington có điều kiện | [Mục 7](#s7) |
+| generate_safe_prime, thứ tự các bước lọc | [Mục 8](#s8) |
+| Lỗi thường gặp, debug | [Mục 9](#s9) |
+| Lệnh chạy thử trên Windows | [Mục 10](#s10) |
+| Bài tập tính tay | [Mục 11](#s11) |
+| Tóm tắt, câu hỏi tự kiểm tra, bảng thuật ngữ | [Mục 12](#s12) |
+
 > Dựa trên `project_01_source/src/prime.cpp` và `src/dh.h` ở commit `0720eff` (main). Mọi `file:dòng` là của commit này; main đổi thì dòng có thể lệch.
 > Đối tượng: thành viên nhóm **chưa viết NV3**. Mục tiêu kép: **hiểu vì sao** code viết như vậy và **tự làm lại được** phần này.
 > Người viết: Nhi. Người đọc chéo: Võ Văn Cường (xem mục 13).
@@ -7,6 +43,7 @@
 
 ---
 
+<a id="s0"></a>
 ## 0. TỔNG QUAN
 
 ### 0.1. Câu chuyện xuyên suốt
@@ -102,6 +139,7 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 
 ---
 
+<a id="s1"></a>
 ## 1. KIẾN THỨC NỀN, TỰ KIỂM TRA TRƯỚC KHI ĐỌC CODE
 
 > **Tư duy nguyên bản:** Ta cần một phép kiểm "chắc chắn khi nói *hợp số*, xác suất khi nói *nguyên tố*", chạy nhanh với số 512 bit. Hãy xuất phát từ câu hỏi: **"Tính chất nào mà mọi số nguyên tố đều có, còn hợp số thì thường không?"**
@@ -117,8 +155,11 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 4. Vì sao cơ số b chọn trong [2, n-2]?
 5. Sau k vòng độc lập, xác suất sai tối đa là bao nhiêu?
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s2"></a>
 ## 2. BẢN ĐỒ ĐỌC CODE
 
 Đọc theo thứ tự này, trong `project_01_source/src/prime.cpp`:
@@ -135,8 +176,11 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 
 Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `generate_safe_prime` dòng 26. Hàm phụ nằm trong `namespace` ẩn của `prime.cpp` (dòng 7 đến 163), nên không gọi được từ file khác.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s3"></a>
 ## 3. BƯỚC 1: SÀNG SỐ NGUYÊN TỐ NHỎ
 
 > **Tư duy nguyên bản:** Phép lũy thừa mô-đun 512 bit rất tốn, còn chia một số 512 bit cho số nhỏ thì rẻ. Hãy hỏi: **"Có thể loại bao nhiêu hợp số mà không cần lũy thừa?"**
@@ -160,8 +204,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước (suy từ code, tự chạy để xác nhận):** `has_small_factor(15)` là true, `has_small_factor(13)` là false, `has_small_factor(0)` là true.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s4"></a>
 ## 4. BƯỚC 2: TÁCH n-1 VÀ MỘT VÒNG MILLER-RABIN
 
 > **Tư duy nguyên bản:** Nếu a^(n-1) ≡ 1 mà n là hợp số, ta cần cách nhìn "chi tiết hơn" vào chuỗi bình phương. Hãy hỏi: **"Đi từ a^m đến a^(n-1) bằng bình phương liên tiếp, có điểm nào lộ ra căn bậc hai không tầm thường không?"**
@@ -186,8 +233,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** n-1 = 2^r·m với m lẻ; bình phương liên tiếp dùng `mul_mod(x, x, n)` (dòng 77), vòng `step = 1 .. r-1` (dòng 75).
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s5"></a>
 ## 5. BƯỚC 3: `is_probable_prime`
 
 > **Tư duy nguyên bản:** Một vòng với một cơ số chỉ cho bằng chứng yếu. Hãy hỏi: **"Lặp bao nhiêu vòng độc lập thì sai số nhỏ đến mức chấp nhận được?"**
@@ -209,8 +259,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** hàm trả false chắc chắn cho hợp số, và true cho số nguyên tố xác suất qua đủ `rounds` vòng.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s6"></a>
 ## 6. BƯỚC 4: SÀNG KẾT HỢP CHO q VÀ p = 2q+1
 
 > **Tư duy nguyên bản:** Ta cần **hai** số cùng nguyên tố. Hãy hỏi: **"Một phép chia có kiểm tra được cả hai số cùng lúc không?"**
@@ -232,8 +285,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** ứng viên có ước nhỏ ở q hoặc p bị loại sau một lượt duyệt bảng.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s7"></a>
 ## 7. BƯỚC 5: CƠ SỐ 2 VÀ CHỨNG NHẬN POCKLINGTON CÓ ĐIỀU KIỆN
 
 > **Tư duy nguyên bản:** p = 2q+1 có cấu trúc rất đặc biệt: p-1 chỉ có hai ước nguyên tố. Hãy hỏi: **"Cấu trúc đó giúp rút gọn phép kiểm ở chỗ nào?"**
@@ -258,8 +314,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** ứng viên không qua cơ số 2 bị loại trước khi chạy 20 vòng ngẫu nhiên.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s8"></a>
 ## 8. BƯỚC 6: `generate_safe_prime`
 
 > **Tư duy nguyên bản:** Ta có đủ công cụ; còn lại là thứ tự. Hãy hỏi: **"Bước nào loại được nhiều ứng viên nhất với chi phí thấp nhất? Đặt nó lên đầu."**
@@ -277,8 +336,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** p đúng bitsize bit, p và (p-1)/2 cùng qua 20 vòng Miller-Rabin.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s9"></a>
 ## 9. LỖI THƯỜNG GẶP VÀ CÁCH DEBUG
 
 | Triệu chứng | Nguyên nhân thường gặp | Chỗ kiểm |
@@ -290,8 +352,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 | Lỗi liên kết khi dịch tay trên Windows | Thiếu `-lbcrypt` ở cuối lệnh | mục 10 |
 | Kết quả sai khi nhân số lớn | Nhân trực tiếp thay vì `mul_mod` | `dh.h:12` |
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s10"></a>
 ## 10. CHẠY THỬ (Windows PowerShell 5.1, trong `project_01_source`)
 
 ```powershell
@@ -305,8 +370,11 @@ g++ @flags -I tests tests/test_prime.cpp @libs -o test_prime.exe -lbcrypt
 **Kết quả đúng:** dòng `test_prime: 28 kiem tra, 0 sai`.
 Bộ đầy đủ: `python tests\run_tests.py 512` cho `Tong: 6/6 dat` (u512 7018, modexp 6404, random 23205, prime 28, dh 604 kiểm tra, đều 0 sai) khi đã dịch đủ các tệp test.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s11"></a>
 ## 11. BÀI TẬP VẬN DỤNG
 
 **Bài tập 1 (M2).** Tách n-1 = 2^r·m cho n = 341 và n = 561. Rồi kiểm tra tay vòng Miller-Rabin cơ số 2 cho 341.
@@ -339,8 +407,11 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 - **Đối chiếu:** `python -c "print(pow(2,6,13), pow(12,2,13), pow(2,170,341), 341%3)"` phải ra `12 1 1 2`.
 </details>
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s12"></a>
 ## 12. TÓM TẮT, TỰ KIỂM TRA CUỐI BÀI
 
 ### 12.1. Tóm tắt 1 trang
@@ -386,14 +457,18 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 | Sieve | Sàng | Loại ước nhỏ trước khi kiểm tốn kém |
 | Modular exponentiation | Lũy thừa mô-đun | b^e mod n (NV2) |
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s13"></a>
 ## 13. ĐÃ ĐỌC CHÉO
 
 - Võ Văn Cường (kiểm chéo NV3): chưa.
 
 ---
 
+<a id="phu-luc"></a>
 ## PHỤ LỤC: LƯU Ý VỀ ĐỘ CHÍNH XÁC
 
 1. Mọi số dòng lấy từ `prime.cpp` và `dh.h` ở commit `0720eff`; main đổi thì phải cập nhật.
