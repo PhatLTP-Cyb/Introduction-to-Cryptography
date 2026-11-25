@@ -578,7 +578,7 @@ Bạn hãy kiểm tra `p = 23` (`q = 11`) bằng cách tính `2^11 mod 23` và `
 
 - **Bốn bước của hàm (báo cáo mục 2.4):** sinh `q` (bit cao và bit thấp bằng `1`), sàng kết hợp, vòng cơ số `2` cho `q` và `p`, rồi `is_probable_prime` `20` vòng cho cả `q` và `p`.
 - **Thứ tự từ rẻ đến đắt:** bước nào loại được nhiều ứng viên nhất với chi phí thấp nhất thì ta đặt nó lên đầu.
-- **Giới hạn kích thước:** `bitsize` nằm trong `[16, 512]` theo báo cáo (mục này hiện ghi `BIGINT_BITS`).
+- **Giới hạn kích thước:** `bitsize` nằm trong `[16, BIGINT_BITS]` (kiểm ở `prime.cpp:235`); `BIGINT_BITS = LIMBS * 64` (`u512.h:13`). Ở bản 512 bit đã nộp khoảng này là `[16, 512]`, khớp báo cáo.
 
 **Cần đọc**
 
