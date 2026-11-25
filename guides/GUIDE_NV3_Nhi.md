@@ -516,6 +516,42 @@ Bạn hãy tự suy điều kiện của `q` để `2q + 1` chia hết cho `s`: 
 
 **Kết quả sau bước:** ứng viên không qua cơ số 2 bị loại trước khi chạy 20 vòng ngẫu nhiên.
 
+**Kiến thức cần biết**
+
+- **Dạng đặc biệt của Pocklington (báo cáo mục 2.4.1):** với `p = 2q + 1`, `q` nguyên tố lẻ, nếu `a^(p-1) ≡ 1 (mod p)` và `gcd(a² - 1, p) = 1` thì `p` nguyên tố (HAC Fact 4.40, 4.59).
+- **Với cơ số `a = 2`:** điều kiện thứ hai trở thành `gcd(3, p) = 1`; kết luận là có điều kiện vì `q` chỉ được kiểm tra nguyên tố theo xác suất.
+- **Lũy thừa cơ số `2` trong không gian Montgomery (báo cáo mục 2.4.2):** chỉ áp dụng cho mô-đun lẻ; ta duyệt bit số mũ từ trái sang phải, mỗi bit bình phương bằng `mul`, gặp bit `1` thì nhân đôi bằng `add_mod_reduced` thay cho `mul` (mô-đun chẵn gọi lại `modular_exponentiation`).
+
+**Cần đọc**
+
+- HAC, Chương 4: Fact 4.40, Fact 4.59.
+- Code trong mục này: `prime.cpp:96-103`, `prime.cpp:138-162`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy kiểm tra `p = 23` (`q = 11`) bằng cách tính `2^11 mod 23` và `gcd(3, 23)`: bắt đầu từ `2^11 = 2048` rồi chia cho `23`.
+
+<details><summary>Đáp án</summary>
+
+- `2048 = 89·23 + 1` nên `x = 1`, thuộc `{1, p - 1}`; `23 mod 3 = 2` khác `0` nên `gcd(3, 23) = 1`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Với `p = 23`, ta có `x = 2^11 mod 23 = 1` và `gcd(3, 23) = 1`.
+
+**Cần đọc để làm bước 2**
+
+- Với ứng viên `p = 15 = 2·7 + 1` (`q = 7` nguyên tố lẻ), bạn hãy tự kiểm tra vòng cơ số `2` và điều kiện `mod 3`.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `2^7 = 128 = 8·15 + 8` nên `x = 8`, không thuộc `{1, 14}`, bị loại ngay ở vòng cơ số `2`; `15 mod 3 = 0` cũng vi phạm `gcd(3, p) = 1`.
+
+</details>
+
 [Về mục lục](#muc-luc)
 
 ---
@@ -537,6 +573,41 @@ Bạn hãy tự suy điều kiện của `q` để `2q + 1` chia hết cho `s`: 
 </details>
 
 **Kết quả sau bước:** p đúng bitsize bit, p và (p-1)/2 cùng qua 20 vòng Miller-Rabin.
+
+**Kiến thức cần biết**
+
+- **Bốn bước của hàm (báo cáo mục 2.4):** sinh `q` (bit cao và bit thấp bằng `1`), sàng kết hợp, vòng cơ số `2` cho `q` và `p`, rồi `is_probable_prime` `20` vòng cho cả `q` và `p`.
+- **Thứ tự từ rẻ đến đắt:** bước nào loại được nhiều ứng viên nhất với chi phí thấp nhất thì ta đặt nó lên đầu.
+- **Giới hạn kích thước:** `bitsize` nằm trong `[16, 512]` theo báo cáo (mục này hiện ghi `BIGINT_BITS`).
+
+**Cần đọc**
+
+- `prime.cpp:228-263`, `dh.h:26`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Với `bitsize = 16`, bạn hãy xác định `q` có bao nhiêu bit và những bit nào được đặt bằng `1` (lưu ý `q` có `bitsize - 1` bit).
+
+<details><summary>Đáp án</summary>
+
+- `q` có `15` bit; bit cao nhất (bit `14`) và bit `0` đặt bằng `1`, nên `q` lẻ.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Với `bitsize = 16`, `q` có `15` bit với bit `14` và bit `0` bằng `1`.
+
+**Cần đọc để làm bước 2**
+
+- Bạn hãy nêu thứ tự bốn bước lọc của vòng `for (;;)` trong `generate_safe_prime` (`prime.cpp:228-263`) và cho biết hàm trả về khi nào.
+
+<details><summary>Đáp án bước 2</summary>
+
+- Sàng kết hợp, rồi cơ số `2` cho `q` và `p`, rồi `is_probable_prime` cho `q` và `p`; gặp điều kiện loại ở bước nào thì `continue`; qua hết thì trả `p`.
+
+</details>
 
 [Về mục lục](#muc-luc)
 
