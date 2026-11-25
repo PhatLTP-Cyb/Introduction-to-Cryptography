@@ -706,7 +706,7 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 | 4 | M3 | Vì sao b nằm trong [2, n-2]? | b = 1 và n-1 cho kết quả tầm thường |
 | 5 | M3 | Sau k vòng độc lập, xác suất sai tối đa? | 4^(-k) |
 | 6 | M4 | Nếu p = 2q+1 chia hết cho 7 thì q mod 7 bằng mấy? | 3, vì (7-1)/2 = 3 |
-| 7 | M6 | Bỏ điều kiện gcd(3, p) = 1 ở `passes_base_two_and_certifies` thì sao? | Đây là điều kiện gcd(2^((p-1)/q) - 1, p) = gcd(3, p) = 1 của định lý Pocklington (a = 2, (p-1)/q = 2). Đã chạy p ≡ 3 mod 4, p < 2·10^6 khi bỏ điều kiện: 17 hợp số qua phép kiểm x ∈ {1, p-1} (nhỏ nhất 2047 = 23·89), nhưng q của cả 17 số đều là hợp số và không số nào chia hết cho 3, nên chưa có phản ví dụ. Khi q thật sự nguyên tố, phép kiểm này đã kéo theo p nguyên tố (bậc của 2 mod p bằng p-1), nên điều kiện thừa về toán và được giữ để khớp giả thiết của định lý |
+| 7 | M6 | Bỏ điều kiện gcd(3, p) = 1 ở `passes_base_two_and_certifies` thì sao? | Đây là điều kiện gcd(2^((p-1)/q) - 1, p) = gcd(3, p) = 1 của định lý Pocklington (a = 2, (p-1)/q = 2). Đã chạy p ≡ 3 mod 4, p < 2·10^6 khi bỏ điều kiện: 17 hợp số qua phép kiểm x ∈ {1, p-1} (nhỏ nhất 2047 = 23·89), nhưng q của cả 17 số đều là hợp số và không số nào chia hết cho 3, nên chưa có phản ví dụ. Khi q thật sự nguyên tố, phép kiểm này đã kéo theo p nguyên tố (suy luận của người soạn, chưa có nguồn: mọi ước nguyên tố r của p có bậc của 2 mod r chia hết 2q nên r-1 là bội của 2q, suy ra r ≥ p), nên điều kiện thừa về toán và được giữ để khớp giả thiết của định lý |
 | 8 | M8 | Vẽ lại sơ đồ mục 0.2 từ trí nhớ | Đối chiếu với `generate_safe_prime` |
 
 ### 12.3. Hiểu lầm thường gặp
@@ -729,6 +729,40 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 | Pseudoprime | Số giả nguyên tố | Hợp số qua phép thử với một cơ số nhất định |
 | Sieve | Sàng | Loại ước nhỏ trước khi kiểm tốn kém |
 | Modular exponentiation | Lũy thừa mô-đun | b^e mod n (NV2) |
+
+### 12.5. Số đo thực nghiệm (khớp báo cáo mục 2.5)
+
+- **Cách đo:** ta đo `generate_safe_prime` ở `512` bit trên cùng máy và hệ điều hành; mỗi lần đo dùng `20` số `p` sinh từ cùng một seed, lặp `3` lượt tuần tự (`60` lượt sinh, không phải `60` giá trị `p` độc lập); `20` chuỗi `p` trùng từng ký tự giữa các bản.
+
+**Bảng tỉ số `pock/main` (`main` chạy trước, `pock` sau, thứ tự cố định):**
+
+| Lượt | Tỉ số |
+|---|---|
+| Lượt 1 | 1,0064 |
+| Lượt 2 | 1,0720 |
+| Lượt 3 | 1,0313 |
+| Gộp | 1,0358 |
+| Trung vị 20 tỉ số theo p | 1,0167 |
+
+**Bảng tỉ số `new/pock` (thứ tự xen kẽ):**
+
+| Lượt | Tỉ số |
+|---|---|
+| Lượt 1 | 0,9147 |
+| Lượt 2 | 0,9272 |
+| Lượt 3 | 0,9305 |
+| Gộp | 0,9241 |
+| Trung vị | 0,9203 |
+
+- **Phạm vi kết luận:** hai đợt đo thuộc hai phiên độc lập nên bạn không nhân chéo các tỉ số; một lần đo độc lập khác của thành viên nhóm (`5` lượt xen kẽ, `512` bit) không thấy khác biệt rõ; ở lượt `2` của bản Pocklington cũ có hai mẫu chênh (`p` thứ `7`: `57,9 ms` so với khoảng `37 ms`; `p` thứ `8`: `302 ms` so với khoảng `173 ms`), nên bảng chỉ dùng tỉ số tổng và trung vị.
+- Nguyên nhân của mức giảm ở bảng `new/pock` chưa được xác định, không gán lý do.
+- **Câu hỏi tự kiểm:** Vì sao không nói `60` giá trị `p` độc lập?
+
+<details><summary>Đáp án</summary>
+
+- Vì `20` giá trị `p` được lặp lại qua `3` lượt cùng seed.
+
+</details>
 
 [Về mục lục](#muc-luc)
 
