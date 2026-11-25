@@ -47,6 +47,30 @@ Ghi chú: link `#sN` chỉ nhảy đúng mục sau khi PR thêm khung điều h�
 14. **Code chạy được không?**
     Test 6/6 đạt ở 512 bit và ở 1024 bit trên Windows. Chưa dịch thử trên Linux (báo cáo mục 6.3 ghi rõ).
 
+15. **Định lý Fermat nhỏ nói gì, và 341 cho thấy điều gì?**
+    p nguyên tố, gcd(a,p)=1 thì a^(p-1) ≡ 1 (mod p). Chiều ngược không đúng: 341 = 11×31 là hợp số nhưng 2^340 ≡ 1 (mod 341) (giả nguyên tố cơ số 2). Số Carmichael còn tệ hơn (câu 2). Xem [mục 1](GUIDE_NV3_Nhi.md#s1), [mục 4](GUIDE_NV3_Nhi.md#s4).
+
+16. **Vì sao x² ≡ 1 (mod p) với p nguyên tố chỉ có x ≡ ±1?**
+    x² - 1 = (x-1)(x+1) chia hết cho p, p nguyên tố nên p | (x-1) hoặc p | (x+1). Xem [mục 1](GUIDE_NV3_Nhi.md#s1).
+
+17. **Hợp số thì x² ≡ 1 có thể có nghiệm nào khác?**
+    Hợp số lẻ có ít nhất 2 ước nguyên tố lẻ phân biệt thì có từ 4 nghiệm (định lý phần dư Trung Hoa). Ví dụ mod 35: 1, 6, 29, 34 (6² = 36 ≡ 1, 29² = 841 = 24×35 + 1). Nghiệm 6 và 29 là căn bậc hai không tầm thường của 1, Miller-Rabin bắt đúng chỗ này. Xem [mục 1](GUIDE_NV3_Nhi.md#s1).
+
+18. **Một vòng Miller-Rabin làm gì? Witness là gì?**
+    Viết n-1 = 2^s·d, d lẻ. Tính x = b^d mod n. Nếu x = 1 hoặc x = n-1 thì qua. Ngược lại bình phương liên tiếp tối đa s-1 lần: gặp n-1 thì qua; hết mà không gặp thì n chắc chắn hợp số. Cơ số b làm lộ hợp số gọi là witness. Xem [mục 4](GUIDE_NV3_Nhi.md#s4).
+
+19. **Cận 1/4 từ đâu ra? Chứng minh thế nào?**
+    Chỉ nêu kết luận và nguồn: hợp số lẻ có không quá 1/4 cơ số là strong liar (HAC Fact 4.23, 4.25; Rabin 1980). Nhi không tự chứng minh, guide cũng không có chứng minh. Xem [mục 5](GUIDE_NV3_Nhi.md#s5).
+
+20. **Lũy thừa cơ số 2 dùng phép cộng thay phép nhân ở đâu?**
+    Với cơ số 2, nhân đôi x mod n bằng x + x rồi trừ n nếu cần (`add_mod_reduced`), thay cho một phép nhân Montgomery. Chỉ dùng khi mô-đun lẻ (Montgomery yêu cầu). Xem [mục 7](GUIDE_NV3_Nhi.md#s7).
+
+21. **Vì sao bảng số đo chỉ dùng tỉ số tổng và trung vị?**
+    Ở lượt 2 của bản Pocklington cũ có hai mẫu chênh lớn: p thứ 7 là 57,9 ms so với khoảng 37 ms, p thứ 8 là 302 ms so với khoảng 173 ms. Thời gian từng p dao động mạnh nên chỉ báo tỉ số tổng và trung vị, không báo từng mẫu. Xem [mục 12.5](GUIDE_NV3_Nhi.md#s12).
+
+22. **Thứ tự chạy khi đo có thiên lệch không?**
+    Đợt Pocklington chạy thứ tự cố định (main trước, pock sau); đợt cơ số 2 chạy xen kẽ. Nên không loại trừ ảnh hưởng của thứ tự ở đợt Pocklington, chưa đo riêng. Xem [mục 12.5](GUIDE_NV3_Nhi.md#s12).
+
 ## B. Câu hỏi thử trong nhóm (không đáp án)
 
 - **Cường:** (1) `uint512_t` lưu số thế nào, phép nhân 512 bit tràn ra sao? (2) Montgomery giải quyết điều gì so với `mod` thường?
