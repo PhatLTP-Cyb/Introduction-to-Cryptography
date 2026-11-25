@@ -242,6 +242,44 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước (suy từ code, tự chạy để xác nhận):** `has_small_factor(15)` là true, `has_small_factor(13)` là false, `has_small_factor(0)` là true.
 
+**Kiến thức cần biết**
+
+- **Sàng như chiếc rây lọc:** mỗi số nguyên tố nhỏ đều loại được các bội số của chính nó.
+- **Bội nhỏ hơn bình phương đã bị lọc trước:** mọi bội nhỏ hơn bình phương của một số nguyên tố đều đã bị số nguyên tố nhỏ hơn đánh dấu rồi (ví dụ `6 = 2·3` đã bị `2` đánh dấu).
+- **Bảng sàng dùng chung:** danh sách số nguyên tố nhỏ chỉ tạo một lần trong biến `static const` rồi dùng lại.
+- **Chi phí kiểm tra:** chia số nhỏ rẻ hơn nhiều so với một phép lũy thừa mô-đun 512 bit.
+
+**Cần đọc**
+
+- `prime.cpp:14-37`, `prime.cpp:166-179`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tự sàng Eratosthenes bằng tay cho các số từ `2` đến `30`: bội của `2` bắt đầu đánh dấu từ `4`, bội của `3` từ `9`, bội của `5` từ `25`; số nguyên tố tiếp theo là `7`, mà `7² = 49 > 30` nên ta dừng.
+
+<details><summary>Đáp án</summary>
+
+- `2, 3, 5, 7, 11, 13, 17, 19, 23, 29` (`10` số).
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn lọc được `10` số nguyên tố từ `2` đến `30` và thấy mốc dừng tại `7² = 49 > 30`.
+
+**Cần đọc để làm bước 2**
+
+- Dựa vào `prime.cpp:173`, bạn hãy tự dự đoán `has_small_factor` cho `n = 49`, `n = 7`, `n = 21`.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `n = 49`: `true` (`49 mod 7 = 0` và `49` khác `7`).
+- `n = 7`: `false` (`7 mod 7 = 0` nhưng `n` bằng `s`, các `s` khác cho dư khác `0`).
+- `n = 21`: `true` (`21 mod 3 = 0` và `21` khác `3`).
+
+</details>
+
 [Về mục lục](#muc-luc)
 
 ---
@@ -359,6 +397,44 @@ Bạn hãy đối chiếu `decompose_even` (`prime.cpp:56-61`) với hai phép t
 **Nếu không làm thì sao:** vẫn đúng, chỉ tốn gấp đôi số phép chia.
 
 **Kết quả sau bước:** ứng viên có ước nhỏ ở q hoặc p bị loại sau một lượt duyệt bảng.
+
+**Kiến thức cần biết**
+
+- **Gộp hai phép kiểm thành một điều kiện theo `mod s`:** vì `p = 2q + 1`, kiểm `p` chia hết cho `s` cũng là kiểm một điều kiện của `q` theo `mod s`.
+- **Một phép chia dùng cho cả hai:** chỉ một lần lấy số dư của `q` theo `s` cho ra giá trị dùng cho cả kiểm tra `q` lẫn kiểm tra `p`.
+- **Ví dụ số:** với `s = 7`, `q = 17` có `17 mod 7 = 3`; `p = 35 = 5·7` chia hết cho `7` nên ứng viên bị loại.
+- **Ngoại lệ khi chính `q` hoặc `p` bằng `s`:** `q != s` bảo vệ `q` (nếu `q` chính là `s` thì dư `0` nhưng `q` là số nguyên tố); `q != (s-1)/2` bảo vệ `p` (khi `q = (s-1)/2` thì `p = 2q + 1 = s`, tức `p` chính là số nguyên tố `s`).
+
+**Cần đọc**
+
+- `prime.cpp:106-136`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tự suy điều kiện của `q` để `2q + 1` chia hết cho `s`: viết `2q + 1 = k·s`, chú ý `s` lẻ nên `2` khả nghịch `mod s`, rồi thử với `s = 7` để tìm `q mod 7`.
+
+<details><summary>Đáp án</summary>
+
+- `q ≡ (s-1)/2 (mod s)`; với `s = 7` là `q ≡ 3`, vì `2·3 + 1 = 7`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn rút ra được điều kiện `q ≡ (s-1)/2 (mod s)` để phát hiện `p = 2q + 1` chia hết cho `s`.
+
+**Cần đọc để làm bước 2**
+
+- Dựa vào `prime.cpp:127-129`, với `s = 5`, bạn hãy quyết định có loại ứng viên `q = 7`, `q = 3`, `q = 5` hay không.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `q = 7`: dư `2 = (s-1)/2` và `q` khác `2`, `p = 15` chia hết cho `5`, loại.
+- `q = 3`: dư `3`, khác `0` và khác `2`, `p = 7`, qua.
+- `q = 5`: dư `0` nhưng `q` bằng `s` nên `q` không bị loại; `p = 11`, dư của `q` là `0` khác `2` nên `p` không bị loại; qua.
+
+</details>
 
 [Về mục lục](#muc-luc)
 
