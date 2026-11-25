@@ -193,6 +193,20 @@ Bạn hãy tự kiểm tra Fermat cho `341 = 11·31` với cơ số `2`: thử t
 </details>
 - Slide bài giảng: Nhi xác nhận sau khi mở.
 
+**Bổ sung lý thuyết (khớp báo cáo mục 2.1)**
+
+- **Vì sao `x² ≡ 1 (mod p)` (`p` nguyên tố lẻ) chỉ có `x ≡ ±1`:** ta viết `x² - 1 = (x - 1)(x + 1)`; vì `p` nguyên tố mà chia hết tích thì chia hết một thừa số, nên `x ≡ 1` hoặc `x ≡ -1 (mod p)`.
+- **Hợp số lẻ có từ hai ước nguyên tố lẻ trở lên:** phương trình `x² ≡ 1 (mod n)` có ít nhất `4` nghiệm (theo định lý phần dư Trung Hoa, như báo cáo ghi). Ví dụ `mod 35 = 5·7`: nghiệm là `1, 6, 29, 34`; nghiệm không tầm thường là `6` và `29` (`6² = 36 = 35 + 1`; `29² = 841 = 24·35 + 1`).
+- **Thuật ngữ:** **chứng nhân hợp số (witness)** là cơ số `b` làm vòng kiểm tra kết luận `n` là hợp số; **số nguyên tố Sophie Germain** là số nguyên tố `q` mà `2q + 1` cũng nguyên tố (`p = 2q + 1` là safe prime).
+- **Cận phát hiện mỗi vòng:** với mỗi cơ số chọn ngẫu nhiên, báo cáo ghi hợp số lẻ bị phát hiện với xác suất ít nhất `3/4` (`rabin1980`, `menezes1996handbook`); đây là cận cho hợp số lẻ.
+- **Bài tập:** Mod `9`, tìm mọi `x` trong `1..8` có `x² ≡ 1 (mod 9)`.
+
+<details><summary>Đáp án</summary>
+
+- Chỉ có `x = 1` và `x = 8` (tức `±1`).
+
+</details>
+
 [Về mục lục](#muc-luc)
 
 ---
