@@ -372,6 +372,43 @@ Bạn hãy đối chiếu `decompose_even` (`prime.cpp:56-61`) với hai phép t
 
 **Kết quả sau bước:** hàm trả false chắc chắn cho hợp số, và true cho số nguyên tố xác suất qua đủ `rounds` vòng.
 
+**Kiến thức cần biết**
+
+- **Mỗi vòng độc lập như một lần hỏi lại bằng chứng mới:** các vòng kiểm tra độc lập giúp lặp lại phép thử với cơ số mới.
+- **Cận xác suất qua một vòng và `k` vòng:** hợp số lẻ lọt qua mỗi vòng không quá `1/4` (HAC Fact 4.23, 4.25), nên `k` vòng độc lập cho cận `4^(-k)`.
+- **Ý nghĩa của xác suất (HAC Note 4.47):** đó là xác suất hợp số lọt qua, không phải xác suất `n` là hợp số.
+- **Cơ số và số vòng mặc định:** cơ số chọn trong `[2, n - 2]` (HAC Algorithm 4.24); mặc định `rounds = 20` (`dh.h:25`) và `SAFE_PRIME_ROUNDS = 20` (`prime.cpp:11`, dùng ở dòng `256` cho cả `q` và `p`).
+
+**Cần đọc**
+
+- `prime.cpp:182-226`, `dh.h:25`.
+- HAC (Menezes), Chương 4: Fact 4.23, Algorithm 4.24, Fact 4.25, Note 4.47.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tính cận sai số cho `k = 20`: đổi `4^(-20) = 2^(-40)`, rồi dùng `2^10 = 1024` để tính giá trị xấp xỉ.
+
+<details><summary>Đáp án</summary>
+
+- `4^(-20) = 2^(-40) ≈ 9,09×10^(-13)`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn tính được cận sai số cho `k = 20` là `4^(-20) = 2^(-40) ≈ 9,09×10^(-13)`.
+
+**Cần đọc để làm bước 2**
+
+- Với `n = 25`, bạn hãy liệt kê các cơ số `b` hợp lệ trong `[2, n - 2]` và giải thích vì sao `b = 1` và `b = 24` bị loại.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `b` từ `2` đến `23`; `b = 1` cho `1` và `b = 24 = n - 1` cho `-1 (mod 25)`, cả hai luôn qua nên không có ích (`comment dòng 88-90`).
+
+</details>
+
 [Về mục lục](#muc-luc)
 
 ---
