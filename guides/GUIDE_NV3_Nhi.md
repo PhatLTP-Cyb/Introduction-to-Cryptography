@@ -155,6 +155,44 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 4. Vì sao cơ số b chọn trong [2, n-2]?
 5. Sau k vòng độc lập, xác suất sai tối đa là bao nhiêu?
 
+**Kiến thức cần biết**
+
+- **Số học đồng dư giống như đồng hồ:** khi chia cho `n`, ta chỉ giữ phần dư, ví dụ `16 ≡ 1 (mod 15)` với `15 = 3·5`.
+- **Fermat nhỏ là phép thử một chiều:** với `p` nguyên tố và `gcd(a, p) = 1` thì `a^(p-1) ≡ 1 (mod p)`, nhưng hợp số vẫn có thể qua phép thử này, như `341 = 11·31` có `2^340 ≡ 1 (mod 341)`.
+- **Số Carmichael (HAC Definition 4.10):** là hợp số qua phép thử Fermat với mọi cơ số nguyên tố cùng nhau; ví dụ `561 = 3·11·17`.
+- **Căn bậc hai không tầm thường của 1:** theo mod `15`, `4² = 16 ≡ 1` và `4` khác `±1`, nên `4` là căn bậc hai không tầm thường của `1`.
+
+**Cần đọc**
+
+- HAC (Menezes), Chương 4: Definition 4.10.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tự kiểm tra Fermat cho `341 = 11·31` với cơ số `2`: thử tính `2^340 mod 341` bằng cách tách lũy thừa qua các bước nhỏ rồi đối chiếu kết quả với `1`.
+
+<details><summary>Đáp án</summary>
+
+- `341 = 11·31` là hợp số nhưng `2^340 ≡ 1 (mod 341)`.
+- Cách tính tay: `2^10 = 1024 = 3·341 + 1 ≡ 1 (mod 341)`, nên `2^340 = (2^10)^34 ≡ 1 (mod 341)`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- `2^340 ≡ 1 (mod 341)`: hợp số `341` qua được phép thử Fermat cơ số `2`.
+
+**Cần đọc để làm bước 2**
+
+- Bạn hãy lập bảng x² mod 15 cho x = 1..14, tìm mọi x có x² ≡ 1 (mod 15), rồi loại x = 1 và x = 14 (tức ±1). Phần còn lại là căn bậc hai không tầm thường.
+
+<details><summary>Đáp án bước 2</summary>
+
+- x² ≡ 1 (mod 15) có nghiệm x ∈ {1, 4, 11, 14}; không tầm thường là `4` và `11` (`11² = 121 = 120 + 1`).
+
+</details>
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
 [Về mục lục](#muc-luc)
 
 ---
@@ -232,6 +270,43 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 **Nếu không tách thì sao:** phải chép lại phần bình phương liên tiếp ở hai nơi.
 
 **Kết quả sau bước:** n-1 = 2^r·m với m lẻ; bình phương liên tiếp dùng `mul_mod(x, x, n)` (dòng 77), vòng `step = 1 .. r-1` (dòng 75).
+
+**Kiến thức cần biết**
+
+- **Tách `n - 1 = 2^r · m` (`m` lẻ) giống như rút hết phần chẵn ra ngoài:** ta chia đôi `n - 1` liên tiếp cho đến khi gặp số lẻ `m`, chẳng hạn `560 = 2^4·35` và `12 = 2^2·3`.
+- **Chuỗi bình phương đi từ `a^m` lên `a^(n-1)` như từng bậc thang:** với `n = 13`, `n - 1 = 12 = 2^2·3`, `2^3 = 8`, `8² = 64 ≡ 12 = n - 1 (mod 13)` nên qua; với `n = 15`, `n - 1 = 14 = 2^1·7`, `2^7 = 128 ≡ 8 (mod 15)`, khác `1` và `14`, `r = 1` nên không còn bước bình phương: kết luận hợp số.
+- **Cơ số và cận xác suất:** chọn cơ số trong `[2, n - 2]` (HAC Algorithm 4.24); mỗi vòng, hợp số lẻ lọt qua không quá `1/4` (HAC Fact 4.23, 4.25), và đó là xác suất hợp số lọt qua, không phải xác suất `n` là hợp số (HAC Note 4.47).
+
+**Cần đọc**
+
+- HAC (Menezes), Chương 4: Fact 4.23, Algorithm 4.24, Fact 4.25, Note 4.47.
+- Code trong mục này: `prime.cpp:56-61`, `prime.cpp:66-85`, `prime.cpp:93`, `prime.cpp:102`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy đối chiếu `decompose_even` (`prime.cpp:56-61`) với hai phép tách `560 = 2^4·35` và `12 = 2^2·3` để xem cách đếm số lần chia đôi `n - 1`.
+
+<details><summary>Đáp án</summary>
+
+- `decompose_even` (`prime.cpp:56-61`) đếm bit `0` liên tiếp từ bit thấp nhất để lấy `r`, rồi dịch phải `r` bit để được `m`: với `12` ta có `12 = 2^2·3` (`r = 2, m = 3`), với `560` ta có `560 = 2^4·35` (`r = 4, m = 35`).
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn tách được `n - 1 = 2^r·m` với `m` lẻ qua `decompose_even` (`prime.cpp:56-61`), khớp với `560 = 2^4·35` và `12 = 2^2·3`.
+
+**Cần đọc để làm bước 2**
+
+- Đọc `miller_rabin_from_first_power` (`prime.cpp:66-85`), `prime.cpp:93`, `prime.cpp:102` cùng HAC Algorithm 4.24, Fact 4.23, Fact 4.25, Note 4.47, rồi tự chạy vòng cơ số 2 cho `n = 21` (ví dụ `n = 13` và `n = 15` ở trên là mẫu để theo).
+
+<details><summary>Đáp án bước 2</summary>
+
+- `n - 1 = 20 = 2^2·5`; `2^5 = 32 ≡ 11 (mod 21)`, khác `1` và `20`; bình phương một lần (`r - 1 = 1`): `11² = 121 ≡ 16 (mod 21)`, khác `20`; hết bước nên kết luận hợp số (`21 = 3·7`).
+
+</details>
+- Slide bài giảng: Nhi xác nhận sau khi mở.
 
 [Về mục lục](#muc-luc)
 
