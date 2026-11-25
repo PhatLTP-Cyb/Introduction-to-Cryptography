@@ -1,5 +1,41 @@
 # GUIDE NV3: MILLER-RABIN VÀ SINH SỐ NGUYÊN TỐ AN TOÀN (SAFE PRIME)
 
+<a id="muc-luc"></a>
+## MỤC LỤC (bấm để tới)
+
+- [0. TỔNG QUAN](#s0)
+- [1. KIẾN THỨC NỀN, TỰ KIỂM TRA TRƯỚC KHI ĐỌC CODE](#s1)
+- [2. BẢN ĐỒ ĐỌC CODE](#s2)
+- [3. BƯỚC 1: SÀNG SỐ NGUYÊN TỐ NHỎ](#s3)
+- [4. BƯỚC 2: TÁCH n-1 VÀ MỘT VÒNG MILLER-RABIN](#s4)
+- [5. BƯỚC 3: `is_probable_prime`](#s5)
+- [6. BƯỚC 4: SÀNG KẾT HỢP CHO q VÀ p = 2q+1](#s6)
+- [7. BƯỚC 5: CƠ SỐ 2 VÀ CHỨNG NHẬN POCKLINGTON CÓ ĐIỀU KIỆN](#s7)
+- [8. BƯỚC 6: `generate_safe_prime`](#s8)
+- [9. LỖI THƯỜNG GẶP VÀ CÁCH DEBUG](#s9)
+- [10. CHẠY THỬ (Windows PowerShell 5.1, trong `project_01_source`)](#s10)
+- [11. BÀI TẬP VẬN DỤNG](#s11)
+- [12. TÓM TẮT, TỰ KIỂM TRA CUỐI BÀI](#s12)
+- [13. ĐÃ ĐỌC CHÉO](#s13)
+- [PHỤ LỤC: LƯU Ý VỀ ĐỘ CHÍNH XÁC](#phu-luc)
+
+## TRA NHANH: CÂU HỎI -> MỤC CẦN MỞ
+
+| Câu hỏi hoặc từ khóa | Mở mục |
+|---|---|
+| Định lý nhỏ Fermat, căn bậc hai của 1 | [Mục 1](#s1) |
+| Bản đồ hàm và số dòng trong prime.cpp | [Mục 2](#s2) |
+| Sàng số nguyên tố nhỏ, has_small_factor, vì sao n khác s | [Mục 3](#s3) |
+| Tách n-1 = 2^r * m, một vòng Miller-Rabin, căn bậc hai không tầm thường, Carmichael | [Mục 4](#s4) |
+| is_probable_prime, xác suất sai 4^-k | [Mục 5](#s5) |
+| Sàng kết hợp q và p = 2q+1 | [Mục 6](#s6) |
+| Cơ số 2, chứng nhận Pocklington có điều kiện | [Mục 7](#s7) |
+| generate_safe_prime, thứ tự các bước lọc | [Mục 8](#s8) |
+| Lỗi thường gặp, debug | [Mục 9](#s9) |
+| Lệnh chạy thử trên Windows | [Mục 10](#s10) |
+| Bài tập tính tay | [Mục 11](#s11) |
+| Tóm tắt, câu hỏi tự kiểm tra, bảng thuật ngữ | [Mục 12](#s12) |
+
 > Dựa trên `project_01_source/src/prime.cpp` và `src/dh.h` ở commit `0720eff` (main). Mọi `file:dòng` là của commit này; main đổi thì dòng có thể lệch.
 > Đối tượng: thành viên nhóm **chưa viết NV3**. Mục tiêu kép: **hiểu vì sao** code viết như vậy và **tự làm lại được** phần này.
 > Người viết: Nhi. Người đọc chéo: Võ Văn Cường (xem mục 13).
@@ -7,6 +43,7 @@
 
 ---
 
+<a id="s0"></a>
 ## 0. TỔNG QUAN
 
 ### 0.1. Câu chuyện xuyên suốt
@@ -102,6 +139,7 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 
 ---
 
+<a id="s1"></a>
 ## 1. KIẾN THỨC NỀN, TỰ KIỂM TRA TRƯỚC KHI ĐỌC CODE
 
 > **Tư duy nguyên bản:** Ta cần một phép kiểm "chắc chắn khi nói *hợp số*, xác suất khi nói *nguyên tố*", chạy nhanh với số 512 bit. Hãy xuất phát từ câu hỏi: **"Tính chất nào mà mọi số nguyên tố đều có, còn hợp số thì thường không?"**
@@ -117,8 +155,63 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 4. Vì sao cơ số b chọn trong [2, n-2]?
 5. Sau k vòng độc lập, xác suất sai tối đa là bao nhiêu?
 
+**Kiến thức cần biết**
+
+- **Số học đồng dư giống như đồng hồ:** khi chia cho `n`, ta chỉ giữ phần dư, ví dụ `16 ≡ 1 (mod 15)` với `15 = 3·5`.
+- **Fermat nhỏ là phép thử một chiều:** với `p` nguyên tố và `gcd(a, p) = 1` thì `a^(p-1) ≡ 1 (mod p)`, nhưng hợp số vẫn có thể qua phép thử này, như `341 = 11·31` có `2^340 ≡ 1 (mod 341)`.
+- **Số Carmichael (HAC Definition 4.10):** là hợp số qua phép thử Fermat với mọi cơ số nguyên tố cùng nhau; ví dụ `561 = 3·11·17`.
+- **Căn bậc hai không tầm thường của 1:** theo mod `15`, `4² = 16 ≡ 1` và `4` khác `±1`, nên `4` là căn bậc hai không tầm thường của `1`.
+
+**Cần đọc**
+
+- HAC (Menezes), Chương 4: Definition 4.10.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tự kiểm tra Fermat cho `341 = 11·31` với cơ số `2`: thử tính `2^340 mod 341` bằng cách tách lũy thừa qua các bước nhỏ rồi đối chiếu kết quả với `1`.
+
+<details><summary>Đáp án</summary>
+
+- `341 = 11·31` là hợp số nhưng `2^340 ≡ 1 (mod 341)`.
+- Cách tính tay: `2^10 = 1024 = 3·341 + 1 ≡ 1 (mod 341)`, nên `2^340 = (2^10)^34 ≡ 1 (mod 341)`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- `2^340 ≡ 1 (mod 341)`: hợp số `341` qua được phép thử Fermat cơ số `2`.
+
+**Cần đọc để làm bước 2**
+
+- Bạn hãy lập bảng x² mod 15 cho x = 1..14, tìm mọi x có x² ≡ 1 (mod 15), rồi loại x = 1 và x = 14 (tức ±1). Phần còn lại là căn bậc hai không tầm thường.
+
+<details><summary>Đáp án bước 2</summary>
+
+- x² ≡ 1 (mod 15) có nghiệm x ∈ {1, 4, 11, 14}; không tầm thường là `4` và `11` (`11² = 121 = 120 + 1`).
+
+</details>
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Bổ sung lý thuyết (khớp báo cáo mục 2.1)**
+
+- **Vì sao `x² ≡ 1 (mod p)` (`p` nguyên tố lẻ) chỉ có `x ≡ ±1`:** ta viết `x² - 1 = (x - 1)(x + 1)`; vì `p` nguyên tố mà chia hết tích thì chia hết một thừa số, nên `x ≡ 1` hoặc `x ≡ -1 (mod p)`.
+- **Hợp số lẻ có từ hai ước nguyên tố lẻ trở lên:** phương trình `x² ≡ 1 (mod n)` có ít nhất `4` nghiệm (theo định lý phần dư Trung Hoa, như báo cáo ghi). Ví dụ `mod 35 = 5·7`: nghiệm là `1, 6, 29, 34`; nghiệm không tầm thường là `6` và `29` (`6² = 36 = 35 + 1`; `29² = 841 = 24·35 + 1`).
+- **Thuật ngữ:** **chứng nhân hợp số (witness)** là cơ số `b` làm vòng kiểm tra kết luận `n` là hợp số; **số nguyên tố Sophie Germain** là số nguyên tố `q` mà `2q + 1` cũng nguyên tố (`p = 2q + 1` là safe prime).
+- **Cận phát hiện mỗi vòng:** với mỗi cơ số chọn ngẫu nhiên, báo cáo ghi hợp số lẻ bị phát hiện với xác suất ít nhất `3/4` (`rabin1980`, `menezes1996handbook`); đây là cận cho hợp số lẻ.
+- **Bài tập:** Mod `9`, tìm mọi `x` trong `1..8` có `x² ≡ 1 (mod 9)`.
+
+<details><summary>Đáp án</summary>
+
+- Chỉ có `x = 1` và `x = 8` (tức `±1`).
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s2"></a>
 ## 2. BẢN ĐỒ ĐỌC CODE
 
 Đọc theo thứ tự này, trong `project_01_source/src/prime.cpp`:
@@ -135,8 +228,11 @@ Thời gian là **ước lượng của người soạn, chưa đo** trên ngư�
 
 Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `generate_safe_prime` dòng 26. Hàm phụ nằm trong `namespace` ẩn của `prime.cpp` (dòng 7 đến 163), nên không gọi được từ file khác.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s3"></a>
 ## 3. BƯỚC 1: SÀNG SỐ NGUYÊN TỐ NHỎ
 
 > **Tư duy nguyên bản:** Phép lũy thừa mô-đun 512 bit rất tốn, còn chia một số 512 bit cho số nhỏ thì rẻ. Hãy hỏi: **"Có thể loại bao nhiêu hợp số mà không cần lũy thừa?"**
@@ -160,8 +256,49 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước (suy từ code, tự chạy để xác nhận):** `has_small_factor(15)` là true, `has_small_factor(13)` là false, `has_small_factor(0)` là true.
 
+**Kiến thức cần biết**
+
+- **Sàng như chiếc rây lọc:** mỗi số nguyên tố nhỏ đều loại được các bội số của chính nó.
+- **Bội nhỏ hơn bình phương đã bị lọc trước:** mọi bội nhỏ hơn bình phương của một số nguyên tố đều đã bị số nguyên tố nhỏ hơn đánh dấu rồi (ví dụ `6 = 2·3` đã bị `2` đánh dấu).
+- **Bảng sàng dùng chung:** danh sách số nguyên tố nhỏ chỉ tạo một lần trong biến `static const` rồi dùng lại.
+- **Chi phí kiểm tra:** chia số nhỏ rẻ hơn nhiều so với một phép lũy thừa mô-đun 512 bit.
+
+**Cần đọc**
+
+- `prime.cpp:14-37`, `prime.cpp:166-179`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tự sàng Eratosthenes bằng tay cho các số từ `2` đến `30`: bội của `2` bắt đầu đánh dấu từ `4`, bội của `3` từ `9`, bội của `5` từ `25`; số nguyên tố tiếp theo là `7`, mà `7² = 49 > 30` nên ta dừng.
+
+<details><summary>Đáp án</summary>
+
+- `2, 3, 5, 7, 11, 13, 17, 19, 23, 29` (`10` số).
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn lọc được `10` số nguyên tố từ `2` đến `30` và thấy mốc dừng tại `7² = 49 > 30`.
+
+**Cần đọc để làm bước 2**
+
+- Dựa vào `prime.cpp:173`, bạn hãy tự dự đoán `has_small_factor` cho `n = 49`, `n = 7`, `n = 21`.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `n = 49`: `true` (`49 mod 7 = 0` và `49` khác `7`).
+- `n = 7`: `false` (`7 mod 7 = 0` nhưng `n` bằng `s`, các `s` khác cho dư khác `0`).
+- `n = 21`: `true` (`21 mod 3 = 0` và `21` khác `3`).
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s4"></a>
 ## 4. BƯỚC 2: TÁCH n-1 VÀ MỘT VÒNG MILLER-RABIN
 
 > **Tư duy nguyên bản:** Nếu a^(n-1) ≡ 1 mà n là hợp số, ta cần cách nhìn "chi tiết hơn" vào chuỗi bình phương. Hãy hỏi: **"Đi từ a^m đến a^(n-1) bằng bình phương liên tiếp, có điểm nào lộ ra căn bậc hai không tầm thường không?"**
@@ -186,8 +323,48 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** n-1 = 2^r·m với m lẻ; bình phương liên tiếp dùng `mul_mod(x, x, n)` (dòng 77), vòng `step = 1 .. r-1` (dòng 75).
 
+**Kiến thức cần biết**
+
+- **Tách `n - 1 = 2^r · m` (`m` lẻ) giống như rút hết phần chẵn ra ngoài:** ta chia đôi `n - 1` liên tiếp cho đến khi gặp số lẻ `m`, chẳng hạn `560 = 2^4·35` và `12 = 2^2·3`.
+- **Chuỗi bình phương đi từ `a^m` lên `a^(n-1)` như từng bậc thang:** với `n = 13`, `n - 1 = 12 = 2^2·3`, `2^3 = 8`, `8² = 64 ≡ 12 = n - 1 (mod 13)` nên qua; với `n = 15`, `n - 1 = 14 = 2^1·7`, `2^7 = 128 ≡ 8 (mod 15)`, khác `1` và `14`, `r = 1` nên không còn bước bình phương: kết luận hợp số.
+- **Cơ số và cận xác suất:** chọn cơ số trong `[2, n - 2]` (HAC Algorithm 4.24); mỗi vòng, hợp số lẻ lọt qua không quá `1/4` (HAC Fact 4.23, 4.25), và đó là xác suất hợp số lọt qua, không phải xác suất `n` là hợp số (HAC Note 4.47).
+
+**Cần đọc**
+
+- HAC (Menezes), Chương 4: Fact 4.23, Algorithm 4.24, Fact 4.25, Note 4.47.
+- Code trong mục này: `prime.cpp:56-61`, `prime.cpp:66-85`, `prime.cpp:93`, `prime.cpp:102`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy đối chiếu `decompose_even` (`prime.cpp:56-61`) với hai phép tách `560 = 2^4·35` và `12 = 2^2·3` để xem cách đếm số lần chia đôi `n - 1`.
+
+<details><summary>Đáp án</summary>
+
+- `decompose_even` (`prime.cpp:56-61`) đếm bit `0` liên tiếp từ bit thấp nhất để lấy `r`, rồi dịch phải `r` bit để được `m`: với `12` ta có `12 = 2^2·3` (`r = 2, m = 3`), với `560` ta có `560 = 2^4·35` (`r = 4, m = 35`).
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn tách được `n - 1 = 2^r·m` với `m` lẻ qua `decompose_even` (`prime.cpp:56-61`), khớp với `560 = 2^4·35` và `12 = 2^2·3`.
+
+**Cần đọc để làm bước 2**
+
+- Đọc `miller_rabin_from_first_power` (`prime.cpp:66-85`), `prime.cpp:93`, `prime.cpp:102` cùng HAC Algorithm 4.24, Fact 4.23, Fact 4.25, Note 4.47, rồi tự chạy vòng cơ số 2 cho `n = 21` (ví dụ `n = 13` và `n = 15` ở trên là mẫu để theo).
+
+<details><summary>Đáp án bước 2</summary>
+
+- `n - 1 = 20 = 2^2·5`; `2^5 = 32 ≡ 11 (mod 21)`, khác `1` và `20`; bình phương một lần (`r - 1 = 1`): `11² = 121 ≡ 16 (mod 21)`, khác `20`; hết bước nên kết luận hợp số (`21 = 3·7`).
+
+</details>
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s5"></a>
 ## 5. BƯỚC 3: `is_probable_prime`
 
 > **Tư duy nguyên bản:** Một vòng với một cơ số chỉ cho bằng chứng yếu. Hãy hỏi: **"Lặp bao nhiêu vòng độc lập thì sai số nhỏ đến mức chấp nhận được?"**
@@ -209,8 +386,48 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** hàm trả false chắc chắn cho hợp số, và true cho số nguyên tố xác suất qua đủ `rounds` vòng.
 
+**Kiến thức cần biết**
+
+- **Mỗi vòng độc lập như một lần hỏi lại bằng chứng mới:** các vòng kiểm tra độc lập giúp lặp lại phép thử với cơ số mới.
+- **Cận xác suất qua một vòng và `k` vòng:** hợp số lẻ lọt qua mỗi vòng không quá `1/4` (HAC Fact 4.23, 4.25), nên `k` vòng độc lập cho cận `4^(-k)`.
+- **Ý nghĩa của xác suất (HAC Note 4.47):** đó là xác suất hợp số lọt qua, không phải xác suất `n` là hợp số.
+- **Cơ số và số vòng mặc định:** cơ số chọn trong `[2, n - 2]` (HAC Algorithm 4.24); mặc định `rounds = 20` (`dh.h:25`) và `SAFE_PRIME_ROUNDS = 20` (`prime.cpp:11`, dùng ở dòng `256` cho cả `q` và `p`).
+
+**Cần đọc**
+
+- `prime.cpp:182-226`, `dh.h:25`.
+- HAC (Menezes), Chương 4: Fact 4.23, Algorithm 4.24, Fact 4.25, Note 4.47.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tính cận sai số cho `k = 20`: đổi `4^(-20) = 2^(-40)`, rồi dùng `2^10 = 1024` để tính giá trị xấp xỉ.
+
+<details><summary>Đáp án</summary>
+
+- `4^(-20) = 2^(-40) ≈ 9,09×10^(-13)`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn tính được cận sai số cho `k = 20` là `4^(-20) = 2^(-40) ≈ 9,09×10^(-13)`.
+
+**Cần đọc để làm bước 2**
+
+- Với `n = 25`, bạn hãy liệt kê các cơ số `b` hợp lệ trong `[2, n - 2]` và giải thích vì sao `b = 1` và `b = 24` bị loại.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `b` từ `2` đến `23`; `b = 1` cho `1` và `b = 24 = n - 1` cho `-1 (mod 25)`, cả hai luôn qua nên không có ích (xem comment ở `prime.cpp:88-90`).
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s6"></a>
 ## 6. BƯỚC 4: SÀNG KẾT HỢP CHO q VÀ p = 2q+1
 
 > **Tư duy nguyên bản:** Ta cần **hai** số cùng nguyên tố. Hãy hỏi: **"Một phép chia có kiểm tra được cả hai số cùng lúc không?"**
@@ -232,8 +449,49 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** ứng viên có ước nhỏ ở q hoặc p bị loại sau một lượt duyệt bảng.
 
+**Kiến thức cần biết**
+
+- **Gộp hai phép kiểm thành một điều kiện theo `mod s`:** vì `p = 2q + 1`, kiểm `p` chia hết cho `s` cũng là kiểm một điều kiện của `q` theo `mod s`.
+- **Một phép chia dùng cho cả hai:** chỉ một lần lấy số dư của `q` theo `s` cho ra giá trị dùng cho cả kiểm tra `q` lẫn kiểm tra `p`.
+- **Ví dụ số:** với `s = 7`, `q = 17` có `17 mod 7 = 3`; `p = 35 = 5·7` chia hết cho `7` nên ứng viên bị loại.
+- **Ngoại lệ khi chính `q` hoặc `p` bằng `s`:** `q != s` bảo vệ `q` (nếu `q` chính là `s` thì dư `0` nhưng `q` là số nguyên tố); `q != (s-1)/2` bảo vệ `p` (khi `q = (s-1)/2` thì `p = 2q + 1 = s`, tức `p` chính là số nguyên tố `s`).
+
+**Cần đọc**
+
+- `prime.cpp:106-136`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy tự suy điều kiện của `q` để `2q + 1` chia hết cho `s`: viết `2q + 1 = k·s`, chú ý `s` lẻ nên `2` khả nghịch `mod s`, rồi thử với `s = 7` để tìm `q mod 7`.
+
+<details><summary>Đáp án</summary>
+
+- `q ≡ (s-1)/2 (mod s)`; với `s = 7` là `q ≡ 3`, vì `2·3 + 1 = 7`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Bạn rút ra được điều kiện `q ≡ (s-1)/2 (mod s)` để phát hiện `p = 2q + 1` chia hết cho `s`.
+
+**Cần đọc để làm bước 2**
+
+- Dựa vào `prime.cpp:127-129`, với `s = 5`, bạn hãy quyết định có loại ứng viên `q = 7`, `q = 3`, `q = 5` hay không.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `q = 7`: dư `2 = (s-1)/2` và `q` khác `2`, `p = 15` chia hết cho `5`, loại.
+- `q = 3`: dư `3`, khác `0` và khác `2`, `p = 7`, qua.
+- `q = 5`: dư `0` nhưng `q` bằng `s` nên `q` không bị loại; `p = 11`, dư của `q` là `0` khác `2` nên `p` không bị loại; qua.
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s7"></a>
 ## 7. BƯỚC 5: CƠ SỐ 2 VÀ CHỨNG NHẬN POCKLINGTON CÓ ĐIỀU KIỆN
 
 > **Tư duy nguyên bản:** p = 2q+1 có cấu trúc rất đặc biệt: p-1 chỉ có hai ước nguyên tố. Hãy hỏi: **"Cấu trúc đó giúp rút gọn phép kiểm ở chỗ nào?"**
@@ -258,8 +516,47 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** ứng viên không qua cơ số 2 bị loại trước khi chạy 20 vòng ngẫu nhiên.
 
+**Kiến thức cần biết**
+
+- **Dạng đặc biệt của Pocklington (báo cáo mục 2.4.1):** với `p = 2q + 1`, `q` nguyên tố lẻ, nếu `a^(p-1) ≡ 1 (mod p)` và `gcd(a² - 1, p) = 1` thì `p` nguyên tố (HAC Fact 4.40, 4.59).
+- **Với cơ số `a = 2`:** điều kiện thứ hai trở thành `gcd(3, p) = 1`; kết luận là có điều kiện vì `q` chỉ được kiểm tra nguyên tố theo xác suất.
+- **Lũy thừa cơ số `2` trong không gian Montgomery (báo cáo mục 2.4.2):** chỉ áp dụng cho mô-đun lẻ; ta duyệt bit số mũ từ trái sang phải, mỗi bit bình phương bằng `mul`, gặp bit `1` thì nhân đôi bằng `add_mod_reduced` thay cho `mul` (mô-đun chẵn gọi lại `modular_exponentiation`).
+
+**Cần đọc**
+
+- HAC, Chương 4: Fact 4.40, Fact 4.59.
+- Code trong mục này: `prime.cpp:96-103`, `prime.cpp:138-162`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Bạn hãy kiểm tra `p = 23` (`q = 11`) bằng cách tính `2^11 mod 23` và `gcd(3, 23)`: bắt đầu từ `2^11 = 2048` rồi chia cho `23`.
+
+<details><summary>Đáp án</summary>
+
+- `2048 = 89·23 + 1` nên `x = 1`, thuộc `{1, p - 1}`; `23 mod 3 = 2` khác `0` nên `gcd(3, 23) = 1`.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Với `p = 23`, ta có `x = 2^11 mod 23 = 1` và `gcd(3, 23) = 1`.
+
+**Cần đọc để làm bước 2**
+
+- Với ứng viên `p = 15 = 2·7 + 1` (`q = 7` nguyên tố lẻ), bạn hãy tự kiểm tra vòng cơ số `2` và điều kiện `mod 3`.
+
+<details><summary>Đáp án bước 2</summary>
+
+- `2^7 = 128 = 8·15 + 8` nên `x = 8`, không thuộc `{1, 14}`, bị loại ngay ở vòng cơ số `2`; `15 mod 3 = 0` cũng vi phạm `gcd(3, p) = 1`.
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s8"></a>
 ## 8. BƯỚC 6: `generate_safe_prime`
 
 > **Tư duy nguyên bản:** Ta có đủ công cụ; còn lại là thứ tự. Hãy hỏi: **"Bước nào loại được nhiều ứng viên nhất với chi phí thấp nhất? Đặt nó lên đầu."**
@@ -277,8 +574,46 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 
 **Kết quả sau bước:** p đúng bitsize bit, p và (p-1)/2 cùng qua 20 vòng Miller-Rabin.
 
+**Kiến thức cần biết**
+
+- **Bốn bước của hàm (báo cáo mục 2.4):** sinh `q` (bit cao và bit thấp bằng `1`), sàng kết hợp, vòng cơ số `2` cho `q` và `p`, rồi `is_probable_prime` `20` vòng cho cả `q` và `p`.
+- **Thứ tự từ rẻ đến đắt:** bước nào loại được nhiều ứng viên nhất với chi phí thấp nhất thì ta đặt nó lên đầu.
+- **Giới hạn kích thước:** `bitsize` nằm trong `[16, BIGINT_BITS]` (kiểm ở `prime.cpp:235`); `BIGINT_BITS = LIMBS * 64` (`u512.h:13`). Ở bản 512 bit đã nộp khoảng này là `[16, 512]`, khớp báo cáo.
+
+**Cần đọc**
+
+- `prime.cpp:228-263`, `dh.h:26`.
+- Slide bài giảng: Nhi xác nhận sau khi mở.
+
+**Gợi ý bước 1**
+
+Với `bitsize = 16`, bạn hãy xác định `q` có bao nhiêu bit và những bit nào được đặt bằng `1` (lưu ý `q` có `bitsize - 1` bit).
+
+<details><summary>Đáp án</summary>
+
+- `q` có `15` bit; bit cao nhất (bit `14`) và bit `0` đặt bằng `1`, nên `q` lẻ.
+
+</details>
+
+**Kết quả sau bước 1**
+
+- Với `bitsize = 16`, `q` có `15` bit với bit `14` và bit `0` bằng `1`.
+
+**Cần đọc để làm bước 2**
+
+- Bạn hãy nêu thứ tự bốn bước lọc của vòng `for (;;)` trong `generate_safe_prime` (`prime.cpp:228-263`) và cho biết hàm trả về khi nào.
+
+<details><summary>Đáp án bước 2</summary>
+
+- Sàng kết hợp, rồi cơ số `2` cho `q` và `p`, rồi `is_probable_prime` cho `q` và `p`; gặp điều kiện loại ở bước nào thì `continue`; qua hết thì trả `p`.
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s9"></a>
 ## 9. LỖI THƯỜNG GẶP VÀ CÁCH DEBUG
 
 | Triệu chứng | Nguyên nhân thường gặp | Chỗ kiểm |
@@ -290,8 +625,11 @@ Chữ ký công khai nằm ở `src/dh.h`: `is_probable_prime` dòng 25, `genera
 | Lỗi liên kết khi dịch tay trên Windows | Thiếu `-lbcrypt` ở cuối lệnh | mục 10 |
 | Kết quả sai khi nhân số lớn | Nhân trực tiếp thay vì `mul_mod` | `dh.h:12` |
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s10"></a>
 ## 10. CHẠY THỬ (Windows PowerShell 5.1, trong `project_01_source`)
 
 ```powershell
@@ -305,8 +643,11 @@ g++ @flags -I tests tests/test_prime.cpp @libs -o test_prime.exe -lbcrypt
 **Kết quả đúng:** dòng `test_prime: 28 kiem tra, 0 sai`.
 Bộ đầy đủ: `python tests\run_tests.py 512` cho `Tong: 6/6 dat` (u512 7018, modexp 6404, random 23205, prime 28, dh 604 kiểm tra, đều 0 sai) khi đã dịch đủ các tệp test.
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s11"></a>
 ## 11. BÀI TẬP VẬN DỤNG
 
 **Bài tập 1 (M2).** Tách n-1 = 2^r·m cho n = 341 và n = 561. Rồi kiểm tra tay vòng Miller-Rabin cơ số 2 cho 341.
@@ -339,8 +680,11 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 - **Đối chiếu:** `python -c "print(pow(2,6,13), pow(12,2,13), pow(2,170,341), 341%3)"` phải ra `12 1 1 2`.
 </details>
 
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s12"></a>
 ## 12. TÓM TẮT, TỰ KIỂM TRA CUỐI BÀI
 
 ### 12.1. Tóm tắt 1 trang
@@ -362,7 +706,7 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 | 4 | M3 | Vì sao b nằm trong [2, n-2]? | b = 1 và n-1 cho kết quả tầm thường |
 | 5 | M3 | Sau k vòng độc lập, xác suất sai tối đa? | 4^(-k) |
 | 6 | M4 | Nếu p = 2q+1 chia hết cho 7 thì q mod 7 bằng mấy? | 3, vì (7-1)/2 = 3 |
-| 7 | M6 | Bỏ điều kiện gcd(3, p) = 1 ở `passes_base_two_and_certifies` thì sao? | Đây là điều kiện gcd(2^((p-1)/q) - 1, p) = gcd(3, p) = 1 của định lý Pocklington (a = 2, (p-1)/q = 2). Đã chạy p ≡ 3 mod 4, p < 2·10^6 khi bỏ điều kiện: 17 hợp số qua phép kiểm x ∈ {1, p-1} (nhỏ nhất 2047 = 23·89), nhưng q của cả 17 số đều là hợp số và không số nào chia hết cho 3, nên chưa có phản ví dụ. Khi q thật sự nguyên tố, phép kiểm này đã kéo theo p nguyên tố (bậc của 2 mod p bằng p-1), nên điều kiện thừa về toán và được giữ để khớp giả thiết của định lý |
+| 7 | M6 | Bỏ điều kiện gcd(3, p) = 1 ở `passes_base_two_and_certifies` thì sao? | Đây là điều kiện gcd(2^((p-1)/q) - 1, p) = gcd(3, p) = 1 của định lý Pocklington (a = 2, (p-1)/q = 2). Đã chạy p ≡ 3 mod 4, p < 2·10^6 khi bỏ điều kiện: 17 hợp số qua phép kiểm x ∈ {1, p-1} (nhỏ nhất 2047 = 23·89), nhưng q của cả 17 số đều là hợp số và không số nào chia hết cho 3, nên chưa có phản ví dụ. Khi q thật sự nguyên tố, phép kiểm này đã kéo theo p nguyên tố (suy luận của người soạn, chưa có nguồn: mọi ước nguyên tố r của p có bậc của 2 mod r chia hết 2q nên r-1 là bội của 2q, suy ra r ≥ p), nên điều kiện thừa về toán và được giữ để khớp giả thiết của định lý |
 | 8 | M8 | Vẽ lại sơ đồ mục 0.2 từ trí nhớ | Đối chiếu với `generate_safe_prime` |
 
 ### 12.3. Hiểu lầm thường gặp
@@ -386,14 +730,52 @@ Hàm giả định p = 2q+1 với q lẻ (dòng 151, tức p ≡ 3 mod 4) và co
 | Sieve | Sàng | Loại ước nhỏ trước khi kiểm tốn kém |
 | Modular exponentiation | Lũy thừa mô-đun | b^e mod n (NV2) |
 
+### 12.5. Số đo thực nghiệm (khớp báo cáo mục 2.5)
+
+- **Cách đo:** ta đo `generate_safe_prime` ở `512` bit trên cùng máy và hệ điều hành; mỗi lần đo dùng `20` số `p` sinh từ cùng một seed, lặp `3` lượt tuần tự (`60` lượt sinh, không phải `60` giá trị `p` độc lập); `20` chuỗi `p` trùng từng ký tự giữa các bản.
+
+**Bảng tỉ số `pock/main` (`main` chạy trước, `pock` sau, thứ tự cố định):**
+
+| Lượt | Tỉ số |
+|---|---|
+| Lượt 1 | 1,0064 |
+| Lượt 2 | 1,0720 |
+| Lượt 3 | 1,0313 |
+| Gộp | 1,0358 |
+| Trung vị 20 tỉ số theo p | 1,0167 |
+
+**Bảng tỉ số `new/pock` (thứ tự xen kẽ):**
+
+| Lượt | Tỉ số |
+|---|---|
+| Lượt 1 | 0,9147 |
+| Lượt 2 | 0,9272 |
+| Lượt 3 | 0,9305 |
+| Gộp | 0,9241 |
+| Trung vị | 0,9203 |
+
+- **Phạm vi kết luận:** hai đợt đo thuộc hai phiên độc lập nên bạn không nhân chéo các tỉ số; một lần đo độc lập khác của thành viên nhóm (`5` lượt xen kẽ, `512` bit) không thấy khác biệt rõ; ở lượt `2` của bản Pocklington cũ có hai mẫu chênh (`p` thứ `7`: `57,9 ms` so với khoảng `37 ms`; `p` thứ `8`: `302 ms` so với khoảng `173 ms`), nên bảng chỉ dùng tỉ số tổng và trung vị.
+- Nguyên nhân của mức giảm ở bảng `new/pock` chưa được xác định, không gán lý do.
+- **Câu hỏi tự kiểm:** Vì sao không nói `60` giá trị `p` độc lập?
+
+<details><summary>Đáp án</summary>
+
+- Vì `20` giá trị `p` được lặp lại qua `3` lượt cùng seed.
+
+</details>
+
+[Về mục lục](#muc-luc)
+
 ---
 
+<a id="s13"></a>
 ## 13. ĐÃ ĐỌC CHÉO
 
 - Võ Văn Cường (kiểm chéo NV3): chưa.
 
 ---
 
+<a id="phu-luc"></a>
 ## PHỤ LỤC: LƯU Ý VỀ ĐỘ CHÍNH XÁC
 
 1. Mọi số dòng lấy từ `prime.cpp` và `dh.h` ở commit `0720eff`; main đổi thì phải cập nhật.
