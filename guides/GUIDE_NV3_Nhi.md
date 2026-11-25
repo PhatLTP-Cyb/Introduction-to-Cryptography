@@ -419,7 +419,7 @@ Bạn hãy tính cận sai số cho `k = 20`: đổi `4^(-20) = 2^(-40)`, rồi 
 
 <details><summary>Đáp án bước 2</summary>
 
-- `b` từ `2` đến `23`; `b = 1` cho `1` và `b = 24 = n - 1` cho `-1 (mod 25)`, cả hai luôn qua nên không có ích (`comment dòng 88-90`).
+- `b` từ `2` đến `23`; `b = 1` cho `1` và `b = 24 = n - 1` cho `-1 (mod 25)`, cả hai luôn qua nên không có ích (xem comment ở `prime.cpp:88-90`).
 
 </details>
 
